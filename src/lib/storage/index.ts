@@ -33,7 +33,28 @@ export interface CreateAdapterOptions {
 }
 
 /**
- * `<base>api/health` 를 800ms 안에 두드려 보고, 응답이 오면 RestAdapter,
+ * 셀프호스트 서버가 `GET <base>api/health` 에서 돌려줘야 하는 응답 (M6 계약).
+ * **status 200 만으로는 부족하다** — `vite preview`/`vite dev` 의 SPA 폴백과
+ * 일부 정적 호스트는 없는 경로에도 index.html 을 200 으로 준다. 그래서 본문의
+ * 앱 마커까지 확인해야 정적 모드를 서버 모드로 오인하지 않는다.
+ */
+export interface HealthResponse {
+  app: 'mathemagics';
+}
+
+async function isOurServer(res: Response): Promise<boolean> {
+  if (!res.ok) return false;
+  if (!res.headers.get('content-type')?.includes('application/json')) return false;
+  try {
+    const body: unknown = await res.json();
+    return (body as HealthResponse | null)?.app === 'mathemagics';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * `<base>api/health` 를 800ms 안에 두드려 보고, 우리 서버가 답하면 RestAdapter,
  * 아니면(정적 호스팅) DexieAdapter 를 돌려준다. `init()` 은 호출자가 한다.
  */
 export async function createAdapter(options: CreateAdapterOptions = {}): Promise<StorageAdapter> {
@@ -44,7 +65,7 @@ export async function createAdapter(options: CreateAdapterOptions = {}): Promise
   if (typeof doFetch === 'function') {
     try {
       const res = await doFetch(`${apiBase}health`, { signal: AbortSignal.timeout(timeoutMs) });
-      if (res.ok) return new RestAdapter(apiBase);
+      if (await isOurServer(res)) return new RestAdapter(apiBase);
     } catch {
       // 네트워크 실패 / 타임아웃 / 정적 호스팅 → 로컬 저장
     }
