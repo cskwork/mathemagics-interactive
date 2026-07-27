@@ -147,6 +147,7 @@ DexieAdapter (IndexedDB          RestAdapter ──HTTP──▶ Bun 단일 파�
 ```
 
 - **어댑터 선택은 런타임 감지**: 부팅 시 `/api/health` probe(800ms 타임아웃) → 성공 시 RestAdapter, 실패 시 DexieAdapter. 같은 정적 빌드를 두 모드에서 재사용.
+  - **M6 서버 계약 (M0에서 발견·확정)**: SPA 폴백이 `/api/health`에도 200 HTML을 반환하므로 `r.ok`만으로는 오판 — probe는 JSON content-type + 본문 `{app:"mathemagics"}`를 요구한다. Bun 서버는 이 형식으로 응답해야 함 (근거: docs/briefs/M0-RESULT.md).
 - **저장소 (확정 — 2026-07-28 사용자 승인)**: 브라우저 저장은 **IndexedDB(Dexie.js)** 를 주 저장소로 사용. SRS 카드 데이터가 계속 자라고 인덱스 쿼리(due 카드 조회)가 필요하기 때문. localStorage는 "마지막 활성 프로필 ID" 같은 소형 플래그만.
 - Safari ITP 7일 축출 방어: `navigator.storage.persist()` + PWA 홈 화면 설치 유도.
 - 참고: SQLite WASM `opfs-sahpool` VFS는 COOP/COEP 없이 GitHub Pages에서 동작 확인됨 — 다만 Dexie 대비 이점 없어 채택 안 함(브라우저 내 SQLite가 꼭 필요해지면 카드 남아 있음).
