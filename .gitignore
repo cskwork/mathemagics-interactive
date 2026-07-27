@@ -1,0 +1,19 @@
+# 저작권 자료 — 절대 커밋 금지 (원서 PDF)
+mathemagics.pdf
+*.pdf
+
+# 빌드/의존성
+node_modules/
+dist/
+.svelte-kit/
+
+# 로컬 데이터
+*.sqlite
+*.db
+data/
+
+# OS/에디터
+.DS_Store
+*.log
+.env
+.env.*
