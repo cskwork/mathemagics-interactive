@@ -19,9 +19,12 @@ describe('apiBaseUrl', () => {
 });
 
 describe('createAdapter', () => {
-  it('uses RestAdapter when the health probe answers ok', async () => {
+  const JSON_HEADERS = { 'content-type': 'application/json' };
+
+  it('uses RestAdapter when the health probe answers with our app marker', async () => {
     const fetchImpl = vi.fn(
-      async (_input: RequestInfo | URL, _init?: RequestInit) => new Response('{}', { status: 200 })
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        new Response(JSON.stringify({ app: 'mathemagics' }), { status: 200, headers: JSON_HEADERS })
     );
 
     const adapter = await createAdapter({ apiBase: API, fetchImpl: fetchImpl as unknown as typeof fetch });
@@ -30,6 +33,31 @@ describe('createAdapter', () => {
     expect(adapter.mode).toBe('server');
     expect(fetchImpl).toHaveBeenCalledOnce();
     expect(fetchImpl.mock.calls[0]?.[0]).toBe(`${API}health`);
+  });
+
+  it('falls back to DexieAdapter when a 200 is really an SPA fallback (vite preview, some static hosts)', async () => {
+    const fetchImpl = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        new Response('<!doctype html><html></html>', {
+          status: 200,
+          headers: { 'content-type': 'text/html' }
+        })
+    );
+
+    const adapter = await createAdapter({ apiBase: API, fetchImpl: fetchImpl as unknown as typeof fetch });
+
+    expect(adapter).toBeInstanceOf(DexieAdapter);
+  });
+
+  it('falls back to DexieAdapter when the JSON body is not our health payload', async () => {
+    const fetchImpl = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        new Response(JSON.stringify({ status: 'ok' }), { status: 200, headers: JSON_HEADERS })
+    );
+
+    const adapter = await createAdapter({ apiBase: API, fetchImpl: fetchImpl as unknown as typeof fetch });
+
+    expect(adapter).toBeInstanceOf(DexieAdapter);
   });
 
   it('falls back to DexieAdapter on a 404 (GitHub Pages serves its 404 page)', async () => {
