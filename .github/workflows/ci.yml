@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` 의 prepare 훅이 paraglide 메시지를 컴파일한다 (src/lib/paraglide 는 생성물).
+      - run: npm ci
+
+      - name: svelte-check (TS strict)
+        run: npm run check
+
+      - name: vitest
+        run: npm test
+
+      - name: build
+        run: npm run build
