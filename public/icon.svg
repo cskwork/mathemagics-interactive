@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Mathemagics">
+  <rect width="512" height="512" rx="96" fill="#0f1020" />
+  <g fill="none" stroke="#ffc94d" stroke-width="26" stroke-linecap="round">
+    <path d="M150 190h60M180 160v60" />
+    <path d="M302 190h60" />
+    <path d="M150 330h60M180 300v60" />
+    <path d="M302 300l60 60M362 300l-60 60" />
+  </g>
+  <path d="M96 256h320" stroke="#f2f3fb" stroke-width="16" stroke-linecap="round" />
+</svg>

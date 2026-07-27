@@ -1,0 +1,46 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+
+  "app_title": "매스매직스",
+  "app_tagline": "머릿속으로 계산하는 마술",
+
+  "nav_profiles": "프로필",
+  "nav_home": "홈",
+  "nav_settings": "설정",
+
+  "profiles_heading": "누가 연습할까요?",
+  "profiles_empty": "아직 프로필이 없어요. 하나 만들어 볼까요?",
+  "profiles_add": "프로필 만들기",
+  "profiles_name_label": "이름",
+  "profiles_name_placeholder": "이름을 적어 주세요",
+  "profiles_avatar_label": "아바타",
+  "profiles_save": "저장",
+  "profiles_cancel": "취소",
+  "profiles_rename": "이름 바꾸기",
+  "profiles_delete": "삭제",
+  "profiles_delete_confirm": "{name} 프로필과 진도를 모두 지울까요?",
+  "profiles_select": "선택",
+
+  "home_greeting": "안녕, {name}!",
+  "home_placeholder": "레슨은 다음 단계에서 추가됩니다.",
+  "home_switch_profile": "프로필 바꾸기",
+
+  "settings_heading": "설정",
+  "settings_language": "언어",
+  "settings_language_hint": "언어는 프로필마다 따로 저장돼요.",
+  "settings_sound": "소리",
+  "settings_daily_goal": "하루 목표 (분)",
+  "settings_back": "돌아가기",
+
+  "storage_mode_label": "저장 위치",
+  "storage_mode_local": "이 기기 (브라우저)",
+  "storage_mode_server": "셀프호스트 서버",
+  "storage_persist_granted": "저장 공간이 보호되고 있어요.",
+  "storage_persist_denied": "브라우저가 데이터를 지울 수 있어요. 홈 화면에 추가하면 더 안전해요.",
+
+  "locale_name_ko": "한국어",
+  "locale_name_en": "English",
+
+  "loading": "불러오는 중…",
+  "not_found": "없는 화면이에요."
+}
