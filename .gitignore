@@ -6,6 +6,11 @@ mathemagics.pdf
 node_modules/
 dist/
 .svelte-kit/
+dev-dist/
+.vite/
+
+# 생성물 — `npm run i18n` (package.json prepare 훅)이 messages/*.json 에서 만든다
+src/lib/paraglide/
 
 # 로컬 데이터
 *.sqlite

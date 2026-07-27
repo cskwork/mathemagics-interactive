@@ -1,0 +1,46 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+
+  "app_title": "Mathemagics",
+  "app_tagline": "Calculation tricks you do in your head",
+
+  "nav_profiles": "Profiles",
+  "nav_home": "Home",
+  "nav_settings": "Settings",
+
+  "profiles_heading": "Who is practising?",
+  "profiles_empty": "No profiles yet. Shall we make one?",
+  "profiles_add": "New profile",
+  "profiles_name_label": "Name",
+  "profiles_name_placeholder": "Type a name",
+  "profiles_avatar_label": "Avatar",
+  "profiles_save": "Save",
+  "profiles_cancel": "Cancel",
+  "profiles_rename": "Rename",
+  "profiles_delete": "Delete",
+  "profiles_delete_confirm": "Delete {name} and all of their progress?",
+  "profiles_select": "Choose",
+
+  "home_greeting": "Hi, {name}!",
+  "home_placeholder": "Lessons arrive in a later milestone.",
+  "home_switch_profile": "Switch profile",
+
+  "settings_heading": "Settings",
+  "settings_language": "Language",
+  "settings_language_hint": "Language is saved per profile.",
+  "settings_sound": "Sound",
+  "settings_daily_goal": "Daily goal (minutes)",
+  "settings_back": "Back",
+
+  "storage_mode_label": "Saved in",
+  "storage_mode_local": "This device (browser)",
+  "storage_mode_server": "Self-hosted server",
+  "storage_persist_granted": "Your storage is protected.",
+  "storage_persist_denied": "The browser may clear this data. Add to home screen to keep it safer.",
+
+  "locale_name_ko": "한국어",
+  "locale_name_en": "English",
+
+  "loading": "Loading…",
+  "not_found": "No such screen."
+}
