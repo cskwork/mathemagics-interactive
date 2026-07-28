@@ -86,5 +86,33 @@
 
   "numpad_label": "숫자 패드",
   "numpad_backspace": "지우기",
-  "numpad_clear": "모두 지우기"
+  "numpad_clear": "모두 지우기",
+
+  "stage_cast_heading": "오늘의 공연자",
+  "stage_cast_hint": "무대에 오를 공연자를 골라요.",
+  "stage_cast_empty": "첫 공연자를 등록해 주세요.",
+  "stage_chip_label": "현재 공연자",
+
+  "home_today_show": "오늘의 공연",
+  "home_today_show_hint": "무대에 오를 준비를 해요.",
+  "home_start": "공연 시작",
+  "home_coming_soon": "레슨은 다음 업데이트로 열려요.",
+  "home_repertoire": "내 레퍼토리",
+  "home_repertoire_hint": "곧 배울 기법들이 여기에 나타나요.",
+
+  "playground_booth": "조명실",
+  "playground_stage": "무대",
+
+  "dialog_close": "닫기",
+  "dialog_confirm": "확인",
+  "dialog_cancel": "취소",
+  "dialog_rename_title": "이름 바꾸기",
+  "dialog_delete_title": "프로필 삭제",
+  "dialog_delete_body": "{name} 프로필과 진도가 모두 지워져요.",
+  "dialog_parent_gate_title": "어른 확인 필요",
+  "dialog_parent_gate_prompt": "지우려면 어른이 확인해야 해요. 아래 계산의 답을 적어 주세요.",
+  "dialog_parent_gate_answer_label": "답",
+  "dialog_parent_gate_wrong": "답이 달라요. 다시 해 볼까요?",
+
+  "caption_label": "자막"
 }

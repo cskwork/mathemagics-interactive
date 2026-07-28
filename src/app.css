@@ -1,122 +1,323 @@
-/*
- * M0 은 배관이다 — 여기 스타일은 "읽을 수 있는 최소치"이지 디자인 시스템이 아니다.
- * 시각 언어(PLAN.md §7)는 M2 부터.
- * 다만 지금부터 지키는 것: 터치 타깃 >= 48px, 본문 >= 16px, prefers-reduced-motion 준수.
- */
-:root {
-  --bg: #0f1020;
-  --surface: #1b1d33;
-  --surface-2: #262943;
-  --text: #f2f3fb;
-  --muted: #a7abc9;
-  --accent: #ffc94d;
-  --accent-ink: #2a1e00;
-  --danger: #ff6b6b;
-  --radius: 14px;
-  --tap: 48px;
+/* Hallmark · P4 H4 E4 S4 R4 V4 — 전역 요소·버튼 시스템·레이아웃 도우미.
+ * M7 "The Stage" 리디자인. 토큰은 src/lib/ui/tokens.css 에서(아래 @import). */
+@import './lib/ui/tokens.css';
 
-  color-scheme: dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
-}
-
+/* ── 리셋/기본 ───────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--bg);
+  background: var(--stage-floor);
+  /* 좁은 폭(320/375)에서 가로 스크롤이 생기지 않도록 — 반응형 검증 대상. */
+  overflow-x: clip;
+}
+
+body {
+  /* 무대 바닥 위에 엷은 빛(스포트라이트 침전) — 페이지 전체 톤. */
+  background-image: var(--stage-spotlight-bg);
+  background-repeat: no-repeat;
 }
 
 h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.18;
+  /* hallmark 규약: 헤더에 이탤릭 금지 — 강조는 웨이트·색·언더라인으로. */
+  font-style: normal;
+  font-family: var(--font-display);
+}
+
+h1 {
+  font-size: var(--text-display);
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+}
+
 h2 {
-  margin: 0 0 0.5rem;
-  line-height: 1.2;
+  font-size: var(--text-title);
+  font-weight: 800;
 }
 
-button {
-  min-height: var(--tap);
-  min-width: var(--tap);
-  padding: 0 1rem;
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--surface-2);
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
+p {
+  margin: 0;
 }
 
-button:hover {
-  background: #33375a;
+a {
+  color: var(--spotlight);
 }
 
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
+/* ── 포커스 링(고대비화 — M0 인계 #10 / 브리프 §3.7) ─────────────── */
+/* 앰버 3px + 오프셋 3px, 그리고 wash 헤일로를 더해 어떤 배경에서도 보이게. */
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--spotlight);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 6px var(--spotlight-glow);
 }
 
-button.primary {
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 700;
-}
-
-button.danger {
-  color: var(--danger);
-}
-
-input,
-select {
-  min-height: var(--tap);
-  padding: 0 0.75rem;
-  border: 1px solid #3a3e63;
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-}
-
+/* ── 레이아웃 도우미 ────────────────────────────────────────────── */
 .app {
-  max-width: 44rem;
+  max-width: var(--app-max);
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
-}
-
-.muted {
-  color: var(--muted);
-}
-
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 1rem;
-}
-
-.row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  flex-wrap: wrap;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+  /* 자식이 가로로 넘치지 않게 — 그리드/플렉스 자식이 minmax(0,1fr) 과 함께 작동. */
+  min-width: 0;
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
+.row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.muted {
+  color: var(--house-light);
+}
+
+.card {
+  background: var(--stage-mid);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── 버튼 시스템 — 역할별 음성 × 8 상태 (브리프 §3.5) ────────────── */
+/* 기본 .btn 베이스 + 변형(--primary/secondary/ghost/danger).
+ * 상태: default / hover / focus-visible / active / disabled / loading / error / success.
+ * 포커스 링은 위 전역 :focus-visible 규칙이 담당(중복 코드 회피). */
+button,
+.btn {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--stage-lit);
+  color: var(--house-bright);
+  font: inherit;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-base) ease,
+    color var(--motion-base) ease,
+    border-color var(--motion-base) ease,
+    transform var(--motion-fast) ease,
+    box-shadow var(--motion-base) ease;
+}
+
+/* secondary(기본 button) — 무대 표면 */
+button:hover,
+.btn:hover {
+  background: var(--stage-rise);
+}
+
+button:active,
+.btn:active {
+  transform: translateY(1px);
+  background: var(--stage-mid);
+}
+
+button:disabled,
+.btn:disabled,
+.btn[aria-disabled='true'],
+.btn[data-state='disabled'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* primary — 스포트라이트/앰버(주 행동) */
+.btn--primary,
+button.primary {
+  background: var(--spotlight);
+  color: var(--spotlight-ink);
+  font-weight: 800;
+  box-shadow: var(--shadow-card);
+}
+.btn--primary:hover,
+button.primary:hover {
+  background: color-mix(in srgb, var(--spotlight) 88%, white 12%);
+}
+.btn--primary:active,
+button.primary:active {
+  background: color-mix(in srgb, var(--spotlight) 82%, var(--stage-floor) 18%);
+}
+
+/* secondary — 무대 표면(명시적 변형 클래스) */
+.btn--secondary {
+  background: var(--stage-lit);
+  color: var(--house-bright);
+}
+
+/* ghost — 텍스트 전용 보조 */
+.btn--ghost {
+  background: transparent;
+  color: var(--house-light);
+  min-width: auto;
+  padding: 0 var(--space-3);
+}
+.btn--ghost:hover {
+  background: var(--spotlight-wash);
+  color: var(--house-bright);
+}
+
+/* danger — 어깨(miss/적색) */
+.btn--danger,
+button.danger {
+  color: var(--miss);
+  background: var(--miss-wash);
+  border-color: color-mix(in srgb, var(--miss) 45%, transparent);
+}
+.btn--danger:hover,
+button.danger:hover {
+  background: color-mix(in srgb, var(--miss) 28%, var(--stage-mid) 72%);
+  color: var(--house-bright);
+}
+.btn--danger:active,
+button.danger:active {
+  background: color-mix(in srgb, var(--miss) 38%, var(--stage-mid) 62%);
+}
+
+/* loading / error / success — 답 제출 등에 쓸 수 있는 상태 표식(M2+ 본사용).
+ * 시스템으로서 정의하고, M7 에서 즉시 쓰이는 disabled/loading 만 적용. */
+.btn[data-state='loading'] {
+  cursor: progress;
+  position: relative;
+  color: transparent;
+}
+.btn[data-state='loading']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  border: 2px solid var(--spotlight-wash-strong);
+  border-top-color: var(--spotlight-ink);
+  animation: btn-spin 0.7s linear infinite;
+}
+.btn[data-state='success'] {
+  background: var(--applause-wash);
+  color: var(--applause);
+  border-color: var(--applause);
+}
+.btn[data-state='error'] {
+  background: var(--miss-wash);
+  color: var(--miss);
+  border-color: var(--miss);
+  animation: btn-shake 0.3s ease;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes btn-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+/* ── 입력 ───────────────────────────────────────────────────────── */
+input,
+select {
+  min-height: var(--tap);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--stage-line);
+  border-radius: var(--radius);
+  background: var(--stage-floor);
+  color: var(--house-bright);
+  font: inherit;
+  font-family: var(--font-body);
+}
+input::placeholder {
+  color: var(--house-light);
+}
+
+/* ── 마이크로인터랙션 원시체(브리프 §3.6, 최대 3종) ────────────────
+ * spotlight-sweep(정답) · curtain-rise(진입) · card-settle(셀 채움).
+ * 전역 prefers-reduced-motion 블록이 아래에서 이들을 즉시 전환한다. */
+@keyframes spotlight-sweep {
+  0% {
+    background-position: -60% 0;
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 160% 0;
+    opacity: 0;
+  }
+}
+@keyframes curtain-rise {
+  0% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes card-settle {
+  0% {
+    transform: translateY(-3px) scale(0.94);
+  }
+  60% {
+    transform: translateY(0) scale(1.03);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 적용 유틸리티 클래스 — prefers-reduced-motion 에서는 효과 없음(아래 블록). */
+.rise {
+  animation: curtain-rise var(--motion-slow) var(--ease-stage) both;
+}
+.sweep {
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    var(--spotlight-wash-strong) 50%,
+    transparent 70%
+  );
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: spotlight-sweep var(--motion-slow) ease;
+}
+
+/* ── reduced-motion — 전역 즉시 전환(PLAN §7.2 / hallmark 규약) ──── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
