@@ -40,12 +40,20 @@ export interface ProgressRecord {
   strategyCounts?: Record<string, number>;
   /** 레슨 완료 시각(완료 표시 마커). */
   completedAt?: number;
+
+  // ── M3 SRS 확장 (optional, 스키마 v1 불변). ────────────────────────────────
+  /** 정확도 게이트 통과 시각. 단조 잠금 — 한 번 통과하면 재잠금 없음(PLAN §4.1-3). */
+  gatePassedAt?: number;
+  /** 연습 누적(레슨 practice + 복습). 정확도 게이트·숙련도 산출용. attempts/correct 와 별개로
+   *  레슨 연습은 attempts 에도 이미 반영되지만, 복습 세션 누적은 여기에 추가한다. */
+  practiceAttempts?: number;
+  practiceCorrect?: number;
 }
 
-/** FSRS/SM-2 계열 간격 반복 카드 상태 (스케줄러 본체는 M3). */
+/** FSRS/SM-2 계열 간격 반복 카드 상태 (스케줄러 본체는 src/lib/srs). */
 export interface SrsCard {
   profileId: string;
-  /** 예: "7x8" */
+  /** 카드 식별자. "기법#밴드" 형식(브리프 §2-1 "카드 = 기법 × 난이도 밴드"). 예: "ltr-addition#1". */
   factId: string;
   /** epoch ms — 복습 예정 시각 */
   due: number;
@@ -55,6 +63,21 @@ export interface SrsCard {
   lapses: number;
   /** epoch ms — importAll("merge") 의 last-write-wins 기준 */
   lastReview: number;
+
+  // ── M3 확장 (전부 optional → 구버전 레코드 호환, 스키마 v1 불변). ─────────────
+  /** 이 카드가 속한 기법(technique). 게이트·숙련도·보고서 산출에 사용. */
+  skillId?: string;
+  /** 난이도 밴드 인덱스(난이도 적응). src/lib/srs/difficulty.ts. */
+  difficultyBand?: number;
+  /** 현재 밴드의 생성 파라미터(자릿수·올림). 카드가 자체 파라미터를 기억. */
+  digits?: number;
+  carry?: boolean;
+  /** 연산/방향 — 연습 세션에서 generateProblem 호출용. */
+  op?: 'add' | 'sub';
+  method?: 'ltr' | 'rtl';
+  /** 누적 정오 카운트(정확도 산출). */
+  correct?: number;
+  total?: number;
 }
 
 /** 프로필별 설정. 언어는 여기 있다 (PLAN.md §6.2 — 형제가 서로 다른 언어로 학습). */
@@ -64,6 +87,11 @@ export interface Settings {
   /** BCP-47 로케일 태그. 앱이 모르는 값이면 baseLocale 로 폴백한다. */
   locale: string;
   dailyGoalMinutes: number;
+
+  // ── M3 스트릭 확장 (optional, 스키마 v1 불변). 스트릭은 프로필 단위 비(非)스킬 상태.
+  streakCount?: number;
+  lastStreakDayMs?: number;
+  freezesAvailable?: number;
 }
 
 /** 두 저장 모드(브라우저/셀프호스트)의 공용 교환 포맷. */

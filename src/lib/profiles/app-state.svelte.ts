@@ -7,7 +7,14 @@
 import { applyLocale, fallbackLocale, normalizeLocale, type Locale } from '../i18n/locale.svelte.js';
 import { createAdapter } from '../storage/index.js';
 import { requestPersistentStorage, type PersistenceState } from '../storage/persistence.js';
-import type { ProgressRecord, Profile, Settings, StorageAdapter, StorageMode } from '../storage/types.js';
+import type {
+  ProgressRecord,
+  Profile,
+  Settings,
+  SrsCard,
+  StorageAdapter,
+  StorageMode
+} from '../storage/types.js';
 import { readLastProfileId, writeLastProfileId } from './last-profile.js';
 
 export function defaultSettings(profileId: string): Settings {
@@ -170,5 +177,26 @@ export class AppState {
   /** 활성 프로필 id (진도/레슨 화면이 참조). */
   activeProfileId(): string | undefined {
     return this.#activeId;
+  }
+
+  // ── SRS 카드(M3 연습 시스템) ──────────────────────────────────────────────
+  // 컴포넌트가 어댑터를 직접 두드리지 않고 AppState 를 거치게 한다 — 활성 프로필 보장.
+
+  /** 활성 프로필의 모든 SRS 카드. 진도·보고서 화면이 사용. */
+  async loadAllCards(): Promise<SrsCard[]> {
+    if (this.#activeId === undefined) return [];
+    // getDueCards(now=+∞, 큰 limit) 로 전체 회수 — 어댑터에 listAllCards 가 없으므로.
+    return this.adapter().getDueCards(this.#activeId, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+  }
+
+  /** 지금 복습 예정(due ≤ now) 카드. 연습 세션 시작용. */
+  async getDueCards(now: number, limit: number = 200): Promise<SrsCard[]> {
+    if (this.#activeId === undefined) return [];
+    return this.adapter().getDueCards(this.#activeId, now, limit);
+  }
+
+  /** 카드 upsert(복습 결과 저장·카드 생성). profileId 는 card 에서 가져온다. */
+  async upsertCard(card: SrsCard): Promise<void> {
+    await this.adapter().upsertCard(card);
   }
 }
