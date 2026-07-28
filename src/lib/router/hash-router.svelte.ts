@@ -11,7 +11,7 @@
  */
 
 /** 라우트 목록. 화면이 늘면 여기에 추가한다(M1: playground 개발용 라우트 추가). */
-export const ROUTES = ['profiles', 'home', 'settings', 'playground'] as const;
+export const ROUTES = ['profiles', 'home', 'settings', 'playground', 'lessons', 'lesson'] as const;
 export type Route = (typeof ROUTES)[number];
 
 export const DEFAULT_ROUTE: Route = 'profiles';
@@ -21,14 +21,18 @@ const PATH_TO_ROUTE: Record<string, Route> = {
   '/': 'profiles',
   '/home': 'home',
   '/settings': 'settings',
-  '/dev/playground': 'playground'
+  '/dev/playground': 'playground',
+  '/lessons': 'lessons',
+  '/lesson': 'lesson'
 };
 
 const ROUTE_TO_PATH: Record<Route, string> = {
   profiles: '/',
   home: '/home',
   settings: '/settings',
-  playground: '/dev/playground'
+  playground: '/dev/playground',
+  lessons: '/lessons',
+  lesson: '/lesson'
 };
 
 /** `#/home?x=1` -> `/home`. 해시가 없거나 모르는 경로면 undefined. */

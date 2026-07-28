@@ -8,12 +8,15 @@ describe('parseHash', () => {
     expect(parseHash('#/home')).toBe('home');
     expect(parseHash('#/settings')).toBe('settings');
     expect(parseHash('#/dev/playground')).toBe('playground');
+    expect(parseHash('#/lessons')).toBe('lessons');
+    expect(parseHash('#/lesson')).toBe('lesson');
   });
 
   it('ignores a query string and a trailing slash', () => {
     expect(parseHash('#/home?from=profiles')).toBe('home');
     expect(parseHash('#/settings/')).toBe('settings');
     expect(parseHash('#/dev/playground?op=add')).toBe('playground');
+    expect(parseHash('#/lesson?id=ltr-addition')).toBe('lesson');
   });
 
   it('returns undefined for unknown paths so the app can show "not found"', () => {

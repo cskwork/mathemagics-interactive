@@ -7,7 +7,7 @@
 import { applyLocale, fallbackLocale, normalizeLocale, type Locale } from '../i18n/locale.svelte.js';
 import { createAdapter } from '../storage/index.js';
 import { requestPersistentStorage, type PersistenceState } from '../storage/persistence.js';
-import type { Profile, Settings, StorageAdapter, StorageMode } from '../storage/types.js';
+import type { ProgressRecord, Profile, Settings, StorageAdapter, StorageMode } from '../storage/types.js';
 import { readLastProfileId, writeLastProfileId } from './last-profile.js';
 
 export function defaultSettings(profileId: string): Settings {
@@ -141,5 +141,34 @@ export class AppState {
     await this.adapter().saveSettings(next);
     this.#settings = next;
     applyLocale(next.locale);
+  }
+
+  // ── 진도(M2 레슨 프레임워크) ──────────────────────────────────────────────
+  // 컴포넌트가 어댑터를 직접 두드리지 않고 AppState 를 거치게 한다 — 활성 프로필 보장.
+
+  /** 활성 프로필의 모든 진도 기록. 레슨 목록 화면(완료 표시)이 사용. */
+  async loadAllProgress(): Promise<ProgressRecord[]> {
+    if (this.#activeId === undefined) return [];
+    return this.adapter().getProgress(this.#activeId);
+  }
+
+  /** 활성 프로필의 특정 스킬 진도. */
+  async loadProgress(skillId: string): Promise<ProgressRecord | undefined> {
+    if (this.#activeId === undefined) return undefined;
+    const all = await this.adapter().getProgress(this.#activeId);
+    return all.find((r) => r.skillId === skillId);
+  }
+
+  /** 진도 기록 upsert(레슨 완료·단계 도달 저장). profileId 를 활성 프로필로 채운다. */
+  async saveProgress(record: Omit<ProgressRecord, 'profileId'> & { profileId?: string }): Promise<void> {
+    const profileId = record.profileId ?? this.#activeId;
+    if (profileId === undefined) return;
+    const full: ProgressRecord = { ...record, profileId };
+    await this.adapter().upsertProgress(full);
+  }
+
+  /** 활성 프로필 id (진도/레슨 화면이 참조). */
+  activeProfileId(): string | undefined {
+    return this.#activeId;
   }
 }
