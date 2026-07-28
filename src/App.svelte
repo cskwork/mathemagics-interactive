@@ -5,6 +5,7 @@
   import ProfilePicker from './routes/ProfilePicker.svelte';
   import Home from './routes/Home.svelte';
   import SettingsPage from './routes/Settings.svelte';
+  import Playground from './routes/Playground.svelte';
 
   const app = createAppState();
   const router = createRouter();
@@ -20,9 +21,10 @@
   });
 
   // 프로필이 없는데 home/settings 로 들어오면 프로필 선택으로 되돌린다.
+  // 단 playground(개발용)는 프로필 없이도 접근 가능.
   $effect(() => {
     if (!app.ready()) return;
-    if (router.current() !== 'profiles' && app.activeProfile() === undefined) {
+    if (router.current() !== 'profiles' && router.current() !== 'playground' && app.activeProfile() === undefined) {
       router.navigate('profiles');
     }
   });
@@ -49,6 +51,8 @@
     <Home {app} {router} />
   {:else if router.current() === 'settings'}
     <SettingsPage {app} {router} />
+  {:else if router.current() === 'playground'}
+    <Playground />
   {:else}
     <ProfilePicker {app} {router} />
   {/if}
