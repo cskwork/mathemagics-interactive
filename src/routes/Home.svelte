@@ -30,10 +30,12 @@
         <p class="kicker">{m.home_today_show()}</p>
         <p class="muted lead">{m.home_today_show_hint()}</p>
         <div class="cta-row">
-          <button class="btn--primary cta" disabled aria-disabled="true">
+          <button class="btn--primary cta" onclick={() => router.navigate('lessons')}>
             {m.home_start()}
           </button>
-          <p class="muted note">{m.home_coming_soon()}</p>
+          <button class="btn--ghost" onclick={() => router.navigate('lessons')}>
+            {m.nav_lessons()}
+          </button>
         </div>
       </div>
     </article>
@@ -111,9 +113,6 @@
   }
   .cta {
     min-width: 10rem;
-  }
-  .note {
-    font-size: var(--text-small);
   }
 
   .repertoire h3 {

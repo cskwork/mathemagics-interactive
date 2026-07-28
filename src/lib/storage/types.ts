@@ -27,6 +27,19 @@ export interface ProgressRecord {
   /** epoch ms — importAll("merge") 의 last-write-wins 기준 */
   lastPlayedAt: number;
   stars: 0 | 1 | 2 | 3;
+
+  // ── M2 레슨 프레임워크 확장 (전부 optional → 구버전 레코드와 호환, 스키마 버전 불변).
+  //   storage 계층을 lesson 모듈과 느슨하게 결합하기 위해 제네릭 타입 사용. ──────────────
+  /** 가장 도달한 레슨 단계(lesson LessonPhase 문자열). */
+  lessonStepReached?: string;
+  /** 누적 힌트 사용 수. */
+  hintsUsed?: number;
+  /** bottom-out 힌트 사용 수. */
+  bottomOuts?: number;
+  /** 전략 카드 선택 기록(choice → 횟수). 분석은 M3. */
+  strategyCounts?: Record<string, number>;
+  /** 레슨 완료 시각(완료 표시 마커). */
+  completedAt?: number;
 }
 
 /** FSRS/SM-2 계열 간격 반복 카드 상태 (스케줄러 본체는 M3). */
