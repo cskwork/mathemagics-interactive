@@ -1,0 +1,119 @@
+/**
+ * Hallmark · P4 H4 E4 S4 R4 V4 — The Stage 디자인 토큰 (M7 산출물 1).
+ *
+ * 이 앱은 교재가 아니라 **마술사의 무대**다(브리프 §2 "The Stage").
+ * 다크 서피스 = 객석·무대 바닥, 앰버 = 스포트라이트·객석 조명. 기존 M0 팔레트
+ * (`--bg:#0f1020` / `--accent:#ffc94d`)를 버리지 않고 의미론적 층으로 재명명·확장한다.
+ *
+ * 규약: 컴포넌트는 inline 색값(#hex / rgb() / oklch())·inline font-family 를 쓰지 않고
+ * 반드시 아래 토큰을 참조한다(hallmark 토큰 잠금). rgba "wash" 변종도 오직 여기에만 존재한다.
+ * v1 은 다크 기준. 라이트(color-scheme: light) 토큰은 향후 마일스톤을 위해 자리만 둔다.
+ */
+
+:root {
+  /* ── 무대 서피스 (객석 → 무대 바닥 → 조명 받은 영역) ─────────────────────── */
+  --stage-floor: #0f1020; /* 가장 어두움 — 페이지 배경·가장자리 객석 */
+  --stage-mid: #1b1d33; /* 카드·패널 표면 */
+  --stage-lit: #262943; /* 조명을 받아 한 단 밝은 표면(버튼 secondary·활성 칩) */
+  --stage-rise: #33375a; /* hover 시 한 단 더 떠오르는 표면 */
+  --stage-line: #3a3e63; /* 표면 경계선·입력 테두리 */
+  --stage-edge: #4a4f7a; /* 좀 더 또렷한 경계(프로시니엄 프레임·구분선) */
+
+  /* ── 스포트라이트 (앰버) — 주 행동·강조 ─────────────────────────────── */
+  --spotlight: #ffc94d; /* 객석 조명·스포트라이트 본색 */
+  --spotlight-ink: #2a1e00; /* 앰버 위 잉크(어두운 글자) — 대비 확보 */
+  --spotlight-wash: rgba(255, 201, 77, 0.12); /* 앰버 엷은 침전 — 활성 셀·호버 */
+  --spotlight-wash-strong: rgba(255, 201, 77, 0.2); /* 앰버 진한 침전 — 하이라이트 셀 */
+  --spotlight-glow: rgba(255, 201, 77, 0.35); /* 포커스 링 헤일로 */
+
+  /* ── 박수 (성공 초록) ─────────────────────────────────────────────── */
+  --applause: #6ee297; /* 정답·성공 글자/테두리 */
+  --applause-deep: #4cd964; /* wash 베이스 */
+  --applause-wash: rgba(76, 217, 100, 0.22);
+
+  /* ── 어김 (오답 적색) ─────────────────────────────────────────────── */
+  --miss: #ff6b6b; /* 오답·파괴적 행동 */
+  --miss-wash: rgba(255, 107, 107, 0.22);
+
+  /* ── 객석 조명 (텍스트 계통) ──────────────────────────────────────── */
+  --house-bright: #f2f3fb; /* 본문 — 무대 위 밝은 글자 */
+  --house-light: #a7abc9; /* 보조 텍스트·캡션 — 객석 희미한 조명 */
+
+  /* ── 타이포그래피 (2+1 규약) ───────────────────────────────────────── */
+  /* Pretendard Variable(CDN, display=swap) → 오프라인/미설치 시 시스템 한글 폰트로
+     우아하게 전환. 한글+영문 한 가족으로 통일(기본 로케일 ko 워드마크가 한글이므로
+     라틴 디스플레이를 섞으면 불일치). 웨이트로 디스플레이/본문을 구분한다. */
+  --font-display: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR',
+    system-ui, sans-serif;
+  --font-body: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR',
+    system-ui, sans-serif;
+  /* 숫자 전용 역할 — 계산 그리드·카운터. 같은 가족이되 tabular-nums 를 전제로 한다. */
+  --font-numeric: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR',
+    ui-monospace, monospace;
+
+  /* 타입 스케일(의도적 위계 — 시스템 폰트 일변도 탈피) */
+  --text-display: clamp(2rem, 6vw, 3rem); /* 오늘의 공연·섹션 헤드 */
+  --text-title: clamp(1.4rem, 4vw, 1.9rem); /* 화면 제목 */
+  --text-lead: 1.125rem; /* 리드 카피 */
+  --text-body: 1rem; /* 본문(≥16px — PLAN §7.2 경도 제약) */
+  --text-small: 0.9rem; /* 보조·컨트롤 라벨 */
+  --text-caption: 0.8rem; /* 자막바·메타 */
+  --tracking-display: -0.02em; /* 대형 디스플레이는 약간 좁혀 포스터 느낌 */
+  --tracking-numeric: 0; /* 자릿수 정렬은 tabular-nums 가 담당 */
+
+  /* ── 리듬(간격 스케일) ───────────────────────────────────────────── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --app-max: 46rem; /* 본문 영역 최대폭 — 좁은 폭에서는 뷰포트에 맞춤 */
+
+  /* ── 반경 ───────────────────────────────────────────────────────── */
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* ── 그림자/깊이 ─────────────────────────────────────────────────── */
+  /* "무대 위 카드" 모티프 — ColumnGrid 셀·번호판·카드에 깊이 부여 */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-cell: 0 2px 6px rgba(0, 0, 0, 0.25); /* 세로셈 숫자 카드 한 장의 그림자 */
+  --shadow-inset: inset 0 0 0 1px var(--stage-line);
+  --shadow-stage: 0 24px 60px rgba(0, 0, 0, 0.45);
+
+  /* ── 동작 시간 ───────────────────────────────────────────────────── */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 420ms;
+  --ease-stage: cubic-bezier(0.22, 1, 0.36, 1); /* 커튼 상승감 — 살짝 overshoot */
+
+  /* ── 터치 타깃(PLAN §7.2 경도 제약: ≥48px) ──────────────────────── */
+  --tap: 48px;
+
+  /* ── 스포트라이트 배경(무대 중앙 방사형) ─────────────────────────── */
+  /* 주요 행동 영역에 엷게 까는 객석 조선. 배경 대비 6–10% 로 과하지 않게. */
+  --stage-spotlight-bg: radial-gradient(
+    120% 80% at 50% 0%,
+    var(--spotlight-wash) 0%,
+    transparent 62%
+  );
+
+  color-scheme: dark;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--house-bright);
+  background: var(--stage-floor);
+}
+
+/* 라이트 color-scheme 토큰은 향후 마일스톤을 위해 자리만 확보(활성화 안 함).
+   v1 은 다크 기준 — 브리프 §3.1 "다크 기준, 라이트는 토큰만预留". */
+@media (prefers-color-scheme: light) {
+  :root {
+    /* 의도적으로 비워둠 — 라이트 테마 활성화는 별도 마일스톤에서 토큰값을 채운 뒤
+       color-scheme 을 light dark 로 전환한다. 지금은 dark 고정. */
+  }
+}

@@ -86,5 +86,33 @@
 
   "numpad_label": "Number pad",
   "numpad_backspace": "Backspace",
-  "numpad_clear": "Clear all"
+  "numpad_clear": "Clear all",
+
+  "stage_cast_heading": "Today's performer",
+  "stage_cast_hint": "Choose who takes the stage.",
+  "stage_cast_empty": "Add the first performer.",
+  "stage_chip_label": "Current performer",
+
+  "home_today_show": "Today's show",
+  "home_today_show_hint": "Get ready to take the stage.",
+  "home_start": "Start the show",
+  "home_coming_soon": "Lessons open in a future update.",
+  "home_repertoire": "My repertoire",
+  "home_repertoire_hint": "Techniques you'll learn appear here.",
+
+  "playground_booth": "Lighting booth",
+  "playground_stage": "Stage",
+
+  "dialog_close": "Close",
+  "dialog_confirm": "Confirm",
+  "dialog_cancel": "Cancel",
+  "dialog_rename_title": "Rename",
+  "dialog_delete_title": "Delete profile",
+  "dialog_delete_body": "{name}'s profile and all progress will be deleted.",
+  "dialog_parent_gate_title": "Adult confirmation needed",
+  "dialog_parent_gate_prompt": "An adult needs to confirm this. Please solve the sum below.",
+  "dialog_parent_gate_answer_label": "Answer",
+  "dialog_parent_gate_wrong": "That's not right. Try again?",
+
+  "caption_label": "Caption"
 }
