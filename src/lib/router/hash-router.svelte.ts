@@ -10,8 +10,8 @@
  * 리서치 문서에 명시돼 있었다 (architecture-hosting.md "확인하지 않은 것").
  */
 
-/** M0 라우트 (브리프 §2-2). 화면이 늘면 여기에 추가한다. */
-export const ROUTES = ['profiles', 'home', 'settings'] as const;
+/** 라우트 목록. 화면이 늘면 여기에 추가한다(M1: playground 개발용 라우트 추가). */
+export const ROUTES = ['profiles', 'home', 'settings', 'playground'] as const;
 export type Route = (typeof ROUTES)[number];
 
 export const DEFAULT_ROUTE: Route = 'profiles';
@@ -20,13 +20,15 @@ const PATH_TO_ROUTE: Record<string, Route> = {
   '': 'profiles',
   '/': 'profiles',
   '/home': 'home',
-  '/settings': 'settings'
+  '/settings': 'settings',
+  '/dev/playground': 'playground'
 };
 
 const ROUTE_TO_PATH: Record<Route, string> = {
   profiles: '/',
   home: '/home',
-  settings: '/settings'
+  settings: '/settings',
+  playground: '/dev/playground'
 };
 
 /** `#/home?x=1` -> `/home`. 해시가 없거나 모르는 경로면 undefined. */
