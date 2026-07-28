@@ -10,8 +10,18 @@
  * 리서치 문서에 명시돼 있었다 (architecture-hosting.md "확인하지 않은 것").
  */
 
-/** 라우트 목록. 화면이 늘면 여기에 추가한다(M1: playground 개발용 라우트 추가). */
-export const ROUTES = ['profiles', 'home', 'settings', 'playground', 'lessons', 'lesson'] as const;
+/** 라우트 목록. 화면이 늘면 여기에 추가한다(M1: playground, M2: lessons/lesson, M3: practice/progress/report). */
+export const ROUTES = [
+  'profiles',
+  'home',
+  'settings',
+  'playground',
+  'lessons',
+  'lesson',
+  'practice',
+  'progress',
+  'report'
+] as const;
 export type Route = (typeof ROUTES)[number];
 
 export const DEFAULT_ROUTE: Route = 'profiles';
@@ -23,7 +33,10 @@ const PATH_TO_ROUTE: Record<string, Route> = {
   '/settings': 'settings',
   '/dev/playground': 'playground',
   '/lessons': 'lessons',
-  '/lesson': 'lesson'
+  '/lesson': 'lesson',
+  '/practice': 'practice',
+  '/progress': 'progress',
+  '/report': 'report'
 };
 
 const ROUTE_TO_PATH: Record<Route, string> = {
@@ -32,7 +45,10 @@ const ROUTE_TO_PATH: Record<Route, string> = {
   settings: '/settings',
   playground: '/dev/playground',
   lessons: '/lessons',
-  lesson: '/lesson'
+  lesson: '/lesson',
+  practice: '/practice',
+  progress: '/progress',
+  report: '/report'
 };
 
 /** `#/home?x=1` -> `/home`. 해시가 없거나 모르는 경로면 undefined. */

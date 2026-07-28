@@ -12,6 +12,9 @@
   import Playground from './routes/Playground.svelte';
   import Lessons from './routes/Lessons.svelte';
   import Lesson from './routes/Lesson.svelte';
+  import Practice from './routes/Practice.svelte';
+  import Progress from './routes/Progress.svelte';
+  import Report from './routes/Report.svelte';
   import LocaleSwitcher from './components/LocaleSwitcher.svelte';
 
   const app = createAppState();
@@ -81,6 +84,12 @@
           <Lessons {app} {router} />
         {:else if router.current() === 'lesson'}
           <Lesson {app} {router} />
+        {:else if router.current() === 'practice'}
+          <Practice {app} {router} />
+        {:else if router.current() === 'progress'}
+          <Progress {app} {router} />
+        {:else if router.current() === 'report'}
+          <Report {app} {router} />
         {:else if router.current() === 'playground'}
           <Playground />
         {:else}
