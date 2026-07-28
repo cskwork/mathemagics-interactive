@@ -16,6 +16,7 @@ describe('parseHash', () => {
     expect(parseHash('#/stage')).toBe('stage');
     expect(parseHash('#/magic')).toBe('magic');
     expect(parseHash('#/catch')).toBe('catch');
+    expect(parseHash('#/memory')).toBe('memory');
   });
 
   it('ignores a query string and a trailing slash', () => {

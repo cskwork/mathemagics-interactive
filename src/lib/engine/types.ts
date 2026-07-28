@@ -36,6 +36,13 @@ export type Op = 'add' | 'sub' | 'mul' | 'div' | 'est' | 'sqrt';
  * - paper-cross-mult: 크리스크로스 곱셈(2×2~5×5, 1-2-…-2-1 대각선 리듬).
  * - paper-sqrt: 지필 제곱근(두 자리 그룹 나누기, 자리별 추정).
  * - mod-sum-check: 모드섬 검산(9 버리기·11 버리기 — 4장 배수판정과 연결).
+ *
+ * M6 고급 곱셈(8장 — book-content-map §8). 3장(2×2·제곱) + 5장(어림) + 7장(음성 코드) 을 선행.
+ * - square-4digit: 4자리 제곱(1000 단위 ±d + 자리올림 선예측 750,000).
+ * - mul-3x2: 3×2 곱셈(분해·반올림·인수분해 선택).
+ * - square-5digit: 5자리 제곱(3항 분해 a²·2ab·b², 가운데 항 먼저).
+ * - mul-3x3: 3×3 곱셈(근접수법 (z+a)(z+b)).
+ * - mul-5x5: 5×5 곱셈(4분할 ac·(ad+cb)·bd). 8장 최종 보스.
  */
 export type Method =
   | 'ltr'
@@ -52,7 +59,12 @@ export type Method =
   | 'paper-column-add'
   | 'paper-cross-mult'
   | 'paper-sqrt'
-  | 'mod-sum-check';
+  | 'mod-sum-check'
+  | 'square-4digit'
+  | 'mul-3x2'
+  | 'square-5digit'
+  | 'mul-3x3'
+  | 'mul-5x5';
 
 /**
  * 시맨틱 문제 스키마(PLAN §5.2 후보 A).
@@ -181,8 +193,36 @@ export interface BranchStep {
   readonly narration?: LocalizedText;
 }
 
+/**
+ * memory: 계산 중간값을 "메모리 슬롯"(단어 카드/손가락) 에 저장하거나 되불러온다.
+ * 7장 음성 코드(PLAN §7.1 메모리 슬롯) + 8장 고급 곱셈에서 사용. MemorySlot 컴포넌트가 소비.
+ * - store: value 를 슬롯 slot 에 넣는다. digits/word 는 음성 코드로 변환한 힌트(선택).
+ * - recall: 슬롯 slot 의 값을 되불러 합산에 쓴다.
+ */
+export interface MemoryStep {
+  readonly t: 'memory';
+  readonly action: 'store' | 'recall';
+  /** 슬롯 식별자(예: "high", "mid"). */
+  readonly slot: string;
+  /** 저장/회수할 값. */
+  readonly value: number;
+  /** 음성 코드로 바꾼 숫자열(표시용, 선택). */
+  readonly digits?: string;
+  /** 사전에서 찾은 단어 후보(표시용, 선택). */
+  readonly word?: string;
+  readonly narration?: LocalizedText;
+}
+
 /** 파생된 순차 연출 단위. 판별 합합(discriminated union) — `t` 로 좁힌다. */
-export type Step = HighlightStep | WriteStep | CarryStep | StrikeStep | RevealStep | RunningStep | BranchStep;
+export type Step =
+  | HighlightStep
+  | WriteStep
+  | CarryStep
+  | StrikeStep
+  | RevealStep
+  | RunningStep
+  | BranchStep
+  | MemoryStep;
 
 /** ColumnGrid 셀의 시각 상태. */
 export type CellState = 'idle' | 'highlight' | 'filled' | 'correct' | 'wrong';
@@ -371,4 +411,108 @@ export interface ModSumResult {
   readonly mod11Answer: number;
   /** 11 버리기 통과 여부. */
   readonly mod11Match: boolean;
+}
+
+// ── M6 고급 곱셈 시각화 데이터 모델(8장 — 분배법칙 분해 + 자리올림 선예측 + 메모리 슬롯) ────
+
+/**
+ * 자리올림 선예측(book-content-map §8-2). 5장 어림셈이 정밀 계산의 부품이 되는 지점.
+ * 큰 자리부터 발화하기 위해 "다음 합이 다음 자리로 올림될까?"를 미리 판정한다.
+ * 4자리 제곱 기준 임계값 750,000: d² ≤ 250,000 이므로 남은 하위 6자리 합이 750,000 미만이면
+ * 백만 자리가 확정된다.
+ */
+export interface CarryPrediction {
+  /** 예측 대상의 하위 부분합(product % 1_000_000). */
+  readonly lowPart: number;
+  /** 더해질 보정(d² 등). */
+  readonly addition: number;
+  /** 올림 발생 여부(lowPart + addition >= 1_000_000). */
+  readonly willCarry: boolean;
+  /** 임계값(book-content-map §8-2 의 750,000). */
+  readonly threshold: number;
+}
+
+/**
+ * 4자리 제곱 분해(book-content-map §8-2). A² = (A+d)(A−d) + d², d=1000 단위.
+ * 자리올림 선예측({@link CarryPrediction}) + 중간값 메모리 슬롯 저장.
+ */
+export interface Square4Layout {
+  readonly base: number;
+  readonly d: number;
+  readonly high: number;
+  readonly low: number;
+  readonly product: number;
+  readonly dSquared: number;
+  readonly answer: number;
+  readonly carry: CarryPrediction;
+}
+
+/**
+ * 3×2 곱셈 분해(book-content-map §8-3~8-5). 기법 선택(분해/반올림/인수분해) 중 덧셈법 기반.
+ * b(2자리)를 (십+일)로 쪼개 a(3자리)에 두 번 곱해 더한다.
+ */
+export interface Mul3x2Layout {
+  readonly a: number;
+  readonly b: number;
+  /** b 의 십의 자리 덩어리. */
+  readonly tens: number;
+  /** b 의 일의 자리. */
+  readonly units: number;
+  /** tens × a. */
+  readonly tensProduct: number;
+  /** units × a. */
+  readonly unitsProduct: number;
+  readonly answer: number;
+}
+
+/**
+ * 5자리 제곱 3항 분해(book-content-map §8-6). (a·1000+b)² = a²·10⁶ + 2ab·10³ + b².
+ * 가운데 항(2ab)을 먼저 계산해 메모리 슬롯에 저장 → a² → b² → 합산.
+ */
+export interface Square5Layout {
+  readonly base: number;
+  readonly a: number;
+  readonly b: number;
+  readonly aSquared: number;
+  readonly twoAB: number;
+  readonly bSquared: number;
+  readonly answer: number;
+}
+
+/**
+ * 3×3 근접수법 분해(book-content-map §8-8). (z+a)(z+b) = z(z+a+b) + ab.
+ * 두 수가 같은 기준수 z(0 이 많은 수) 근처일 때 사용.
+ */
+export interface Mul3x3Layout {
+  readonly a: number;
+  readonly b: number;
+  /** 기준수(가까운 100의 배수). */
+  readonly z: number;
+  /** a 의 편차(a − z). */
+  readonly da: number;
+  /** b 의 편차(b − z). */
+  readonly db: number;
+  /** z + da + db = a + db = b + da. */
+  readonly mid: number;
+  readonly zTimesMid: number;
+  readonly deviationProduct: number;
+  readonly answer: number;
+}
+
+/**
+ * 5×5 4분할 분해(book-content-map §8-11). (a·1000+b)(c·1000+d) = ac·10⁶ + (ad+cb)·10³ + bd.
+ * 어려운 3×2 두 개 → 메모리 슬롯 2개 저장 → 2×2 → 자리올림 예측 → 3×3.
+ */
+export interface Mul5x5Layout {
+  readonly a: number;
+  readonly b: number;
+  readonly c: number;
+  readonly d: number;
+  readonly ac: number;
+  readonly ad: number;
+  readonly cb: number;
+  readonly bd: number;
+  /** 천 단위 항(ad+cb). */
+  readonly middle: number;
+  readonly answer: number;
 }

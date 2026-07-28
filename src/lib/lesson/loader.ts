@@ -57,7 +57,12 @@ const METHODS: readonly Method[] = [
   'paper-column-add',
   'paper-cross-mult',
   'paper-sqrt',
-  'mod-sum-check'
+  'mod-sum-check',
+  'square-4digit',
+  'mul-3x2',
+  'square-5digit',
+  'mul-3x3',
+  'mul-5x5'
 ];
 const STRATEGIES: readonly StrategyChoice[] = ['this-technique', 'other-technique', 'just-knew'];
 const EST_OFS: readonly string[] = ['add', 'sub', 'mul', 'div'];

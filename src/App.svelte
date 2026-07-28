@@ -18,6 +18,7 @@
   import Stage from './routes/Stage.svelte';
   import Magic from './routes/Magic.svelte';
   import Catch from './routes/Catch.svelte';
+  import Memory from './routes/Memory.svelte';
   import LocaleSwitcher from './components/LocaleSwitcher.svelte';
 
   const app = createAppState();
@@ -99,6 +100,8 @@
           <Magic {app} {router} />
         {:else if router.current() === 'catch'}
           <Catch {router} />
+        {:else if router.current() === 'memory'}
+          <Memory {app} {router} />
         {:else if router.current() === 'playground'}
           <Playground />
         {:else}

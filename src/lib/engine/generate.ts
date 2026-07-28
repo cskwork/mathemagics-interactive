@@ -139,6 +139,30 @@ export function generateProblem(seed: number, opts: GenerateOptions): Problem {
         const a = numberWithDigits(rng, digits);
         return { op, operands: [a, a], method, level };
       }
+      // M6 고급 곱셈(8장).
+      if (method === 'square-4digit') {
+        const a = numberWithDigits(rng, 4);
+        return { op, operands: [a, a], method, level };
+      }
+      if (method === 'square-5digit') {
+        const a = numberWithDigits(rng, 5);
+        return { op, operands: [a, a], method, level };
+      }
+      if (method === 'mul-3x2') {
+        const a = numberWithDigits(rng, 3);
+        const b = numberWithDigits(rng, 2);
+        return { op, operands: [a, b], method, level };
+      }
+      if (method === 'mul-3x3') {
+        const a = numberWithDigits(rng, 3);
+        const b = numberWithDigits(rng, 3);
+        return { op, operands: [a, b], method, level };
+      }
+      if (method === 'mul-5x5') {
+        const a = numberWithDigits(rng, 5);
+        const b = numberWithDigits(rng, 5);
+        return { op, operands: [a, b], method, level };
+      }
       if (method === 'mul-running') {
         // 2×1 / 3×1: a=digits자리, b=1자리(2~9).
         const a = numberWithDigits(rng, digits);

@@ -199,4 +199,21 @@ export class AppState {
   async upsertCard(card: SrsCard): Promise<void> {
     await this.adapter().upsertCard(card);
   }
+
+  // ── 데이터 이식(M6 ExportBundle UI) ──────────────────────────────────────────
+  // 설정 화면의 내보내기/가져오기가 어댑터를 거치게 한다 — 활성 모드(local/server) 에 맞춰 동작.
+
+  /** 전체 데이터를 ExportBundle 로 내보낸다(프로필 무관). */
+  async exportData(): Promise<import('../storage/types.js').ExportBundle> {
+    return this.adapter().exportAll();
+  }
+
+  /** ExportBundle 가져오기. mode = merge(최신 우선) | replace(전체 교체). */
+  async importData(
+    bundle: import('../storage/types.js').ExportBundle,
+    mode: import('../storage/types.js').ImportMode
+  ): Promise<void> {
+    await this.adapter().importAll(bundle, mode);
+    await this.refreshProfiles();
+  }
 }

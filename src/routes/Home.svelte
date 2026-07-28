@@ -61,6 +61,10 @@
           <span class="rep-mark" aria-hidden="true">🔍</span>
           <span>{m.catch_heading()}</span>
         </button>
+        <button class="card rep-card" onclick={() => router.navigate('memory')}>
+          <span class="rep-mark" aria-hidden="true">🧠</span>
+          <span>{m.memory_heading()}</span>
+        </button>
       </div>
     </section>
 

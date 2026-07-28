@@ -1,0 +1,15 @@
+{
+  "id": "ch8-mul-5x5",
+  "skillId": "mul-5x5",
+  "chapter": 8,
+  "order": 5,
+  "prerequisites": ["square-5digit", "mul-3x3"],
+  "title": { "ko": "5×5 곱셈 (4분할)", "en": "5-by-5 multiplication (four-part split)" },
+  "subtitle": { "ko": "2×2 하나 + 3×2 둘 + 3×3 하나", "en": "One 2×2, two 3×2s, one 3×3" },
+  "rule": { "ko": "두 다섯 자리 수를 (a천+b)(c천+d)로 쪼개 ac·백만 + (ad+cb)·천 + bd 네 조각으로 풀어요. 어려운 3×2 두 개를 먼저 해 단어 카드에 저장해요.", "en": "Split both five-digit numbers into (a thousand + b)(c thousand + d), expand into ac·million + (ad+cb)·thousand + bd. Do the two hard 3×2s first and store them in word cards." },
+  "hook": { "problemSet": { "op": "mul", "method": "mul-5x5", "digits": 5, "carry": true, "count": 1, "seed": 218 }, "intro": { "ko": "다섯 자리끼리 곱해요. 최종 무대!", "en": "Multiply five by five. The final stage!" }, "outro": { "ko": "카드 두 장으로 끝냈어요!", "en": "You finished it with two cards!" }, "autoPlayMs": 14000 },
+  "example": { "problemSet": { "op": "mul", "method": "mul-5x5", "digits": 5, "carry": true, "count": 2, "seed": 229 }, "intro": { "ko": "3×2 두 개를 먼저 해요.", "en": "Do the two 3×2s first." } },
+  "fading": { "problemSet": { "op": "mul", "method": "mul-5x5", "digits": 5, "carry": true, "count": 3, "seed": 240 }, "intro": { "ko": "끝자리를 채워 보세요.", "en": "Fill in the last digits." } },
+  "practice": { "problemSet": { "op": "mul", "method": "mul-5x5", "digits": 5, "carry": true, "count": 3, "seed": 251 }, "intro": { "ko": "혼자 풀어 보세요.", "en": "Solve on your own." }, "hints": { "point": { "ko": "천 단위로 네 조각을 나눠요.", "en": "Split each into a thousands part and a remainder." }, "teach": { "ko": "3×2 두 개를 카드에 저장하고, 2×2와 3×3을 더해요.", "en": "Store the two 3×2s in cards, then add the 2×2 and 3×3." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "4분할로 풀었어요", "en": "I used the four-part split" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

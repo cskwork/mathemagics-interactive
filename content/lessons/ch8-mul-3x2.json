@@ -1,0 +1,15 @@
+{
+  "id": "ch8-mul-3x2",
+  "skillId": "mul-3x2",
+  "chapter": 8,
+  "order": 2,
+  "prerequisites": ["mul-2x2-add", "square-3digit"],
+  "title": { "ko": "3×2 곱셈 (분해·반올림·인수분해 선택)", "en": "3-by-2 multiplication (decompose / round / factor)" },
+  "subtitle": { "ko": "2자리 수를 십+일로 쪼개 두 번 곱해요", "en": "Split the two-digit number into tens + units, multiply twice" },
+  "rule": { "ko": "2자리 수를 (십의 자리 + 일의 자리)로 쪼개 3자리 수에 각각 곱해 더해요. 인수분해가 되면 곱셈 연쇄로 더 쉬워요.", "en": "Break the two-digit number into tens + units, multiply each by the three-digit number, add. If it factors, a chain of products is even easier." },
+  "hook": { "problemSet": { "op": "mul", "method": "mul-3x2", "digits": 3, "carry": true, "count": 1, "seed": 86 }, "intro": { "ko": "3×2도 2×2를 키운 것뿐이에요.", "en": "A 3-by-2 is just a 2-by-2 made bigger." }, "outro": { "ko": "중간값을 카드에 두면 안 잊어버려요.", "en": "Holding the middle in a card keeps it safe." }, "autoPlayMs": 11000 },
+  "example": { "problemSet": { "op": "mul", "method": "mul-3x2", "digits": 3, "carry": true, "count": 2, "seed": 97 }, "intro": { "ko": "십의 자리 곱을 먼저 구해요.", "en": "Work out the tens product first." } },
+  "fading": { "problemSet": { "op": "mul", "method": "mul-3x2", "digits": 3, "carry": true, "count": 3, "seed": 108 }, "intro": { "ko": "마지막 자리를 채워 보세요.", "en": "Fill in the last digits." } },
+  "practice": { "problemSet": { "op": "mul", "method": "mul-3x2", "digits": 3, "carry": true, "count": 3, "seed": 119 }, "intro": { "ko": "혼자 풀어 보세요.", "en": "Solve on your own." }, "hints": { "point": { "ko": "2자리 수의 십의 자리를 찾아요.", "en": "Find the tens digit of the two-digit number." }, "teach": { "ko": "십의 자리 곱과 일의 자리 곱을 더해요. 중간값은 카드에!", "en": "Add the tens product and units product. Card holds the middle!" }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "덧셈법으로 풀었어요", "en": "I used the addition method" }, "otherTechnique": { "ko": "인수분해법으로 풀었어요", "en": "I used factoring" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}
