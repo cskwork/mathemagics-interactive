@@ -13,9 +13,6 @@
   const { app, router }: Props = $props();
 
   const profile = $derived(app.activeProfile());
-
-  // 레퍼토리 자리표 — M2+ 콘텐츠가 들어올 슬롯. 가짜 데이터가 아니라 '자리'로 표시.
-  const REPERTOIRE_SLOTS = 4;
 </script>
 
 {#if profile}
@@ -28,10 +25,10 @@
       <div class="spotlight-card-beam" aria-hidden="true"></div>
       <div class="spotlight-card-body">
         <p class="kicker">{m.home_today_show()}</p>
-        <p class="muted lead">{m.home_today_show_hint()}</p>
+        <p class="muted lead">{m.home_practice_hint()}</p>
         <div class="cta-row">
-          <button class="btn--primary cta" onclick={() => router.navigate('lessons')}>
-            {m.home_start()}
+          <button class="btn--primary cta" onclick={() => router.navigate('practice')}>
+            {m.home_practice_cta()}
           </button>
           <button class="btn--ghost" onclick={() => router.navigate('lessons')}>
             {m.nav_lessons()}
@@ -43,12 +40,15 @@
     <section class="repertoire" aria-labelledby="repertoire-h">
       <h3 id="repertoire-h" class="muted">{m.home_repertoire()}</h3>
       <p class="muted small">{m.home_repertoire_hint()}</p>
-      <div class="slots" role="list">
-        {#each Array(REPERTOIRE_SLOTS) as _, i (i)}
-          <div class="slot" role="listitem" aria-hidden="true">
-            <span class="slot-mark">◆</span>
-          </div>
-        {/each}
+      <div class="repertoire-grid">
+        <button class="card rep-card" onclick={() => router.navigate('progress')}>
+          <span class="rep-mark" aria-hidden="true">📊</span>
+          <span>{m.home_progress_cta()}</span>
+        </button>
+        <button class="card rep-card" onclick={() => router.navigate('report')}>
+          <span class="rep-mark" aria-hidden="true">💬</span>
+          <span>{m.home_report_cta()}</span>
+        </button>
       </div>
     </section>
 
@@ -124,24 +124,28 @@
   .small {
     font-size: var(--text-small);
   }
-  .slots {
+  .repertoire-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
     gap: var(--space-3);
     margin-top: var(--space-3);
   }
-  .slot {
-    min-height: 5.5rem;
-    border: 1px dashed var(--stage-line);
-    border-radius: var(--radius);
+  .rep-card {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--house-light);
-    opacity: 0.6;
+    gap: var(--space-2);
+    min-height: 5.5rem;
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
   }
-  .slot-mark {
-    font-size: 0.8rem;
+  .rep-card:hover {
+    border-color: var(--spotlight);
+  }
+  .rep-mark {
+    font-size: 1.6rem;
   }
 
   .nav-row {

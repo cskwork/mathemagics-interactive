@@ -10,6 +10,9 @@ describe('parseHash', () => {
     expect(parseHash('#/dev/playground')).toBe('playground');
     expect(parseHash('#/lessons')).toBe('lessons');
     expect(parseHash('#/lesson')).toBe('lesson');
+    expect(parseHash('#/practice')).toBe('practice');
+    expect(parseHash('#/progress')).toBe('progress');
+    expect(parseHash('#/report')).toBe('report');
   });
 
   it('ignores a query string and a trailing slash', () => {
