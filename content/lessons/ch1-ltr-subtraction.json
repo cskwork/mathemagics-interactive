@@ -1,0 +1,78 @@
+{
+  "id": "ch1-ltr-subtraction",
+  "skillId": "ltr-subtraction",
+  "chapter": 1,
+  "order": 2,
+  "prerequisites": ["ltr-addition"],
+  "title": { "ko": "큰 자리부터 빼기", "en": "Subtract from the biggest place" },
+  "subtitle": {
+    "ko": "더하기에서 배운 순서를 빼기에 그대로 써요",
+    "en": "The same left-to-right order, now for taking away"
+  },
+  "rule": {
+    "ko": "빼는 수를 자리별로 쪼개, 큰 덩어리부터 순서대로 뺍니다.",
+    "en": "Split the number you subtract into place chunks, take away the biggest chunk first."
+  },
+  "hook": {
+    "problemSet": { "op": "sub", "method": "ltr", "digits": 3, "carry": false, "count": 1, "seed": 23 },
+    "intro": {
+      "ko": "빼기도 큰 자리부터 할 수 있어요. 보세요.",
+      "en": "Subtraction can go big-place first too. Watch."
+    },
+    "outro": {
+      "ko": "큰 덩어리부터 빼면 답이 앞자리부터 드러나요.",
+      "en": "Take away the biggest chunk first and the answer shows from the left."
+    },
+    "autoPlayMs": 8000
+  },
+  "example": {
+    "problemSet": { "op": "sub", "method": "ltr", "digits": 2, "carry": false, "count": 2, "seed": 19 },
+    "intro": {
+      "ko": "천천히 볼게요. 빼는 수를 십의 자리와 일의 자리로 나눠요.",
+      "en": "Let's watch slowly. Split the subtracted number into tens and units."
+    }
+  },
+  "fading": {
+    "problemSet": { "op": "sub", "method": "ltr", "digits": 2, "carry": false, "count": 3, "seed": 55 },
+    "intro": {
+      "ko": "마지막 자리부터 직접 채워 보세요.",
+      "en": "Fill in the last digits yourself."
+    }
+  },
+  "practice": {
+    "problemSet": { "op": "sub", "method": "ltr", "digits": 2, "carry": false, "count": 3, "seed": 211 },
+    "intro": {
+      "ko": "전부 혼자 풀어 보세요. 막히면 힌트가 있어요.",
+      "en": "Solve the whole thing alone. Hints are there if you're stuck."
+    },
+    "hints": {
+      "point": {
+        "ko": "가장 큰 자리(십의 자리)부터 시작해 봐요.",
+        "en": "Start from the biggest place (tens)."
+      },
+      "teach": {
+        "ko": "빼는 수를 십의 자리와 일의 자리로 쪼개, 십의 자리부터 빼요. 첫 칸을 보여줄게요.",
+        "en": "Split into tens and units, subtract tens first. I'll show the first cell."
+      },
+      "bottomOut": {
+        "ko": "답을 공개할게요. 큰 자리부터 어떻게 빼졌는지 다시 봐요.",
+        "en": "Here's the answer. Watch how it's taken away from the biggest place."
+      }
+    },
+    "passAccuracy": 0.9
+  },
+  "strategyCards": {
+    "thisTechnique": {
+      "ko": "자리별로 쪼개서 뺐어요",
+      "en": "I split it into place chunks"
+    },
+    "otherTechnique": {
+      "ko": "다른 방법으로 풀었어요",
+      "en": "I used a different way"
+    },
+    "justKnew": {
+      "ko": "그냥 알았어요",
+      "en": "I just knew it"
+    }
+  }
+}

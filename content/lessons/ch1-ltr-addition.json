@@ -1,0 +1,78 @@
+{
+  "id": "ch1-ltr-addition",
+  "skillId": "ltr-addition",
+  "chapter": 1,
+  "order": 1,
+  "prerequisites": [],
+  "title": { "ko": "큰 자리부터 더하기", "en": "Add from the biggest place" },
+  "subtitle": {
+    "ko": "세로로 쓰지 않고 머릿속으로 더하는 첫 걸음",
+    "en": "First step to adding in your head, no pencil"
+  },
+  "rule": {
+    "ko": "더하는 수를 자리별로 쪼개, 큰 덩어리부터 순서대로 더합니다.",
+    "en": "Split the number you add into place chunks, then add the biggest chunk first."
+  },
+  "hook": {
+    "problemSet": { "op": "add", "method": "ltr", "digits": 3, "carry": true, "count": 1, "seed": 42 },
+    "intro": {
+      "ko": "머릿속으로 더하는 마술을 한 번 보세요.",
+      "en": "Watch a mind-adding trick."
+    },
+    "outro": {
+      "ko": "큰 자리부터 차곡차곡 쌓으면 답이 저절로 나와요.",
+      "en": "Stack from the biggest place and the answer appears."
+    },
+    "autoPlayMs": 8000
+  },
+  "example": {
+    "problemSet": { "op": "add", "method": "ltr", "digits": 2, "carry": true, "count": 2, "seed": 7 },
+    "intro": {
+      "ko": "어떻게 하는지 천천히 볼게요. 더하는 수를 십의 자리와 일의 자리로 나눠요.",
+      "en": "Let's watch slowly. Split the added number into tens and units."
+    }
+  },
+  "fading": {
+    "problemSet": { "op": "add", "method": "ltr", "digits": 2, "carry": true, "count": 3, "seed": 91 },
+    "intro": {
+      "ko": "이제 마지막 자리부터 직접 채워 보세요. 한 칸씩 늘어갈 거예요.",
+      "en": "Now fill in the last digits yourself. You'll do one more each time."
+    }
+  },
+  "practice": {
+    "problemSet": { "op": "add", "method": "ltr", "digits": 2, "carry": true, "count": 3, "seed": 303 },
+    "intro": {
+      "ko": "이제 전부 혼자 풀어 보세요. 막히면 힌트가 있어요.",
+      "en": "Now solve the whole thing alone. Hints are there if you're stuck."
+    },
+    "hints": {
+      "point": {
+        "ko": "가장 큰 자리(십의 자리)부터 시작해 봐요.",
+        "en": "Start from the biggest place (tens)."
+      },
+      "teach": {
+        "ko": "더하는 수를 십의 자리와 일의 자리로 쪼개, 십의 자리부터 더해요. 첫 칸을 보여줄게요.",
+        "en": "Split into tens and units, add tens first. I'll show the first cell."
+      },
+      "bottomOut": {
+        "ko": "답을 공개할게요. 큰 자리부터 어떻게 쌓였는지 다시 봐요.",
+        "en": "Here's the answer. Watch how it stacks from the biggest place."
+      }
+    },
+    "passAccuracy": 0.9
+  },
+  "strategyCards": {
+    "thisTechnique": {
+      "ko": "자리별로 쪼개서 더했어요",
+      "en": "I split it into place chunks"
+    },
+    "otherTechnique": {
+      "ko": "다른 방법으로 풀었어요",
+      "en": "I used a different way"
+    },
+    "justKnew": {
+      "ko": "그냥 알았어요",
+      "en": "I just knew it"
+    }
+  }
+}
