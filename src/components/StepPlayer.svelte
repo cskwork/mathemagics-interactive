@@ -1,0 +1,193 @@
+<script lang="ts">
+  /**
+   * 스텝 재생기 — Step[] 을 순서대로 연출(브리프 §2-4 / 리서치 §3).
+   *
+   * 현재 스텝 인덱스 하나로 재생/일시정지/이전/다음/처음부터/속도(1x·0.5x)를 전부 구현한다
+   * (리서치 §3.1 "스텝 상태 기계"). 애니메이션은 스텝 전환의 부수 효과 — CSS transition 기본,
+   * 시퀀싱은 setTimeout 하나. Motion mini(~5KB)는 쓰지 않는다(사유: 단일 타이머 시퀀싱으로
+   * 충분, 병렬·스프링 불필요 → 의존성 0 유지).
+   *
+   * `narration` 은 말풍선 + `aria-live="polite"` 낭독 영역(리서치 §1.5/§3.1).
+   * `prefers-reduced-motion` 시 셀 전환을 즉시(very short duration)로 만든다.
+   */
+  import { m } from '../lib/paraglide/messages.js';
+  import { activeLocale } from '../lib/i18n/locale.svelte.js';
+  import { resolveLocalized } from '../lib/content/localized.js';
+  import ColumnGrid, { type CellRender } from './ColumnGrid.svelte';
+  import type { Grid, Step } from '../lib/engine/types.js';
+
+  interface Props {
+    grid: Grid;
+    steps: readonly Step[];
+  }
+  const { grid, steps }: Props = $props();
+
+  let index = $state(0);
+  let playing = $state(false);
+  let speed = $state(1);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const BASE_MS: Record<Step['t'], number> = {
+    highlight: 950,
+    write: 750,
+    carry: 650,
+    strike: 650,
+    reveal: 750
+  };
+
+  const reduceMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  function stepDuration(s: Step): number {
+    const base = BASE_MS[s.t];
+    const scaled = base / speed;
+    // reduced-motion: 전환을 사실상 즉시로(짧은 고정값). 순서는 유지.
+    return reduceMotion ? Math.min(scaled, 120) : scaled;
+  }
+
+  function clearTimer(): void {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      timer = undefined;
+    }
+  }
+
+  function advance(): void {
+    if (index < steps.length - 1) {
+      index += 1;
+    } else {
+      playing = false;
+    }
+  }
+
+  // 재생 중이면 현재 스텝 duration 후 다음 스텝으로.
+  $effect(() => {
+    if (!playing) return;
+    const cur = steps[index];
+    if (!cur || index >= steps.length - 1) {
+      playing = false;
+      return;
+    }
+    timer = setTimeout(() => {
+      advance();
+    }, stepDuration(cur));
+    return () => clearTimer();
+  });
+
+  function play(): void {
+    if (index >= steps.length - 1) index = 0; // 끝에서 재생 → 처음부터
+    playing = true;
+  }
+  function pause(): void {
+    playing = false;
+  }
+  function next(): void {
+    playing = false;
+    if (index < steps.length - 1) index += 1;
+  }
+  function prev(): void {
+    playing = false;
+    if (index > 0) index -= 1;
+  }
+  function restart(): void {
+    playing = false;
+    index = 0;
+  }
+  function toggleSpeed(): void {
+    speed = speed === 1 ? 0.5 : 1;
+  }
+
+  const total = $derived(steps.length);
+  const current = $derived(steps[index]);
+  const atEnd = $derived(index >= total - 1);
+  const narrationText = $derived(
+    current?.narration ? resolveLocalized(current.narration, activeLocale()) : ''
+  );
+
+  /** steps[0..index] 를 reduce 해 ColumnGrid 용 셀 맵을 만든다(순수 계산). */
+  const cells = $derived.by<Map<string, CellRender>>(() => {
+    const map = new Map<string, CellRender>();
+    for (let i = 0; i <= index && i < steps.length; i++) {
+      const s = steps[i]!;
+      if (s.t === 'write') {
+        map.set(s.cell, { value: s.value, state: 'filled' });
+      } else if (s.t === 'carry') {
+        map.set(s.cell, { value: s.value, state: 'filled' });
+      } else if (s.t === 'reveal') {
+        for (const c of s.cells) map.set(c, { value: s.value, state: 'filled' });
+      } else if (s.t === 'strike') {
+        const prev = map.get(s.cell) ?? {};
+        map.set(s.cell, { ...prev, struck: true });
+      }
+    }
+    // 현재 highlight 스텝의 열/셀을 강조(일시적 — 현재 스텝에만).
+    const cur = steps[index];
+    if (cur && cur.t === 'highlight') {
+      const markCol = (col: string) => {
+        for (const r of grid.rows) {
+          const key = `${r.id}.${col}`;
+          const prev = map.get(key) ?? {};
+          map.set(key, { ...prev, state: 'highlight' });
+        }
+      };
+      if (cur.col) markCol(cur.col);
+      if (cur.cells) for (const c of cur.cells) {
+        const prev = map.get(c) ?? {};
+        map.set(c, { ...prev, state: 'highlight' });
+      }
+    }
+    return map;
+  });
+</script>
+
+<div class="stack" style="gap: 1rem;">
+  <ColumnGrid {grid} {cells} />
+
+  <div class="bubble" aria-live="polite" role="status">
+    {narrationText || m.playground_narration()}
+  </div>
+
+  <div class="row controls" role="group" aria-label={m.player_play()}>
+    <button onclick={restart} aria-label={m.player_restart()} disabled={index === 0 && !playing}>⏮</button>
+    <button onclick={prev} aria-label={m.player_prev()} disabled={index === 0}>◀</button>
+    {#if playing}
+      <button class="primary" onclick={pause} aria-label={m.player_pause()}>⏸</button>
+    {:else}
+      <button class="primary" onclick={play} aria-label={m.player_play()} disabled={atEnd}>▶</button>
+    {/if}
+    <button onclick={next} aria-label={m.player_next()} disabled={atEnd}>▶</button>
+    <button class="speed" onclick={toggleSpeed} aria-label={m.player_speed()} aria-pressed={speed === 0.5}>
+      {speed}×
+    </button>
+  </div>
+
+  <p class="muted step-counter">{m.player_step({ n: index + 1, total })}</p>
+</div>
+
+<style>
+  .bubble {
+    background: var(--surface);
+    border: 1px solid #3a3e63;
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    min-height: 3rem;
+    line-height: 1.45;
+  }
+  .controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .controls button {
+    min-width: var(--tap);
+  }
+  .speed {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .step-counter {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+</style>
