@@ -25,8 +25,12 @@
   interface Props {
     grid: Grid;
     steps: readonly Step[];
+    /** M2: 선두 expect 칸 N 개를 미리 채워둔다(Teach 힌트의 부분 시연). 기본 0. */
+    prefill?: number;
+    /** M2: 모든 expect 칸을 올바르게 채웠을 때 1회 호출. */
+    oncomplete?: () => void;
   }
-  const { grid, steps }: Props = $props();
+  const { grid, steps, prefill = 0, oncomplete }: Props = $props();
 
   /** 학생 입력을 기다리는 답 칸 스텝들(순서 = 풀이 순서). */
   const expectSteps = $derived(
@@ -73,6 +77,23 @@
   });
 
   const completed = $derived(completedCount >= expectCount && expectCount > 0);
+
+  // M2: Teach 힌트로 선두 칸이 미리 채워지면 completedCount 를 그만큼 앞당긴다.
+  $effect(() => {
+    if (prefill > completedCount && prefill <= expectCount) {
+      completedCount = prefill;
+      activeIdx = Math.min(prefill, Math.max(0, expectCount - 1));
+    }
+  });
+
+  // M2: 모든 칸을 올바르게 채우면 1회 oncomplete.
+  let completedFired = $state(false);
+  $effect(() => {
+    if (completed && !completedFired) {
+      completedFired = true;
+      oncomplete?.();
+    }
+  });
 
   /** ColumnGrid 셀 맵(순수 계산). */
   const cells = $derived.by<Map<string, CellRender>>(() => {

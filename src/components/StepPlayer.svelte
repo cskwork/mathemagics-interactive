@@ -19,13 +19,18 @@
   interface Props {
     grid: Grid;
     steps: readonly Step[];
+    /** M2: 마운트 시 자동 재생(레슨 훅 데모). 기본 false. */
+    autoplay?: boolean;
+    /** M2: 끝 스텝에 도달했을 때 1회 호출(레슨 훅→예제 전환 등). */
+    oncomplete?: () => void;
   }
-  const { grid, steps }: Props = $props();
+  const { grid, steps, autoplay = false, oncomplete }: Props = $props();
 
   let index = $state(0);
   let playing = $state(false);
   let speed = $state(1);
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let completedFired = $state(false);
 
   const BASE_MS: Record<Step['t'], number> = {
     highlight: 950,
@@ -58,6 +63,10 @@
       index += 1;
     } else {
       playing = false;
+      if (!completedFired) {
+        completedFired = true;
+        oncomplete?.();
+      }
     }
   }
 
@@ -67,12 +76,23 @@
     const cur = steps[index];
     if (!cur || index >= steps.length - 1) {
       playing = false;
+      if (!completedFired) {
+        completedFired = true;
+        oncomplete?.();
+      }
       return;
     }
     timer = setTimeout(() => {
       advance();
     }, stepDuration(cur));
     return () => clearTimer();
+  });
+
+  // M2: 마운트 시 자동 재생(레슨 훅 데모).
+  $effect(() => {
+    if (autoplay && !playing && !completedFired && steps.length > 0) {
+      playing = true;
+    }
   });
 
   function play(): void {
