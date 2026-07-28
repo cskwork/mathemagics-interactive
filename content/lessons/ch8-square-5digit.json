@@ -1,0 +1,15 @@
+{
+  "id": "ch8-square-5digit",
+  "skillId": "square-5digit",
+  "chapter": 8,
+  "order": 3,
+  "prerequisites": ["square-4digit", "est-band"],
+  "title": { "ko": "다섯 자리 제곱 (3항 분해)", "en": "Five-digit squares (three-term split)" },
+  "subtitle": { "ko": "a²·백만 + 2ab·천 + b², 가운데 항 먼저", "en": "a²·million + 2ab·thousand + b²; middle term first" },
+  "rule": { "ko": "다섯 자리 수를 (a천 + b)로 쪼개 a²·백만 + 2ab·천 + b² 세 항으로 풀어요. 가장 어려운 가운데 항(2ab)을 먼저 구해 단어 카드에 저장해요.", "en": "Split the five-digit number into (a thousand + b), expand into a²·million + 2ab·thousand + b². Do the hardest middle term first and store it in a word card." },
+  "hook": { "problemSet": { "op": "mul", "method": "square-5digit", "digits": 5, "carry": true, "count": 1, "seed": 130 }, "intro": { "ko": "다섯 자리 제곱은 세 조각이에요.", "en": "A five-digit square is three pieces." }, "outro": { "ko": "가운데 항을 먼저 잡았어요!", "en": "You nailed the middle term first!" }, "autoPlayMs": 13000 },
+  "example": { "problemSet": { "op": "mul", "method": "square-5digit", "digits": 5, "carry": true, "count": 2, "seed": 141 }, "intro": { "ko": "2ab를 먼저 구해요.", "en": "Work out 2ab first." } },
+  "fading": { "problemSet": { "op": "mul", "method": "square-5digit", "digits": 5, "carry": true, "count": 3, "seed": 152 }, "intro": { "ko": "끝자리를 채워 보세요.", "en": "Fill in the last digits." } },
+  "practice": { "problemSet": { "op": "mul", "method": "square-5digit", "digits": 5, "carry": true, "count": 3, "seed": 163 }, "intro": { "ko": "혼자 풀어 보세요.", "en": "Solve on your own." }, "hints": { "point": { "ko": "천 단위로 a와 b를 나눠요.", "en": "Split into a (thousands) and b." }, "teach": { "ko": "2ab를 먼저 구해 카드에 두고, a²와 b²를 더해요.", "en": "Do 2ab first, hold it in a card, then add a² and b²." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "3항 분해로 풀었어요", "en": "I used the three-term split" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

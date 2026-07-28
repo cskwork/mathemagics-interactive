@@ -10,11 +10,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "server": "bun run server/index.ts",
+    "roundtrip": "bun run server/roundtrip.ts",
     "check": "npm run i18n && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "dexie": "^4.4.4"
+    "dexie": "^4.4.4",
+    "hono": "^4.12.32"
   },
   "devDependencies": {
     "@inlang/paraglide-js": "^2.23.0",

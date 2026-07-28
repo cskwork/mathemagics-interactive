@@ -47,6 +47,7 @@
   import CrossMultDiagram from '../../components/CrossMultDiagram.svelte';
   import SquareRootDiagram from '../../components/SquareRootDiagram.svelte';
   import ModSumCheck from '../../components/ModSumCheck.svelte';
+  import MemorySlot from '../../components/MemorySlot.svelte';
 
   interface Props {
     skillId: string;
@@ -89,6 +90,18 @@
   const grid = $derived(currentProblem ? deriveGrid(currentProblem) : undefined);
   const baseSteps = $derived(currentProblem ? deriveSteps(currentProblem) : undefined);
 
+  // M6: 8장 메모리 슬롯 — store 스텝들을 모아 MemorySlot 카드로 보여준다(slot 최신값).
+  const memoryEntries = $derived.by(() => {
+    if (!baseSteps) return [];
+    const map = new Map<string, { slot: string; value: number; digits?: string }>();
+    for (const s of baseSteps) {
+      if (s.t === 'memory' && s.action === 'store') {
+        map.set(s.slot, { slot: s.slot, value: s.value, ...(s.digits !== undefined ? { digits: s.digits } : {}) });
+      }
+    }
+    return [...map.values()];
+  });
+
   // 페이딩: 마지막 K 스텝만 입력. K 는 문제 인덱스에 따라 점진 확대.
   const renderSteps = $derived.by(() => {
     if (!baseSteps) return undefined;
@@ -113,6 +126,7 @@
     | { kind: 'xmult'; layout: ReturnType<typeof crossMultLayout> }
     | { kind: 'sqrt'; layout: ReturnType<typeof squareRootLayout> }
     | { kind: 'modsum'; result: ReturnType<typeof checkModSum> }
+    | { kind: 'adv'; base?: number }
     | null;
 
   const techniqueVisual = $derived.by<TechniqueVisual>(() => {
@@ -120,6 +134,13 @@
     const p = currentProblem;
     if (p.op === 'mul') {
       if (p.method === 'square') return { kind: 'xdiagram', base: p.operands[0] ?? 0 };
+      // M6 8장 고급 곱셈: 메모리 슬롯(±d 다이어그램은 제곱 계열에만).
+      if (p.method === 'square-4digit' || p.method === 'square-5digit') {
+        return { kind: 'adv', base: p.operands[0] ?? 0 };
+      }
+      if (p.method === 'mul-3x2' || p.method === 'mul-3x3' || p.method === 'mul-5x5') {
+        return { kind: 'adv' };
+      }
       if (p.method === 'paper-cross-mult') return { kind: 'xmult', layout: crossMultLayout(p) };
       if (p.method === 'mod-sum-check') {
         const [a, b] = [p.operands[0] ?? 0, p.operands[1] ?? 0];
@@ -341,6 +362,11 @@
     <SquareRootDiagram layout={techniqueVisual.layout} />
   {:else if techniqueVisual?.kind === 'modsum'}
     <ModSumCheck result={techniqueVisual.result} />
+  {:else if techniqueVisual?.kind === 'adv'}
+    {#if techniqueVisual.base !== undefined}
+      <XDiagram base={techniqueVisual.base} />
+    {/if}
+    <MemorySlot entries={memoryEntries} />
   {/if}
 {/snippet}
 

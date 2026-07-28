@@ -39,7 +39,8 @@
     strike: 650,
     reveal: 750,
     running: 850,
-    branch: 800
+    branch: 800,
+    memory: 900
   };
 
   const reduceMotion =

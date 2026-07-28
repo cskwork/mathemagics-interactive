@@ -27,6 +27,7 @@ import { deriveMulSteps } from './derive-mul.js';
 import { deriveDivSteps } from './derive-div.js';
 import { deriveEstSteps } from './derive-est.js';
 import { derivePaperSteps } from './derive-paper.js';
+import { deriveAdvSteps } from './derive-adv.js';
 import { pairOf } from './derive-internals.js';
 
 /** 로케일 키 객체 생성 헬퍼(ko 필수, en 선택 → 누락 시 content/localized.ts 가 ko 폴백). */
@@ -405,6 +406,16 @@ export function deriveSteps(problem: Problem): Step[] {
   if (problem.op === 'mul') {
     if (problem.method === 'paper-cross-mult' || problem.method === 'mod-sum-check') {
       return derivePaperSteps(problem);
+    }
+    // M6 고급 곱셈(8장): 5개 신규 method.
+    if (
+      problem.method === 'square-4digit' ||
+      problem.method === 'mul-3x2' ||
+      problem.method === 'square-5digit' ||
+      problem.method === 'mul-3x3' ||
+      problem.method === 'mul-5x5'
+    ) {
+      return deriveAdvSteps(problem);
     }
     return deriveMulSteps(problem);
   }
