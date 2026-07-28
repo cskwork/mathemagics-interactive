@@ -14,12 +14,13 @@
 import type { LocalizedText } from '../content/localized.js';
 
 /**
- * 연산. M1 은 add/sub. M4 가 mul/div/est 를 추가한다.
+ * 연산. M1 은 add/sub. M4 가 mul/div/est 를 추가한다. M5 가 sqrt 를 추가한다.
  * - mul: 곱셈(2×1·3×1·2×2·제곱). operands[0] × operands[1].
  * - div: 나눗셈. operands = [피제수(나뉘는 수), 제수(나누는 수)]. 답 = 몫 + 나머지.
  * - est: 어림셈. operands = 어림할 두 수. {@link Problem.estOf} 가 실제 연산을 가리킨다.
+ * - sqrt: 지필 제곱근(M5, 6장). operands = [근호 아래 수]. 답 = 정수 제곱근(완전제곱수 기준).
  */
-export type Op = 'add' | 'sub' | 'mul' | 'div' | 'est';
+export type Op = 'add' | 'sub' | 'mul' | 'div' | 'est' | 'sqrt';
 
 /**
  * 풀이 방법/방향 — 기법(technique) 식별자. method 선택 자체가 학습 내용의 일부(PLAN §3.2).
@@ -29,6 +30,12 @@ export type Op = 'add' | 'sub' | 'mul' | 'div' | 'est';
  * - square: 2/3자리 제곱(±d 기법, X-다이어그램).
  * - div-1: 1자리 나눗셈(좌→우, 나머지).
  * - est-digit/est-band: 어림셈(자릿수 어림 / 반올림 밴드).
+ *
+ * M5 지필 트랙(6장 — **유일한 우→좌·쓰기 계열**, book-content-map §4-2):
+ * - paper-column-add: 세로열 덧셈(여러 수 세로 합, 올림 위첨자).
+ * - paper-cross-mult: 크리스크로스 곱셈(2×2~5×5, 1-2-…-2-1 대각선 리듬).
+ * - paper-sqrt: 지필 제곱근(두 자리 그룹 나누기, 자리별 추정).
+ * - mod-sum-check: 모드섬 검산(9 버리기·11 버리기 — 4장 배수판정과 연결).
  */
 export type Method =
   | 'ltr'
@@ -41,17 +48,25 @@ export type Method =
   | 'square'
   | 'div-1'
   | 'est-digit'
-  | 'est-band';
+  | 'est-band'
+  | 'paper-column-add'
+  | 'paper-cross-mult'
+  | 'paper-sqrt'
+  | 'mod-sum-check';
 
 /**
  * 시맨틱 문제 스키마(PLAN §5.2 후보 A).
- * `operands[0] op operands[1]` 을 표현. sub 의 경우 `operands[0] >= operands[1]`
+ * `operands[0] op operands[1]` 을 표현(대부분의 연산). sub 의 경우 `operands[0] >= operands[1]`
  * (아동 대상 — 음수 결과 없음, generate.ts 가 보장). 제곱은 `operands = [a, a]` 로 인코딩.
+ *
+ * M5: operands 를 `readonly number[]` 로 넓힌다(2개 이상 허용). 기존 2-피연산자 코드는
+ * `[a, b] = operands` 구조분해로 그대로 동작(후속 요소 무시). **열 덧셈(paper-column-add)** 은
+ * 3~5개의 피연산자를, **지필 제곱근(paper-sqrt)** 은 1개의 피연산자(근호 아래 수)를 가진다.
  */
 export interface Problem {
   id?: string;
   op: Op;
-  operands: [number, number];
+  operands: readonly number[];
   method: Method;
   level: number;
   hints?: LocalizedText;
@@ -253,4 +268,107 @@ export interface EstimationBand {
   readonly exact: number;
   /** 어림에 사용한 반올림 표현(예: "23.9백만 + 7.4백만"). */
   readonly roundingNote: LocalizedText;
+}
+
+// ── M5 지필 트랙 시각화 데이터 모델(6장, 우→좌·쓰기 계열) ──────────────────────
+
+/**
+ * 세로열 덧셈 레이아웃(book-content-map §6-1). ColumnAddGrid 컴포넌트가 소비.
+ * 여러 피연산자를 세로로 나열하고 오른쪽 열부터 더한다. 올림은 carry 행에 위첨자.
+ */
+export interface ColumnAddLayout {
+  /** 더할 피연산자들(위→아래 순서). */
+  readonly addends: readonly number[];
+  /** 피연산수 최대 자릿수. */
+  readonly digitCols: number;
+  /** 합. */
+  readonly sum: number;
+  /** 자리별 올림(place 0=일의 자리 → 다음 자리로 넘길 올림). */
+  readonly carries: readonly number[];
+}
+
+/**
+ * 크리스크로스 곱셈의 한 대각선(book-content-map §6-5). CrossMultDiagram 이 소비.
+ * 결과 자리 `resultPlace`(0=일의 자리)에 기여하는 자릿값 곱들의 모음.
+ */
+export interface CrossMultDiagonal {
+  /** 결과 자리(0=일의 자리, 오른쪽부터). */
+  readonly resultPlace: number;
+  /** 이 대각선에서 곱해지는 자릿값 쌍들. [(a의 자리, a의 숫자, b의 자리, b의 숫자)]. */
+  readonly pairs: readonly { readonly aPlace: number; readonly aDigit: number; readonly bPlace: number; readonly bDigit: number }[];
+  /** 이 대각선의 곱-합(이전 올림 포함 전). */
+  readonly rawSum: number;
+  /** 이 자리에 쓰는 숫자(일의 자리). */
+  readonly writeDigit: number;
+  /** 다음 자리로 넘길 올림. */
+  readonly carryOut: number;
+}
+
+/**
+ * 크리스크로스 곱셈 레이아웃. **대각선 개수 = a자리수 + b자리수 − 1**, 곱 개수 패턴은
+ * 1-2-…-min-…-2-1(3×3이면 1,2,3,2,1). CrossMultDiagram 컴포넌트가 SVG 대각선 오버레이로 렌더.
+ */
+export interface CrossMultLayout {
+  readonly a: number;
+  readonly b: number;
+  readonly product: number;
+  /** 대각선들을 결과의 일의 자리(인덱스 0)부터 나열. */
+  readonly diagonals: readonly CrossMultDiagonal[];
+}
+
+/**
+ * 지필 제곱근의 한 자리 단계(book-content-map §6-4). SquareRootDiagram 이 소비.
+ * (현재 몫 × 2 에 빈칸을 붙인 `trial × d ≤ 나머지` 를 만족하는 최대 d 를 찾는 구조.)
+ */
+export interface SquareRootStep {
+  /** 이 단계까지 확정된 몫(정수부). */
+  readonly rootSoFar: number;
+  /** 시험 제수의 "앞부분" = rootSoFar × 2. 빈칸(_)과 결합해 `trialBase_ × _` 형태. */
+  readonly trialBase: number;
+  /** 찾은 다음 자리 숫자. */
+  readonly digit: number;
+  /** 이 자리에서 빼는 곱(trialBase*10 + digit) × digit. */
+  readonly product: number;
+  /** 이 단계 처리 후 나머지(다음 두 자리 내려받기 전). */
+  readonly remainder: number;
+  /** 이 단계로 내려온(내려받은) 숫자 묶음. */
+  readonly broughtDown: number;
+}
+
+/**
+ * 지필 제곱근 레이아웃(book-content-map §6-4). SquareRootDiagram 컴포넌트가 소비.
+ * 근호 아래 수를 소수점 기준 **두 자리씩 그룹핑**하고, 자리별로 몫을 확정한다.
+ */
+export interface SquareRootLayout {
+  /** 근호 아래 수. */
+  readonly radicand: number;
+  /** 정수부 자릿수 그룹(왼→우). 예: 19 → [19], 502 → [5, 02]. */
+  readonly groups: readonly number[];
+  /** 정수 제곱근(완전제곱수 가정). */
+  readonly root: number;
+  /** 자리별 풀이 단계(왼→우). */
+  readonly steps: readonly SquareRootStep[];
+}
+
+/**
+ * 모드섬 검산 결과(book-content-map §6-2/§6-6). ModSumCheck 컴포넌트가 소비.
+ * 9 버리기(자릿수 합 mod 9)·11 버리기(오른쪽부터 교대 ± mod 11) 두 채널.
+ */
+export interface ModSumResult {
+  /** 검산 대상 연산. */
+  readonly op: 'add' | 'sub' | 'mul';
+  /** 9 버리기: 각 피연산자의 모드섬(0~8). */
+  readonly mod9Operands: readonly number[];
+  /** 9 버리기: 피연산자 모드섬들을 op 로 계산한 뒤 mod 9 한 예측값. */
+  readonly mod9Expected: number;
+  /** 9 버리기: 답의 실제 모드섬. */
+  readonly mod9Answer: number;
+  /** 9 버리기 통과 여부(mod9Expected === mod9Answer). */
+  readonly mod9Match: boolean;
+  /** 11 버리기 예측값(0~10). */
+  readonly mod11Expected: number;
+  /** 11 버리기 답 실제값. */
+  readonly mod11Answer: number;
+  /** 11 버리기 통과 여부. */
+  readonly mod11Match: boolean;
 }

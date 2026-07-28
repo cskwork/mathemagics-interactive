@@ -72,20 +72,9 @@ export interface SrsCard {
   /** 현재 밴드의 생성 파라미터(자릿수·올림). 카드가 자체 파라미터를 기억. */
   digits?: number;
   carry?: boolean;
-  /** 연산/방향 — 연습 세션에서 generateProblem 호출용. M4 가 mul/div/est 확장. */
-  op?: 'add' | 'sub' | 'mul' | 'div' | 'est';
-  method?:
-    | 'ltr'
-    | 'rtl'
-    | 'mul-running'
-    | 'mul-add'
-    | 'mul-sub'
-    | 'mul-factor'
-    | 'mul-11'
-    | 'square'
-    | 'div-1'
-    | 'est-digit'
-    | 'est-band';
+  /** 연산/방향 — 연습 세션에서 generateProblem 호출용. M4 가 mul/div/est, M5 가 sqrt + 지필 4종 확장. */
+  op?: import('../engine/types.js').Op;
+  method?: import('../engine/types.js').Method;
   /** op='est' 일 때 어림 대상 연산. */
   estOf?: 'add' | 'sub' | 'mul' | 'div';
   /** 누적 정오 카운트(정확도 산출). */
@@ -105,6 +94,10 @@ export interface Settings {
   streakCount?: number;
   lastStreakDayMs?: number;
   freezesAvailable?: number;
+
+  // ── M5 공연 모드 확장 (optional, 스키마 v1 불변). 기법별 자기 최고 기록(초 단위).
+  //   리더보드·타인 비교 없음(PLAN §4.2-8). key = skillId, value = 최단 시간(ms).
+  stageBests?: Record<string, number>;
 }
 
 /** 두 저장 모드(브라우저/셀프호스트)의 공용 교환 포맷. */

@@ -15,6 +15,9 @@
   import Practice from './routes/Practice.svelte';
   import Progress from './routes/Progress.svelte';
   import Report from './routes/Report.svelte';
+  import Stage from './routes/Stage.svelte';
+  import Magic from './routes/Magic.svelte';
+  import Catch from './routes/Catch.svelte';
   import LocaleSwitcher from './components/LocaleSwitcher.svelte';
 
   const app = createAppState();
@@ -90,6 +93,12 @@
           <Progress {app} {router} />
         {:else if router.current() === 'report'}
           <Report {app} {router} />
+        {:else if router.current() === 'stage'}
+          <Stage {app} {router} />
+        {:else if router.current() === 'magic'}
+          <Magic {app} {router} />
+        {:else if router.current() === 'catch'}
+          <Catch {router} />
         {:else if router.current() === 'playground'}
           <Playground />
         {:else}

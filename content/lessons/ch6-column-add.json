@@ -1,0 +1,15 @@
+{
+  "id": "ch6-column-add",
+  "skillId": "paper-column-add",
+  "chapter": 6,
+  "order": 1,
+  "prerequisites": ["divisibility"],
+  "title": { "ko": "세로열 덧셈", "en": "Adding columns of numbers" },
+  "subtitle": { "ko": "여러 수를 세로로 더하며 올림을 옮겨요", "en": "Stack numbers and carry the overflow" },
+  "rule": { "ko": "오른쪽 열부터 위→아래로 더해 끝자리를 적고, 올림은 다음 열로 넘겨요.", "en": "Add each column top-to-bottom from the right, write the units digit and carry the tens." },
+  "hook": { "problemSet": { "op": "add", "method": "paper-column-add", "digits": 2, "carry": true, "count": 1, "seed": 61, "operandCount": 3 }, "intro": { "ko": "여러 수를 한꺼번에 더해요.", "en": "Add several numbers at once." }, "outro": { "ko": "올림만 조심하면 돼요.", "en": "Just mind the carries." }, "autoPlayMs": 8000 },
+  "example": { "problemSet": { "op": "add", "method": "paper-column-add", "digits": 2, "carry": true, "count": 2, "seed": 62, "operandCount": 3 }, "intro": { "ko": "열을 따라 더해 봐요.", "en": "Follow the columns." } },
+  "fading": { "problemSet": { "op": "add", "method": "paper-column-add", "digits": 2, "carry": true, "count": 3, "seed": 63, "operandCount": 3 }, "intro": { "ko": "끝자리부터 채워요.", "en": "Fill from the right." } },
+  "practice": { "problemSet": { "op": "add", "method": "paper-column-add", "digits": 2, "carry": true, "count": 3, "seed": 64, "operandCount": 3 }, "intro": { "ko": "혼자 더해요.", "en": "Add on your own." }, "hints": { "point": { "ko": "오른쪽 열부터 시작해요.", "en": "Start from the right column." }, "teach": { "ko": "열의 합에서 끝자리를 적고 십 자리는 올림이에요.", "en": "Write the units digit; the tens digit is the carry." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "세로로 더했어요", "en": "I stacked them" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used another way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

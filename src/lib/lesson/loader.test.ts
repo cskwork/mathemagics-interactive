@@ -129,7 +129,8 @@ describe('buildLesson / loadLessonFromRaw — problem expansion', () => {
   it('practice problems honour carry=true (a carry actually occurs somewhere)', () => {
     const lesson = buildLesson(validFile());
     for (const p of lesson.practiceProblems) {
-      const [x, y] = p.operands;
+      const x = p.operands[0] ?? 0;
+      const y = p.operands[1] ?? 0;
       // 자리 어디서든 올림 발생: 일의 자리 올림 OR 결과 자릿수 증가(십의 자리 올림).
       const hasCarry = (x % 10) + (y % 10) >= 10 || String(x + y).length > String(Math.max(x, y)).length;
       expect(hasCarry).toBe(true);

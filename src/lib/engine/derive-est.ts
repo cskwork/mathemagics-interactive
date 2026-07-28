@@ -9,7 +9,7 @@
  */
 import type { LocalizedText } from '../content/localized.js';
 import type { EstimationBand, Problem, Step } from './types.js';
-import { deriveGrid, writeAnswerLTR } from './derive-internals.js';
+import { deriveGrid, pairOf, writeAnswerLTR } from './derive-internals.js';
 
 const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko } : { ko, en });
 
@@ -20,7 +20,7 @@ function estOf(problem: Problem): 'add' | 'sub' | 'mul' | 'div' {
 
 /** 정확값. */
 function exactOf(problem: Problem): number {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   switch (estOf(problem)) {
     case 'add':
       return a + b;
@@ -48,7 +48,7 @@ function roundToTwoSig(n: number): number {
  * estimate = 두 수를 반올림해 계산한 추정치. 밴드 [low, high] = 정확값의 ±10%(또는 최소 폭).
  */
 export function estimationBand(problem: Problem): EstimationBand {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   const aR = roundToTwoSig(a);
   const bR = roundToTwoSig(b);
   const op = estOf(problem);
@@ -91,7 +91,7 @@ export function deriveEstSteps(problem: Problem): Step[] {
       narration: L(`어림으로 빠르게 구해요. 큰 수일수록 오차가 작아요.`)
     }
   ];
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   const aR = roundToTwoSig(a);
   const bR = roundToTwoSig(b);
   // 치환 체인: 원래 수 → 반올림 수. branch 스텝(SubstitutionChain 이 소비).

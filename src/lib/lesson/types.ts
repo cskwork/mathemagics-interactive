@@ -33,6 +33,8 @@ export interface ProblemSet {
   readonly seed: number;
   /** op='est' 일 때 어림 대상 연산. */
   readonly estOf?: 'add' | 'sub' | 'mul' | 'div';
+  /** M5 paper-column-add: 더할 피연산자 수(기본 3). */
+  readonly operandCount?: number;
 }
 
 /** 3단 힌트 사다리 티어 — PLAN §4.1-6 / 리서치 §3·§4.2. */

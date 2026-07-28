@@ -32,7 +32,7 @@ export function colAtPlace(grid: Grid, place: number): ColId {
   return col;
 }
 
-/** 연산의 정확(또는 대표) 답. div 는 몫. */
+/** 연산의 정확(또는 대표) 답. div 는 몫, sqrt 는 정수 제곱근. */
 export function answerOf(op: Problem['op'], a: number, b: number): number {
   switch (op) {
     case 'add':
@@ -45,6 +45,8 @@ export function answerOf(op: Problem['op'], a: number, b: number): number {
       return Math.floor(a / b);
     case 'est':
       return a;
+    case 'sqrt':
+      return Math.floor(Math.sqrt(a));
   }
 }
 
@@ -61,7 +63,23 @@ export function opSign(op: Problem['op']): string {
       return '÷';
     case 'est':
       return '≈';
+    case 'sqrt':
+      return '√';
   }
+}
+
+/**
+ * 2-피연산자 문제의 피연산자 쌍을 안전하게 가져온다. M5 가 operands 를
+ * `readonly number[]` 로 넓혀 `noUncheckedIndexedAccess` 가 걸리므로, 2-피연산자 기법
+ * (add/sub/mul/div/est/square) 는 이 접근자로 [a, b] 를 얻는다. 누락 시 0.
+ */
+export function pairOf(problem: Problem): [number, number] {
+  return [problem.operands[0] ?? 0, problem.operands[1] ?? 0];
+}
+
+/** i 번째 피연산자(없으면 0). 열 덧셈 등 다-피연산자 기법이 사용. */
+export function operandAt(problem: Problem, i: number): number {
+  return problem.operands[i] ?? 0;
 }
 
 /**
@@ -70,7 +88,7 @@ export function opSign(op: Problem['op']): string {
  * `answerOverride`(선택) 로 답 자릿수를 강제 — 어림셈(estimate 가 피연산자보다 자릿수가 큰 경우) 용.
  */
 export function deriveGrid(problem: Problem, answerOverride?: number): Grid {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   const answer = answerOverride ?? answerOf(problem.op, a, b);
   const digitCols = Math.max(String(a).length, String(b).length, String(answer).length, 1);
 

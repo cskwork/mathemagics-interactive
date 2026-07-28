@@ -62,6 +62,9 @@
   function openLesson(skillId: string): void {
     globalThis.location.hash = `#/lesson?id=${encodeURIComponent(skillId)}`;
   }
+  function openMagic(magicId: string): void {
+    globalThis.location.hash = `#/magic?id=${encodeURIComponent(magicId)}`;
+  }
   function chapterLabel(ch: number): string {
     return m.tree_chapter({ n: ch });
   }
@@ -116,8 +119,15 @@
               <div class="lesson-mark" aria-hidden="true">{magicOpen ? '🎩' : '✦'}</div>
               <div class="lesson-body">
                 <h4>{m.tree_magic_slot()}</h4>
-                <p class="muted small">{magicOpen ? m.tree_completed() : m.tree_magic_locked()}</p>
+                <p class="muted small">{magicOpen ? m.tree_magic_open() : m.tree_magic_locked()}</p>
               </div>
+              {#if magicOpen}
+                <div class="lesson-action">
+                  <button class="btn--secondary" onclick={() => openMagic(magicSlot)}>
+                    {m.tree_magic_open()}
+                  </button>
+                </div>
+              {/if}
             </article>
           {/if}
         </div>

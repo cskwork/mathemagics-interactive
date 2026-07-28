@@ -7,7 +7,7 @@ describe('deriveDivisionLayout — quotient & remainder match floor/mod', () => 
   for (const seed of [1, 2, 3, 5, 8]) {
     it(`seed ${seed}: quotient=floor(a/b), remainder=a mod b`, () => {
       const p = generateProblem(seed, { op: 'div', method: 'div-1', digits: 3, carry: true });
-      const [a, b] = p.operands;
+      const a = p.operands[0] ?? 0; const b = p.operands[1] ?? 0;
       const layout = deriveDivisionLayout(p);
       expect(layout.quotient).toBe(Math.floor(a / b));
       expect(layout.remainder).toBe(a - Math.floor(a / b) * b);

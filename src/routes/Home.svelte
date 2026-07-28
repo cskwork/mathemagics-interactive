@@ -49,6 +49,18 @@
           <span class="rep-mark" aria-hidden="true">💬</span>
           <span>{m.home_report_cta()}</span>
         </button>
+        <button class="card rep-card" onclick={() => router.navigate('stage')}>
+          <span class="rep-mark" aria-hidden="true">🎭</span>
+          <span>{m.nav_stage()}</span>
+        </button>
+        <button class="card rep-card" onclick={() => router.navigate('magic')}>
+          <span class="rep-mark" aria-hidden="true">🎩</span>
+          <span>{m.nav_magic()}</span>
+        </button>
+        <button class="card rep-card" onclick={() => router.navigate('catch')}>
+          <span class="rep-mark" aria-hidden="true">🔍</span>
+          <span>{m.catch_heading()}</span>
+        </button>
       </div>
     </section>
 
