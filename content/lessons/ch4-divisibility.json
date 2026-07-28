@@ -1,0 +1,15 @@
+{
+  "id": "ch4-divisibility",
+  "skillId": "divisibility",
+  "chapter": 4,
+  "order": 3,
+  "prerequisites": ["div-1digit"],
+  "title": { "ko": "배수 판정법 (2~11)", "en": "Divisibility rules (2–11)" },
+  "subtitle": { "ko": "나누지 않고도 나누어 떨어지는지 알기", "en": "Tell if it divides evenly without dividing" },
+  "rule": { "ko": "2·5는 끝자리, 3·9는 자릿수 합, 4·8은 끝 몇 자리, 11은 교대 합으로 판정해요.", "en": "Use the last digit for 2 and 5, digit sum for 3 and 9, last digits for 4 and 8, alternating sum for 11." },
+  "hook": { "problemSet": { "op": "div", "method": "div-1", "digits": 3, "carry": false, "count": 1, "seed": 13 }, "intro": { "ko": "나누지 않고도 딱 떨어지는지 알 수 있어요.", "en": "You can tell if it's exact without dividing." }, "outro": { "ko": "규칙만 보면 빠르게 알 수 있어요.", "en": "The rules tell you fast." }, "autoPlayMs": 8000 },
+  "example": { "problemSet": { "op": "div", "method": "div-1", "digits": 3, "carry": false, "count": 2, "seed": 26 }, "intro": { "ko": "규칙들을 하나씩 볼게요.", "en": "Let's see the rules one by one." } },
+  "fading": { "problemSet": { "op": "div", "method": "div-1", "digits": 2, "carry": false, "count": 3, "seed": 39 }, "intro": { "ko": "딱 떨어지는 문제로 연습해요.", "en": "Practise with exact divisions." } },
+  "practice": { "problemSet": { "op": "div", "method": "div-1", "digits": 3, "carry": false, "count": 3, "seed": 52 }, "intro": { "ko": "나누어 떨어지는지 확인해요.", "en": "Check if it divides evenly." }, "hints": { "point": { "ko": "판정 규칙을 떠올려요.", "en": "Recall the divisibility rule." }, "teach": { "ko": "끝자리나 자릿수 합을 봐요. 첫 칸을 보여줄게요.", "en": "Check last digit or digit sum. I'll show the first cell." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "판정법으로 풀었어요", "en": "I used the rules" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

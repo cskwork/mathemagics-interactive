@@ -1,0 +1,15 @@
+{
+  "id": "ch3-mul-11",
+  "skillId": "mul-11",
+  "chapter": 3,
+  "order": 2,
+  "prerequisites": ["mul-2x2-add"],
+  "title": { "ko": "11 곱셈 특수법", "en": "Multiplying by 11" },
+  "subtitle": { "ko": "두 자릿수의 합을 사이에 끼워 넣기", "en": "Tuck the digit sum between the two digits" },
+  "rule": { "ko": "두 자릿수의 합을 두 숫자 사이에 끼워 넣습니다. 합이 10 이상이면 앞자리에 올립니다.", "en": "Place the sum of the two digits between them. If the sum is 10 or more, carry to the front." },
+  "hook": { "problemSet": { "op": "mul", "method": "mul-11", "digits": 2, "carry": true, "count": 1, "seed": 41 }, "intro": { "ko": "11을 곱할 때 특별한 빠른 길이 있어요.", "en": "There's a fast shortcut for multiplying by 11." }, "outro": { "ko": "합을 사이에 넣기만 하면 돼요!", "en": "Just tuck the sum in the middle!" }, "autoPlayMs": 8000 },
+  "example": { "problemSet": { "op": "mul", "method": "mul-11", "digits": 2, "carry": true, "count": 2, "seed": 52 }, "intro": { "ko": "올림이 생기는 경우도 볼게요.", "en": "Let's see the case with a carry too." } },
+  "fading": { "problemSet": { "op": "mul", "method": "mul-11", "digits": 2, "carry": true, "count": 3, "seed": 63 }, "intro": { "ko": "마지막 자리부터 채워 보세요.", "en": "Fill in the last digits yourself." } },
+  "practice": { "problemSet": { "op": "mul", "method": "mul-11", "digits": 2, "carry": true, "count": 3, "seed": 74 }, "intro": { "ko": "혼자 풀어 보세요.", "en": "Solve on your own." }, "hints": { "point": { "ko": "두 자릿수의 합을 구해요.", "en": "Find the sum of the two digits." }, "teach": { "ko": "합을 사이에 끼워 넣어요. 10이 넘으면 올림. 첫 칸을 보여줄게요.", "en": "Tuck the sum in the middle; carry if over 10. I'll show the first cell." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "11법으로 풀었어요", "en": "I used the 11 rule" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

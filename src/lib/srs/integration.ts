@@ -32,6 +32,7 @@ export function factIdParts(factId: string): { skillId: string; band: number } |
 /**
  * 레슨 완료 시 초기 카드 생성. 밴드는 레슨 practice 세트 파라미터에서 유도.
  * due = now(곧 복습 대상). stability/difficulty 는 보수적 초기값.
+ * M4: mul/div/est 기법도 카드로 편입(op/method/estOf 전파).
  */
 export function createCardFromLesson(args: {
   profileId: string;
@@ -40,10 +41,11 @@ export function createCardFromLesson(args: {
   method: Method;
   practiceDigits: number;
   practiceCarry: boolean;
+  estOf?: 'add' | 'sub' | 'mul' | 'div';
   now: number;
   config: SrsConfig;
 }): SrsCard {
-  const { profileId, skillId, op, method, practiceDigits, practiceCarry, now, config } = args;
+  const { profileId, skillId, op, method, practiceDigits, practiceCarry, estOf, now, config } = args;
   const band = Math.min(
     config.maxDifficultyBand,
     paramsToBand({ digits: practiceDigits, carry: practiceCarry })
@@ -59,6 +61,7 @@ export function createCardFromLesson(args: {
     carry: params.carry,
     op,
     method,
+    ...(estOf !== undefined ? { estOf } : {}),
     due: initialDue(now),
     stability: sched.stability,
     difficulty: sched.difficulty,
