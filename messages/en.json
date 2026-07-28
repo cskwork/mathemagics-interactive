@@ -200,5 +200,24 @@
   "report_conversation_starter_title": "A conversation starter with your child",
   "report_conversation_starter_hint": "Don't push for the answer — ask how they worked it out.",
   "report_privacy_note": "All records stay on this device only. No comparisons, no rankings.",
-  "report_back": "Back"
+  "report_back": "Back",
+
+  "xdiagram_label": "{base} squared — the ±d split diagram",
+  "xdiagram_nested": "inner square (reused)",
+  "xdiagram_reuse": "squaring trick again",
+  "chain_label": "substitution chain",
+  "roller_label": "partial products running total",
+  "roller_total": "running",
+  "roller_final": "final answer {n}",
+  "division_label": "division bracket",
+  "division_answer": "quotient {quotient}, remainder {remainder}/{divisor}",
+
+  "tree_heading": "Skill tree",
+  "tree_chapter": "Chapter {n}",
+  "tree_locked": "Locked",
+  "tree_completed": "Done!",
+  "tree_magic_slot": "Magic unlock",
+  "tree_magic_locked": "Coming soon",
+  "tree_track_main": "Mental math main",
+  "tree_track_note": "Track {n}"
 }

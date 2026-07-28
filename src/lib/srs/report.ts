@@ -9,7 +9,7 @@
  */
 import { generateProblem } from '../engine/generate.js';
 import type { LocalizedText } from '../content/localized.js';
-import type { Op } from '../engine/types.js';
+import type { Method, Op } from '../engine/types.js';
 import { DAY_MS, startOfDay } from './config.js';
 
 /** 보호자 리포트 입력(진도 기록 요약). */
@@ -19,7 +19,9 @@ export interface LearnedTechnique {
   readonly rule: LocalizedText;
   readonly completedAt: number;
   readonly op: Op;
-  readonly method: 'ltr' | 'rtl';
+  readonly method: Method;
+  /** 어림셈인 경우 어림 대상 연산. */
+  readonly estOf?: 'add' | 'sub' | 'mul' | 'div';
   /** 대화 소재용 샘플 문제 생성 파라미터. */
   readonly sampleDigits: number;
   readonly sampleCarry: boolean;
@@ -97,7 +99,8 @@ function tryMakeStarter(tech: LearnedTechnique, now: number): ConversationStarte
     return undefined;
   }
   const [a, b] = problem.operands;
-  const sign = tech.op === 'add' ? '+' : '−';
+  const realOp = tech.op === 'est' ? tech.estOf ?? 'add' : tech.op;
+  const sign = realOp === 'add' ? '+' : realOp === 'sub' ? '−' : realOp === 'mul' ? '×' : '÷';
   const expr = `${num(a)} ${sign} ${num(b)}`;
 
   // 대화 문구 — "아이에게 {문제}를 어떻게 풀었는지 물어보세요" (ko/en).

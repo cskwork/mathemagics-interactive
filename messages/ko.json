@@ -200,5 +200,24 @@
   "report_conversation_starter_title": "아이와 나눌 대화 소재",
   "report_conversation_starter_hint": "정답을 재촉하지 말고, 어떻게 풀었는지 물어봐 주세요.",
   "report_privacy_note": "모든 기록은 이 기기에만 저장돼요. 비교·순위는 없습니다.",
-  "report_back": "돌아가기"
+  "report_back": "돌아가기",
+
+  "xdiagram_label": "{base} 제곱의 ±d 분기 도식",
+  "xdiagram_nested": "안쪽 제곱 (재사용)",
+  "xdiagram_reuse": "다시 제곱 기법",
+  "chain_label": "치환 체인",
+  "roller_label": "부분곱 누계",
+  "roller_total": "누계",
+  "roller_final": "최종 답 {n}",
+  "division_label": "나눗셈 브래킷",
+  "division_answer": "몫 {quotient}, 나머지 {remainder}/{divisor}",
+
+  "tree_heading": "스킬 트리",
+  "tree_chapter": "제{n}장",
+  "tree_locked": "잠겨 있어요",
+  "tree_completed": "완료!",
+  "tree_magic_slot": "마술 해금",
+  "tree_magic_locked": "곧 열려요",
+  "tree_track_main": "암산 메인",
+  "tree_track_note": "트랙 {n}"
 }

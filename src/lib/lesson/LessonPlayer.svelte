@@ -13,6 +13,8 @@
   import { activeLocale } from '../i18n/locale.svelte.js';
   import { resolveLocalized } from '../content/localized.js';
   import { deriveGrid, deriveSteps } from '../engine/derive.js';
+  import { partialProducts } from '../engine/derive-mul.js';
+  import { estimationBand } from '../engine/derive-est.js';
   import type { Problem } from '../engine/types.js';
   import type { HintTier, Lesson, StrategyChoice } from './types.js';
   import { findLesson } from './loader.js';
@@ -35,6 +37,10 @@
   import { paramsToBand } from '../srs/difficulty.js';
   import StepPlayer from '../../components/StepPlayer.svelte';
   import DigitInput from '../../components/DigitInput.svelte';
+  import RollingCounter from '../../components/RollingCounter.svelte';
+  import XDiagram from '../../components/XDiagram.svelte';
+  import DivisionBracket from '../../components/DivisionBracket.svelte';
+  import SubstitutionChain from '../../components/SubstitutionChain.svelte';
 
   interface Props {
     skillId: string;
@@ -89,6 +95,34 @@
   });
 
   const problemKey = $derived(`${lessonState.phase}-${lessonState.index}`);
+
+  // ── 기법별 시각 컴포넌트(부분곱 롤링 / X-다이어그램 / 브래킷 / 치환 체인) ────────────
+  // hook·example 단계에서 StepPlayer 와 함께 보여준다. add/sub 은 시각 없음.
+  type TechniqueVisual =
+    | { kind: 'roller'; parts: ReturnType<typeof partialProducts> }
+    | { kind: 'xdiagram'; base: number }
+    | { kind: 'bracket'; problem: Problem }
+    | { kind: 'chain'; problem: Problem }
+    | null;
+
+  const techniqueVisual = $derived.by<TechniqueVisual>(() => {
+    if (!currentProblem) return null;
+    const p = currentProblem;
+    if (p.op === 'mul') {
+      if (p.method === 'square') return { kind: 'xdiagram', base: p.operands[0] };
+      const parts = partialProducts(p);
+      if (parts.length > 0) return { kind: 'roller', parts };
+    }
+    if (p.op === 'div') return { kind: 'bracket', problem: p };
+    if (p.op === 'est') return { kind: 'chain', problem: p };
+    return null;
+  });
+
+  /** 치환 체인 세그먼트 빌드(est 문제 → 반올림 치환 화살표). */
+  function chainSegments(p: Problem): { from: number | string; to: number | string; label?: string }[] {
+    const band = estimationBand(p);
+    return [{ from: band.roundingNote.ko, to: band.estimate, label: '≈' }];
+  }
 
   // ── 연습 단계 UI 보조 상태 ──────────────────────────────────────────────────
   type PracticeMode = 'input' | 'strategy' | 'revealed' | 'review';
@@ -223,6 +257,7 @@
           method: ps.method,
           practiceDigits: ps.digits,
           practiceCarry: ps.carry,
+          ...(ps.estOf !== undefined ? { estOf: ps.estOf } : {}),
           now: Date.now(),
           config: DEFAULT_SRS_CONFIG
         });
@@ -245,7 +280,42 @@
   function goLessons(): void {
     router.navigate('lessons');
   }
+
+  /** 답 공개 모드의 수식 표시(모든 연산 대응). */
+  function revealExpression(p: Problem): string {
+    const [a, b] = p.operands;
+    if (p.method === 'square') return `${a}²`;
+    const sign = p.op === 'add' ? '+' : p.op === 'sub' ? '−' : p.op === 'mul' ? '×' : p.op === 'div' ? '÷' : '≈';
+    return `${a} ${sign} ${b}`;
+  }
+  /** 답 공개 모드의 답(모든 연산 대응). div 는 몫 R 나머지, est 는 어림 대표값. */
+  function revealAnswer(p: Problem): string {
+    const [a, b] = p.operands;
+    if (p.op === 'mul') return String(a * b);
+    if (p.op === 'div') {
+      const q = Math.floor(a / b);
+      const r = a - q * b;
+      return r === 0 ? String(q) : `${q} 나머지 ${r}`;
+    }
+    if (p.op === 'est') {
+      const band = estimationBand(p);
+      return `≈ ${band.estimate}`;
+    }
+    return String(p.op === 'add' ? a + b : a - b);
+  }
 </script>
+
+{#snippet techniqueView()}
+  {#if techniqueVisual?.kind === 'roller'}
+    <RollingCounter parts={techniqueVisual.parts} />
+  {:else if techniqueVisual?.kind === 'xdiagram'}
+    <XDiagram base={techniqueVisual.base} />
+  {:else if techniqueVisual?.kind === 'bracket'}
+    <DivisionBracket problem={techniqueVisual.problem} />
+  {:else if techniqueVisual?.kind === 'chain' && currentProblem}
+    <SubstitutionChain segments={chainSegments(currentProblem)} />
+  {/if}
+{/snippet}
 
 {#if !lesson}
   <section class="stack">
@@ -267,7 +337,8 @@
       <div class="card intro-card" role="group" aria-label={m.lesson_phase_hook()}>
         <p class="intro-text">{resolveLocalized(lesson.file.hook.intro, activeLocale())}</p>
       </div>
-      <div class="stage-deck">
+      <div class="stage-deck technique-stage">
+        {@render techniqueView()}
         {#key problemKey}
           <StepPlayer {grid} steps={baseSteps} autoplay oncomplete={() => dispatch({ t: 'next' })} />
         {/key}
@@ -280,7 +351,8 @@
       <div class="card intro-card" role="group" aria-label={m.lesson_phase_example()}>
         <p class="intro-text">{resolveLocalized(lesson.file.example.intro, activeLocale())}</p>
       </div>
-      <div class="stage-deck">
+      <div class="stage-deck technique-stage">
+        {@render techniqueView()}
         {#key problemKey}
           <StepPlayer {grid} steps={baseSteps} />
         {/key}
@@ -337,10 +409,8 @@
         <div class="card reveal" role="group" aria-label={m.lesson_hint_bottom_out()}>
           <p class="reveal-label">{m.lesson_hint_bottom_out()}</p>
           <p class="reveal-answer">
-            {currentProblem.operands[0]}{currentProblem.op === 'add' ? ' + ' : ' − '}{currentProblem.operands[1]} =
-            <strong>{currentProblem.op === 'add'
-              ? currentProblem.operands[0] + currentProblem.operands[1]
-              : currentProblem.operands[0] - currentProblem.operands[1]}</strong>
+            {revealExpression(currentProblem)} =
+            <strong>{revealAnswer(currentProblem)}</strong>
           </p>
           {#if hintBubble}
             <p class="muted small">{hintBubble.text}</p>

@@ -11,12 +11,14 @@ import type { Method, Op, Problem } from './types.js';
 
 export interface GenerateOptions {
   op: Op;
-  /** 피연산자 자릿수. 양쪽 같은 자릿수로 생성(2~4 권장). */
+  /** 피연산자 자릿수. op별 의미가 다름(자체 JSDoc 참조). */
   digits: number;
-  /** true 면 올림/빌림이 발생하는 문제를 만든다. false 면 올림/빌림이 없는 문제. */
+  /** true 면 올림/빌림이 발생하는 문제를 만든다. div 에선 나머지 유무, mul-sub 에선 90대 유도. */
   carry: boolean;
   method: Method;
   level?: number;
+  /** op='est' 일 때 어림 대상 연산. */
+  estOf?: 'add' | 'sub' | 'mul' | 'div';
 }
 
 /** mulberry32 — 시드 → 결정적 32비트 PRNG. [0,1) 실수를 돌려준다. */
@@ -76,28 +78,82 @@ function hasSubBorrow(a: number, b: number): boolean {
  * 시드로 문제 1개 생성. 옵션 조건(자릿수·올림/빌림)이 맞을 때까지 다시 뽑는다(최대 시도 제한).
  * sub 의 경우 항상 `operands[0] >= operands[1]`(음수 결과 방지).
  *
- * @throws 조건을 만족하는 문제를 찾지 못한 경우(자릿수가 너무 작거나 carry=false 가 불가능한 조합).
+ * op별 digits 해석:
+ * - add/sub: 양쪽 같은 자릿수.
+ * - mul-running: a=digits자리, b=1자리.  mul-add/sub/factor: 양쪽 2자리.  mul-11: a=digits자리, b=11.
+ * - square: a=digits자리, b=a(operands=[a,a]).
+ * - div: a(피제수)=digits자리, b(제수)=1자리(1~9).
+ * - est: 양쪽 digits자리.
+ *
+ * @throws 조건을 만족하는 문제를 찾지 못한 경우.
  */
 export function generateProblem(seed: number, opts: GenerateOptions): Problem {
-  const { op, digits, carry, method, level = 1 } = opts;
+  const { op, digits, carry, method, level = 1, estOf } = opts;
   const rng = mulberry32(seed);
   const MAX_TRIES = 2000;
 
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
-    const a = numberWithDigits(rng, digits);
-    const b = numberWithDigits(rng, digits);
-    const [hi, lo] = a >= b ? [a, b] : [b, a]; // sub 용: 큰 수가 위
-
-    if (op === 'add') {
-      const ok = carry ? hasAddCarry(a, b) : !hasAddCarry(a, b);
+    if (op === 'add' || op === 'sub') {
+      const a = numberWithDigits(rng, digits);
+      const b = numberWithDigits(rng, digits);
+      const [hi, lo] = a >= b ? [a, b] : [b, a];
+      if (op === 'add') {
+        const ok = carry ? hasAddCarry(a, b) : !hasAddCarry(a, b);
+        if (!ok) continue;
+        return { op, operands: [a, b], method, level };
+      }
+      if (hi === lo) continue;
+      const ok = carry ? hasSubBorrow(hi, lo) : !hasSubBorrow(hi, lo);
       if (!ok) continue;
+      return { op, operands: [hi, lo], method, level };
+    }
+
+    if (op === 'mul') {
+      if (method === 'square') {
+        const a = numberWithDigits(rng, digits);
+        return { op, operands: [a, a], method, level };
+      }
+      if (method === 'mul-running') {
+        // 2×1 / 3×1: a=digits자리, b=1자리(2~9).
+        const a = numberWithDigits(rng, digits);
+        const b = randInt(rng, 2, 9);
+        return { op, operands: [a, b], method, level };
+      }
+      if (method === 'mul-11') {
+        const a = numberWithDigits(rng, Math.max(2, digits));
+        return { op, operands: [a, 11], method, level };
+      }
+      // mul-add/mul-sub/mul-factor: 양쪽 2자리.
+      const a = numberWithDigits(rng, 2);
+      const b = numberWithDigits(rng, 2);
+      // 뺄셈법은 끝자리 8/9 또는 90대가 자연스럽다 — carry 플래그로 90대 유도.
+      if (method === 'mul-sub' && carry && attempt < MAX_TRIES / 2) {
+        const aUp = randInt(rng, 1, 9) * 10 + randInt(rng, 8, 9);
+        return { op, operands: [aUp, b], method, level };
+      }
+      // 인수분해법은 b 가 1자리 인수로 쪼개지는 2자리수가 좋다.
+      if (method === 'mul-factor') {
+        const f1 = randInt(rng, 2, 9);
+        const f2 = randInt(rng, 2, 9);
+        return { op, operands: [numberWithDigits(rng, 2), f1 * f2], method, level };
+      }
       return { op, operands: [a, b], method, level };
     }
-    // sub: 빼기
-    if (hi === lo) continue; // 0 결과는 아동용으로 회피
-    const ok = carry ? hasSubBorrow(hi, lo) : !hasSubBorrow(hi, lo);
-    if (!ok) continue;
-    return { op, operands: [hi, lo], method, level };
+
+    if (op === 'div') {
+      const divisor = randInt(rng, 2, 9);
+      const quotient = numberWithDigits(rng, digits);
+      const remainder = carry ? randInt(rng, 1, divisor - 1) : 0; // carry = 나머지 유무
+      const dividend = divisor * quotient + remainder;
+      return { op, operands: [dividend, divisor], method, level };
+    }
+
+    // est
+    {
+      const a = numberWithDigits(rng, digits);
+      const b = numberWithDigits(rng, digits);
+      return { op: 'est', operands: [a, b], method, level, estOf: estOf ?? 'add' };
+    }
   }
   throw new Error(
     `generateProblem: ${MAX_TRIES}회 시도 안에 조건(op=${op}, digits=${digits}, carry=${carry})을 만족하는 문제를 찾지 못했습니다.`

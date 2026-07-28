@@ -18,18 +18,21 @@ import type { Method, Op, Problem } from '../engine/types.js';
  * 문제 생성 파라미터 — M1 generate.ts 의 GenerateOptions 와 1:1(시드 추가).
  * 레슨은 이 파라미터로 문제를 정의하고, 로더가 {@link buildLesson}에서 구체적 문제로 펼친다.
  * (브리프 §2-5 "문제는 M1 생성기 파라미터로 정의, 하드코딩 최소화".)
+ * M4 가 mul/div/est 와 method 확장(mul-add/sub/factor/11, square, div-1, est-*)을 추가.
  */
 export interface ProblemSet {
   readonly op: Op;
   readonly method: Method;
-  /** 피연산자 자릿수(양쪽 같음). 2~4 권장. */
+  /** 피연산자 자릿수(op별 의미 상이 — generate.ts JSDoc). 2~4 권장. */
   readonly digits: number;
-  /** true 면 올림/빌림이 발생하는 문제. */
+  /** true 면 올림/빌림(또는 div 나머지 유무)이 발생하는 문제. */
   readonly carry: boolean;
   /** 생성할 문제 수. */
   readonly count: number;
   /** 결정적 시드 — 동일 시드→동일 문제(재현 가능). */
   readonly seed: number;
+  /** op='est' 일 때 어림 대상 연산. */
+  readonly estOf?: 'add' | 'sub' | 'mul' | 'div';
 }
 
 /** 3단 힌트 사다리 티어 — PLAN §4.1-6 / 리서치 §3·§4.2. */

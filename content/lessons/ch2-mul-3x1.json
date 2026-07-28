@@ -1,0 +1,15 @@
+{
+  "id": "ch2-mul-3x1",
+  "skillId": "mul-3x1",
+  "chapter": 2,
+  "order": 2,
+  "prerequisites": ["mul-2x1"],
+  "title": { "ko": "세 자리 × 한 자리 곱하기", "en": "Three-digit × one-digit" },
+  "subtitle": { "ko": "세 덩어리 부분곱을 머릿속에 차례로 쌓기", "en": "Stack three partial products in your head" },
+  "rule": { "ko": "세 자리 수를 백·십·일의 자리로 쪼개 각각 곱하고, 큰 곱부터 차례로 더합니다.", "en": "Split the three-digit number into hundreds, tens and units, multiply each, add biggest first." },
+  "hook": { "problemSet": { "op": "mul", "method": "mul-running", "digits": 3, "carry": true, "count": 1, "seed": 23 }, "intro": { "ko": "세 자리 수도 같은 방법이에요.", "en": "Three-digit numbers work the same way." }, "outro": { "ko": "부분곱 세 개를 쌓으면 끝!", "en": "Stack three products and done!" }, "autoPlayMs": 10000 },
+  "example": { "problemSet": { "op": "mul", "method": "mul-running", "digits": 3, "carry": true, "count": 2, "seed": 55 }, "intro": { "ko": "백의 자리 곱부터 더해요.", "en": "Add the hundreds product first." } },
+  "fading": { "problemSet": { "op": "mul", "method": "mul-running", "digits": 3, "carry": true, "count": 3, "seed": 99 }, "intro": { "ko": "마지막 자리부터 채워 보세요.", "en": "Fill in the last digits yourself." } },
+  "practice": { "problemSet": { "op": "mul", "method": "mul-running", "digits": 3, "carry": true, "count": 3, "seed": 314 }, "intro": { "ko": "혼자 풀어 보세요.", "en": "Solve on your own." }, "hints": { "point": { "ko": "백의 자리부터 시작해요.", "en": "Start with the hundreds place." }, "teach": { "ko": "백·십·일 자리로 쪼개 곱해요. 첫 칸을 보여줄게요.", "en": "Split into hundreds, tens, units. I'll show the first cell." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "자리별로 쪼개 곱했어요", "en": "I split by place" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

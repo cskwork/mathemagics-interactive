@@ -23,9 +23,45 @@ import type {
   Problem,
   Step
 } from './types.js';
+import { deriveMulSteps } from './derive-mul.js';
+import { deriveDivSteps } from './derive-div.js';
+import { deriveEstSteps } from './derive-est.js';
 
 /** 로케일 키 객체 생성 헬퍼(ko 필수, en 선택 → 누락 시 content/localized.ts 가 ko 폴백). */
 const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko } : { ko, en });
+
+/** 연산의 표시 부호. */
+export function opSign(op: Problem['op']): string {
+  switch (op) {
+    case 'add':
+      return '+';
+    case 'sub':
+      return '−';
+    case 'mul':
+      return '×';
+    case 'div':
+      return '÷';
+    case 'est':
+      return '≈';
+  }
+}
+
+/** 문제의 정확(또는 대표) 답. div 는 몫, est 는 어림 대표값. 순수 함수. */
+export function computeAnswer(problem: Problem): number {
+  const [a, b] = problem.operands;
+  switch (problem.op) {
+    case 'add':
+      return a + b;
+    case 'sub':
+      return a - b;
+    case 'mul':
+      return a * b;
+    case 'div':
+      return Math.floor(a / b);
+    case 'est':
+      return a; // est 의 "대표값"은 컴포넌트가 EstimationBand.estimate 로 별도 산출.
+  }
+}
 
 /** 숫자를 자릿수 배열로. 일의 자리가 인덱스 0. `348 -> [8,4,3]`, `0 -> [0]`. */
 function digitsOf(n: number): number[] {
@@ -55,10 +91,13 @@ function placeName(place: number): LocalizedText {
  *
  * 자릿값 열 수 = max(두 피연산자 자릿수, 답 자릿수) — `999+1=1000` 처럼 답 자릿수가 늘어나는
  * 경우까지 커버. 피연산자는 자릿값 열 안에서 **오른쪽 정렬**(일의 자리가 가장 오른쪽 열).
+ *
+ * add/sub/mul 은 열 그리드(ColumnGrid) 로 렌더. div/est 는 전용 컴포넌트(DivisionBracket /
+ * SubstitutionChain) 를 쓰므로 여기서는 선형 표시용 최소 그리드만 만든다(부호 + 답 한 줄).
  */
 export function deriveGrid(problem: Problem): Grid {
   const [a, b] = problem.operands;
-  const answer = problem.op === 'add' ? a + b : a - b;
+  const answer = computeAnswer(problem);
   const digitCols = Math.max(String(a).length, String(b).length, String(answer).length);
 
   // c1(부호) + c2..c(digitCols+1)
@@ -81,7 +120,7 @@ export function deriveGrid(problem: Problem): Grid {
   };
 
   const op2Cells: Partial<Record<ColId, string>> = {
-    c1: problem.op === 'add' ? '+' : '−',
+    c1: opSign(problem.op),
     ...numberCells(b)
   };
 
@@ -345,10 +384,15 @@ export function deriveSteps(problem: Problem): Step[] {
   if (problem.op === 'sub' && a < b) {
     throw new Error(`sub requires operands[0] >= operands[1]; got ${a} - ${b}`);
   }
-  const grid = deriveGrid(problem);
-  const m = problem.method;
-  if (problem.op === 'add') {
-    return m === 'ltr' ? deriveAddLTR(a, b, grid) : deriveAddRTL(a, b, grid);
+  if (problem.op === 'add' || problem.op === 'sub') {
+    const grid = deriveGrid(problem);
+    const m = problem.method;
+    if (problem.op === 'add') {
+      return m === 'ltr' ? deriveAddLTR(a, b, grid) : deriveAddRTL(a, b, grid);
+    }
+    return m === 'ltr' ? deriveSubLTR(a, b, grid) : deriveSubRTL(a, b, grid);
   }
-  return m === 'ltr' ? deriveSubLTR(a, b, grid) : deriveSubRTL(a, b, grid);
+  if (problem.op === 'mul') return deriveMulSteps(problem);
+  if (problem.op === 'div') return deriveDivSteps(problem);
+  return deriveEstSteps(problem);
 }

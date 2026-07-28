@@ -37,7 +37,9 @@
     write: 750,
     carry: 650,
     strike: 650,
-    reveal: 750
+    reveal: 750,
+    running: 850,
+    branch: 800
   };
 
   const reduceMotion =

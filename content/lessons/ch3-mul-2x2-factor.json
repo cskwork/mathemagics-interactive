@@ -1,0 +1,15 @@
+{
+  "id": "ch3-mul-2x2-factor",
+  "skillId": "mul-2x2-factor",
+  "chapter": 3,
+  "order": 4,
+  "prerequisites": ["mul-3x1", "mul-11"],
+  "title": { "ko": "두 자리 × 두 자리 — 인수분해법", "en": "Two-digit × two-digit — factoring method" },
+  "subtitle": { "ko": "한 수를 작은 인수들로 분해해 연쇄 곱", "en": "Factor one number into small parts, multiply in a chain" },
+  "rule": { "ko": "한 수를 한 자리 인수 둘(또는 11)로 분해해, 다른 수부터 차례로 곱합니다. 덧셈이 사라져 빨라요.", "en": "Factor one number into single-digit parts (or 11), then multiply the other number through in order. No adding needed." },
+  "hook": { "problemSet": { "op": "mul", "method": "mul-factor", "digits": 2, "carry": true, "count": 1, "seed": 21 }, "intro": { "ko": "분해되는 수는 인수분해가 제일 빨라요.", "en": "Factorable numbers are fastest by factoring." }, "outro": { "ko": "곱하기만 두 번 하면 끝!", "en": "Just two multiplications and done!" }, "autoPlayMs": 9000 },
+  "example": { "problemSet": { "op": "mul", "method": "mul-factor", "digits": 2, "carry": true, "count": 2, "seed": 31 }, "intro": { "ko": "어떤 수로 분해할지 찾아요.", "en": "Find what to factor into." } },
+  "fading": { "problemSet": { "op": "mul", "method": "mul-factor", "digits": 2, "carry": true, "count": 3, "seed": 41 }, "intro": { "ko": "마지막 자리부터 채워 보세요.", "en": "Fill in the last digits yourself." } },
+  "practice": { "problemSet": { "op": "mul", "method": "mul-factor", "digits": 2, "carry": true, "count": 3, "seed": 51 }, "intro": { "ko": "혼자 풀어 보세요.", "en": "Solve on your own." }, "hints": { "point": { "ko": "한 수를 작은 인수로 쪼개요.", "en": "Break one number into small factors." }, "teach": { "ko": "인수로 차례로 곱해요. 첫 칸을 보여줄게요.", "en": "Multiply through the factors in order. I'll show the first cell." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "인수분해법으로 풀었어요", "en": "I used the factoring method" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

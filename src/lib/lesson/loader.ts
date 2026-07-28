@@ -41,9 +41,22 @@ function isLocalizedText(v: unknown): v is { ko: string; en?: string } {
   return true;
 }
 
-const OPS: readonly Op[] = ['add', 'sub'];
-const METHODS: readonly Method[] = ['ltr', 'rtl'];
+const OPS: readonly Op[] = ['add', 'sub', 'mul', 'div', 'est'];
+const METHODS: readonly Method[] = [
+  'ltr',
+  'rtl',
+  'mul-running',
+  'mul-add',
+  'mul-sub',
+  'mul-factor',
+  'mul-11',
+  'square',
+  'div-1',
+  'est-digit',
+  'est-band'
+];
 const STRATEGIES: readonly StrategyChoice[] = ['this-technique', 'other-technique', 'just-knew'];
+const EST_OFS: readonly string[] = ['add', 'sub', 'mul', 'div'];
 
 function isOp(v: unknown): v is Op {
   return isString(v) && (OPS as readonly string[]).includes(v);
@@ -55,19 +68,16 @@ function isMethod(v: unknown): v is Method {
 /** ProblemSet 검증(시드 포함). */
 function isProblemSet(v: unknown): v is ProblemSet {
   if (!isObject(v)) return false;
-  return (
-    isOp(v['op']) &&
-    isMethod(v['method']) &&
-    isNumber(v['digits']) &&
-    (v['digits'] | 0) === v['digits'] &&
-    v['digits'] >= 1 &&
-    isBoolean(v['carry']) &&
-    isNumber(v['count']) &&
-    (v['count'] | 0) === v['count'] &&
-    v['count'] >= 1 &&
-    isNumber(v['seed']) &&
-    (v['seed'] | 0) === v['seed']
-  );
+  if (!(isOp(v['op']) && isMethod(v['method']))) return false;
+  if (!isNumber(v['digits']) || (v['digits'] | 0) !== v['digits'] || v['digits'] < 1) return false;
+  if (!isBoolean(v['carry'])) return false;
+  if (!isNumber(v['count']) || (v['count'] | 0) !== v['count'] || v['count'] < 1) return false;
+  if (!isNumber(v['seed']) || (v['seed'] | 0) !== v['seed']) return false;
+  // estOf: 선택 필드(op='est' 권장). 값이면 add/sub/mul/div 중 하나.
+  if ('estOf' in v && v['estOf'] !== undefined && !(isString(v['estOf']) && EST_OFS.includes(v['estOf']))) {
+    return false;
+  }
+  return true;
 }
 
 /** LessonFile 전체 검증(손으로 쓴 타입가드). */
@@ -130,7 +140,10 @@ export function isLessonFile(v: unknown): v is LessonFile {
 
 /** ProblemSet → 구체적 Problem[](M1 생성기). 중복 없이 count 개. */
 function expand(set: ProblemSet): Problem[] {
-  return generateProblems(set.seed, { op: set.op, method: set.method, digits: set.digits, carry: set.carry }, set.count);
+  const opts = set.estOf
+    ? { op: set.op, method: set.method, digits: set.digits, carry: set.carry, estOf: set.estOf }
+    : { op: set.op, method: set.method, digits: set.digits, carry: set.carry };
+  return generateProblems(set.seed, opts, set.count);
 }
 
 /** 검증된 LessonFile → 런타임 Lesson(문제 세트 전개). */

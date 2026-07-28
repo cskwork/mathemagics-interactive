@@ -72,9 +72,22 @@ export interface SrsCard {
   /** 현재 밴드의 생성 파라미터(자릿수·올림). 카드가 자체 파라미터를 기억. */
   digits?: number;
   carry?: boolean;
-  /** 연산/방향 — 연습 세션에서 generateProblem 호출용. */
-  op?: 'add' | 'sub';
-  method?: 'ltr' | 'rtl';
+  /** 연산/방향 — 연습 세션에서 generateProblem 호출용. M4 가 mul/div/est 확장. */
+  op?: 'add' | 'sub' | 'mul' | 'div' | 'est';
+  method?:
+    | 'ltr'
+    | 'rtl'
+    | 'mul-running'
+    | 'mul-add'
+    | 'mul-sub'
+    | 'mul-factor'
+    | 'mul-11'
+    | 'square'
+    | 'div-1'
+    | 'est-digit'
+    | 'est-band';
+  /** op='est' 일 때 어림 대상 연산. */
+  estOf?: 'add' | 'sub' | 'mul' | 'div';
   /** 누적 정오 카운트(정확도 산출). */
   correct?: number;
   total?: number;

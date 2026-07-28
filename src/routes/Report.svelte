@@ -49,6 +49,7 @@
         completedAt: p.completedAt,
         op: ps.op,
         method: ps.method,
+        ...(ps.estOf !== undefined ? { estOf: ps.estOf } : {}),
         sampleDigits: Math.max(2, ps.digits - 1),
         sampleCarry: ps.carry
       });
