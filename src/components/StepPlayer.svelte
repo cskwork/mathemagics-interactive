@@ -1,6 +1,6 @@
 <script lang="ts">
   /**
-   * 스텝 재생기 — Step[] 을 순서대로 연출(브리프 §2-4 / 리서치 §3).
+   * Hallmark · P3 H4 E4 S3 R4 V3 — 스텝 재생기 (브리프 §2-4 / 리서치 §3).
    *
    * 현재 스텝 인덱스 하나로 재생/일시정지/이전/다음/처음부터/속도(1x·0.5x)를 전부 구현한다
    * (리서치 §3.1 "스텝 상태 기계"). 애니메이션은 스텝 전환의 부수 효과 — CSS transition 기본,
@@ -166,13 +166,18 @@
 </div>
 
 <style>
+  /* 자막바(caption) — aria-live 낭독 영역을 시각적으로도 보이게(M7 산출물 7).
+   * 무대 앞 자막: 하단 가로형 바, 본문 대비 뚜렷한 표면. */
   .bubble {
-    background: var(--surface);
-    border: 1px solid #3a3e63;
+    background: var(--stage-floor);
+    border: 1px solid var(--stage-line);
+    border-left: 3px solid var(--spotlight);
     border-radius: var(--radius);
     padding: 0.85rem 1rem;
     min-height: 3rem;
     line-height: 1.45;
+    color: var(--house-bright);
+    font-size: var(--text-lead);
   }
   .controls {
     justify-content: center;
@@ -182,11 +187,13 @@
     min-width: var(--tap);
   }
   .speed {
+    font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
-    font-weight: 700;
+    font-weight: 800;
   }
   .step-counter {
     text-align: center;
+    font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
     margin: 0;
   }

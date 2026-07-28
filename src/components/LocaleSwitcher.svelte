@@ -1,3 +1,5 @@
+<!-- Hallmark · P3 H3 E4 S3 R4 V4 — 로케일 세그먼티드 컨트롤. 헤더용 compact 음성.
+  활성 로케일 = 스포트라이트. 전역 button.primary 스타일과 독립된 pill 그룹. -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import { activeLocale, availableLocales, type Locale } from '../lib/i18n/locale.svelte.js';
@@ -14,12 +16,49 @@
   };
 </script>
 
-<div class="row" role="group" aria-label={m.settings_language()}>
+<div class="segmented" role="group" aria-label={m.settings_language()}>
   {#each availableLocales as locale (locale)}
     <button
-      class={activeLocale() === locale ? 'primary' : ''}
+      type="button"
+      class="seg"
+      class:active={activeLocale() === locale}
       aria-pressed={activeLocale() === locale}
       onclick={() => onchange(locale)}>{LABELS[locale]()}</button
     >
   {/each}
 </div>
+
+<style>
+  .segmented {
+    display: inline-flex;
+    gap: 0;
+    padding: 2px;
+    background: var(--stage-floor);
+    border: 1px solid var(--stage-line);
+    border-radius: var(--radius-pill);
+  }
+  .seg {
+    min-height: calc(var(--tap) * 0.72);
+    min-width: auto;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--house-light);
+    font-size: var(--text-small);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-base) ease,
+      color var(--motion-base) ease;
+  }
+  .seg:hover {
+    color: var(--house-bright);
+    background: transparent;
+  }
+  .seg.active {
+    background: var(--spotlight);
+    color: var(--spotlight-ink);
+    font-weight: 800;
+  }
+</style>

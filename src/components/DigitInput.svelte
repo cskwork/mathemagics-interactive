@@ -1,6 +1,6 @@
 <script lang="ts">
   /**
-   * digit-cell 에디터(브리프 §2-5 / 리서치 §2.2).
+   * Hallmark · P4 H4 E4 S4 R4 V4 — digit-cell 에디터 (브리프 §2-5 / 리서치 §2.2).
    *
    * Step[] 에서 `expect:true` 인 write 스텝(= 답 칸)만 학생 입력 대기 지점으로 쓰고,
    * 나머지(highlight·carry·strike)는 진행도에 따라 자동 공개한다.
@@ -40,6 +40,8 @@
     undefined
   );
   let fbTimer: ReturnType<typeof setTimeout> | undefined;
+  // spotlight-sweep 재생용 키 — 정답 때마다 증가시켜 오버레이를 리마운트(애니메이션 재시작).
+  let sweepKey = $state(0);
 
   function clearFeedback(): void {
     if (fbTimer !== undefined) {
@@ -123,6 +125,7 @@
     if (d === step.value) {
       // 정답
       feedback = { cell: step.cell, state: 'correct', value: d };
+      sweepKey += 1; // spotlight-sweep 재생
       if (activeIdx === completedCount) {
         completedCount += 1;
         activeIdx = Math.min(activeIdx + 1, Math.max(0, expectCount - 1));
@@ -181,9 +184,14 @@
 <svelte:window onkeydown={handleKey} />
 
 <div class="stack" style="gap: 1rem;">
-  <ColumnGrid {grid} {cells} activeCell={activeCell} />
+  <div class="stage-grid">
+    {#if feedback?.state === 'correct'}
+      {#key sweepKey}<div class="sweep-overlay" aria-hidden="true"></div>{/key}
+    {/if}
+    <ColumnGrid {grid} {cells} activeCell={activeCell} />
+  </div>
 
-  <div class="bubble" aria-live="polite" role="status">
+  <div class="bubble" aria-live="polite" role="status" aria-label={m.caption_label()}>
     {statusText()}
   </div>
 
@@ -195,18 +203,44 @@
 </div>
 
 <style>
+  .stage-grid {
+    position: relative;
+    display: flex;
+    justify-content: start;
+  }
+  /* spotlight-sweep 오버레이 — 정답 때 무대를 훑는 빛. 리마운트로 재생(위 {#key}). */
+  .sweep-overlay {
+    position: absolute;
+    inset: -0.5rem;
+    pointer-events: none;
+    background-image: linear-gradient(
+      100deg,
+      transparent 30%,
+      var(--spotlight-wash-strong) 50%,
+      transparent 70%
+    );
+    background-size: 60% 100%;
+    background-repeat: no-repeat;
+    animation: spotlight-sweep var(--motion-slow) ease;
+    z-index: 2;
+  }
+
+  /* 자막바(caption) — 시각적으로 보이는 aria-live 영역(M7 산출물 7) */
   .bubble {
-    background: var(--surface);
-    border: 1px solid #3a3e63;
+    background: var(--stage-floor);
+    border: 1px solid var(--stage-line);
+    border-left: 3px solid var(--spotlight);
     border-radius: var(--radius);
     padding: 0.85rem 1rem;
     min-height: 3rem;
     line-height: 1.45;
+    color: var(--house-bright);
+    font-size: var(--text-lead);
   }
   .done {
     text-align: center;
-    font-weight: 700;
-    color: #6ee297;
+    font-weight: 800;
+    color: var(--applause);
     margin: 0;
   }
 </style>
