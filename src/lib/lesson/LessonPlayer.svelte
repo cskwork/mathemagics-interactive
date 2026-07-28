@@ -30,6 +30,9 @@
   import type { AppState } from '../profiles/app-state.svelte.js';
   import type { Router } from '../router/hash-router.svelte.js';
   import type { ProgressRecord } from '../storage/types.js';
+  import { DEFAULT_SRS_CONFIG } from '../srs/config.js';
+  import { createCardFromLesson, makeFactId } from '../srs/integration.js';
+  import { paramsToBand } from '../srs/difficulty.js';
   import StepPlayer from '../../components/StepPlayer.svelte';
   import DigitInput from '../../components/DigitInput.svelte';
 
@@ -191,17 +194,41 @@
     void writeProgress({ lessonStepReached: 'practice' });
   });
 
-  // done 시 최종 진도 기록.
+  // done 시 최종 진도 기록 + SRS 카드 생성(브리프: 레슨 완료 → 카드 생성).
   $effect(() => {
     if (!lesson || lessonState.phase !== 'done' || savedDone || !profileId) return;
     savedDone = true;
-    void writeProgress({
-      lessonStepReached: 'done',
-      hintsUsed: lessonState.hintsUsed.length,
-      bottomOuts: lessonState.bottomOuts,
-      strategyCounts: { ...lessonState.strategyCounts },
-      completedAt: Date.now()
-    });
+    void (async (): Promise<void> => {
+      await writeProgress({
+        lessonStepReached: 'done',
+        hintsUsed: lessonState.hintsUsed.length,
+        bottomOuts: lessonState.bottomOuts,
+        strategyCounts: { ...lessonState.strategyCounts },
+        completedAt: Date.now()
+      });
+      // 카드 생성(멱등 — 이미 있으면 덮어쓰지 않음). 기법 × 밴드 1장.
+      const ps = lesson.file.practice.problemSet;
+      const band = Math.min(
+        DEFAULT_SRS_CONFIG.maxDifficultyBand,
+        paramsToBand({ digits: ps.digits, carry: ps.carry })
+      );
+      const factId = makeFactId(lesson.file.skillId, band);
+      const existing = await app.loadAllCards();
+      const hasCard = existing.some((c) => c.factId === factId);
+      if (!hasCard) {
+        const card = createCardFromLesson({
+          profileId,
+          skillId: lesson.file.skillId,
+          op: ps.op,
+          method: ps.method,
+          practiceDigits: ps.digits,
+          practiceCarry: ps.carry,
+          now: Date.now(),
+          config: DEFAULT_SRS_CONFIG
+        });
+        await app.upsertCard(card);
+      }
+    })();
   });
 
   const finalStars = $derived(lesson ? starsFor(lessonState, lesson.file.practice.passAccuracy) : 0);
