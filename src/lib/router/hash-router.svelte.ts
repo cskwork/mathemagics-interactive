@@ -10,7 +10,7 @@
  * 리서치 문서에 명시돼 있었다 (architecture-hosting.md "확인하지 않은 것").
  */
 
-/** 라우트 목록. 화면이 늘면 여기에 추가한다(M1: playground, M2: lessons/lesson, M3: practice/progress/report). */
+/** 라우트 목록. 화면이 늘면 여기에 추가한다(M1: playground, M2: lessons/lesson, M3: practice/progress/report, M5: stage/magic/catch). */
 export const ROUTES = [
   'profiles',
   'home',
@@ -20,7 +20,10 @@ export const ROUTES = [
   'lesson',
   'practice',
   'progress',
-  'report'
+  'report',
+  'stage',
+  'magic',
+  'catch'
 ] as const;
 export type Route = (typeof ROUTES)[number];
 
@@ -36,7 +39,10 @@ const PATH_TO_ROUTE: Record<string, Route> = {
   '/lesson': 'lesson',
   '/practice': 'practice',
   '/progress': 'progress',
-  '/report': 'report'
+  '/report': 'report',
+  '/stage': 'stage',
+  '/magic': 'magic',
+  '/catch': 'catch'
 };
 
 const ROUTE_TO_PATH: Record<Route, string> = {
@@ -48,7 +54,10 @@ const ROUTE_TO_PATH: Record<Route, string> = {
   lesson: '/lesson',
   practice: '/practice',
   progress: '/progress',
-  report: '/report'
+  report: '/report',
+  stage: '/stage',
+  magic: '/magic',
+  catch: '/catch'
 };
 
 /** `#/home?x=1` -> `/home`. 해시가 없거나 모르는 경로면 undefined. */

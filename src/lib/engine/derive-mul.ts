@@ -20,7 +20,7 @@ import type {
   SquareDiagram,
   Step
 } from './types.js';
-import { deriveGrid, writeAnswerLTR } from './derive-internals.js';
+import { deriveGrid, pairOf, writeAnswerLTR } from './derive-internals.js';
 
 const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko } : { ko, en });
 
@@ -31,7 +31,7 @@ const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko }
  * mul-running/mul-add/mul-sub/mul-factor 만 의미있는 부분곱을 낸다(나머지는 빈 배열).
  */
 export function partialProducts(problem: Problem): PartialProduct[] {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   const m = problem.method;
   if (m === 'mul-running') return decomposePlaceProducts(a, b);
   if (m === 'mul-add') return additionMethodParts(a, b);
@@ -128,7 +128,7 @@ function nearestRoundingBase(base: number): number {
 
 /** 곱셈/제곱 문제 → 스텝. method 로 기법을 나눈다. */
 export function deriveMulSteps(problem: Problem): Step[] {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   const grid = deriveGrid(problem);
   switch (problem.method) {
     case 'mul-running':

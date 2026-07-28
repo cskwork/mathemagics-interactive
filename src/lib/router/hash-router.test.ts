@@ -13,6 +13,9 @@ describe('parseHash', () => {
     expect(parseHash('#/practice')).toBe('practice');
     expect(parseHash('#/progress')).toBe('progress');
     expect(parseHash('#/report')).toBe('report');
+    expect(parseHash('#/stage')).toBe('stage');
+    expect(parseHash('#/magic')).toBe('magic');
+    expect(parseHash('#/catch')).toBe('catch');
   });
 
   it('ignores a query string and a trailing slash', () => {
@@ -20,6 +23,8 @@ describe('parseHash', () => {
     expect(parseHash('#/settings/')).toBe('settings');
     expect(parseHash('#/dev/playground?op=add')).toBe('playground');
     expect(parseHash('#/lesson?id=ltr-addition')).toBe('lesson');
+    expect(parseHash('#/magic?id=psychic-math')).toBe('magic');
+    expect(parseHash('#/stage?skill=mul-2x2-add')).toBe('stage');
   });
 
   it('returns undefined for unknown paths so the app can show "not found"', () => {

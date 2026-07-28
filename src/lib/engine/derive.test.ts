@@ -28,7 +28,8 @@ function answerFromSteps(problem: Problem): string {
 }
 
 function expectedAnswer(problem: Problem): number {
-  const [a, b] = problem.operands;
+  const a = problem.operands[0] ?? 0;
+  const b = problem.operands[1] ?? 0;
   return problem.op === 'add' ? a + b : a - b;
 }
 
@@ -80,7 +81,7 @@ describe('deriveSteps — final answer matches a+b / a-b (all combinations)', ()
             const problem = generateProblem(hashSeed(label), { op, method, digits, carry });
             expect(problem.op).toBe(op);
             expect(problem.method).toBe(method);
-            if (op === 'sub') expect(problem.operands[0]).toBeGreaterThanOrEqual(problem.operands[1]);
+            if (op === 'sub') expect(problem.operands[0] ?? 0).toBeGreaterThanOrEqual(problem.operands[1] ?? 0);
             expectAnswerMatches(problem);
           });
         }
@@ -210,11 +211,12 @@ describe('generateProblem — determinism & constraints', () => {
 
   it('carry=true produces a carry, carry=false produces none (add)', () => {
     const withCarry = generateProblem(11, { op: 'add', method: 'rtl', digits: 3, carry: true });
-    const [a, b] = withCarry.operands;
+    const a = withCarry.operands[0] ?? 0;
+    const b = withCarry.operands[1] ?? 0;
     // 적어도 한 자리에서 합 >= 10
     let any = false;
-    let x = a;
-    let y = b;
+    let x: number = a;
+    let y: number = b;
     while (x > 0 || y > 0) {
       if ((x % 10) + (y % 10) >= 10) any = true;
       x = Math.floor(x / 10);
@@ -224,8 +226,8 @@ describe('generateProblem — determinism & constraints', () => {
 
     const noCarry = generateProblem(11, { op: 'add', method: 'rtl', digits: 3, carry: false });
     let none = true;
-    x = noCarry.operands[0];
-    y = noCarry.operands[1];
+    x = noCarry.operands[0] ?? 0;
+    y = noCarry.operands[1] ?? 0;
     while (x > 0 || y > 0) {
       if ((x % 10) + (y % 10) >= 10) none = false;
       x = Math.floor(x / 10);
@@ -238,8 +240,10 @@ describe('generateProblem — determinism & constraints', () => {
     for (const carry of [true, false]) {
       for (const seed of [3, 5, 8]) {
         const p = generateProblem(seed, { op: 'sub', method: 'rtl', digits: 2, carry });
-        expect(p.operands[0]).toBeGreaterThanOrEqual(p.operands[1]);
-        expect(p.operands[0] - p.operands[1]).toBeGreaterThan(0);
+        const hi = p.operands[0] ?? 0;
+        const lo = p.operands[1] ?? 0;
+        expect(hi).toBeGreaterThanOrEqual(lo);
+        expect(hi - lo).toBeGreaterThan(0);
       }
     }
   });

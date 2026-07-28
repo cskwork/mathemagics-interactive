@@ -15,6 +15,8 @@
   import { deriveGrid, deriveSteps } from '../engine/derive.js';
   import { partialProducts } from '../engine/derive-mul.js';
   import { estimationBand } from '../engine/derive-est.js';
+  import { columnAddLayout, crossMultLayout, squareRootLayout } from '../engine/derive-paper.js';
+  import { checkModSum } from '../engine/modsum.js';
   import type { Problem } from '../engine/types.js';
   import type { HintTier, Lesson, StrategyChoice } from './types.js';
   import { findLesson } from './loader.js';
@@ -41,6 +43,10 @@
   import XDiagram from '../../components/XDiagram.svelte';
   import DivisionBracket from '../../components/DivisionBracket.svelte';
   import SubstitutionChain from '../../components/SubstitutionChain.svelte';
+  import ColumnAddGrid from '../../components/ColumnAddGrid.svelte';
+  import CrossMultDiagram from '../../components/CrossMultDiagram.svelte';
+  import SquareRootDiagram from '../../components/SquareRootDiagram.svelte';
+  import ModSumCheck from '../../components/ModSumCheck.svelte';
 
   interface Props {
     skillId: string;
@@ -96,23 +102,36 @@
 
   const problemKey = $derived(`${lessonState.phase}-${lessonState.index}`);
 
-  // ── 기법별 시각 컴포넌트(부분곱 롤링 / X-다이어그램 / 브래킷 / 치환 체인) ────────────
+  // ── 기법별 시각 컴포넌트(부분곱 롤링 / X-다이어그램 / 브래킷 / 치환 체인 / 지필 4종) ────
   // hook·example 단계에서 StepPlayer 와 함께 보여준다. add/sub 은 시각 없음.
   type TechniqueVisual =
     | { kind: 'roller'; parts: ReturnType<typeof partialProducts> }
     | { kind: 'xdiagram'; base: number }
     | { kind: 'bracket'; problem: Problem }
     | { kind: 'chain'; problem: Problem }
+    | { kind: 'coladd'; layout: ReturnType<typeof columnAddLayout> }
+    | { kind: 'xmult'; layout: ReturnType<typeof crossMultLayout> }
+    | { kind: 'sqrt'; layout: ReturnType<typeof squareRootLayout> }
+    | { kind: 'modsum'; result: ReturnType<typeof checkModSum> }
     | null;
 
   const techniqueVisual = $derived.by<TechniqueVisual>(() => {
     if (!currentProblem) return null;
     const p = currentProblem;
     if (p.op === 'mul') {
-      if (p.method === 'square') return { kind: 'xdiagram', base: p.operands[0] };
+      if (p.method === 'square') return { kind: 'xdiagram', base: p.operands[0] ?? 0 };
+      if (p.method === 'paper-cross-mult') return { kind: 'xmult', layout: crossMultLayout(p) };
+      if (p.method === 'mod-sum-check') {
+        const [a, b] = [p.operands[0] ?? 0, p.operands[1] ?? 0];
+        return { kind: 'modsum', result: checkModSum('mul', [a, b], a * b) };
+      }
       const parts = partialProducts(p);
       if (parts.length > 0) return { kind: 'roller', parts };
     }
+    if (p.op === 'add' && p.method === 'paper-column-add') {
+      return { kind: 'coladd', layout: columnAddLayout(p) };
+    }
+    if (p.op === 'sqrt') return { kind: 'sqrt', layout: squareRootLayout(p) };
     if (p.op === 'div') return { kind: 'bracket', problem: p };
     if (p.op === 'est') return { kind: 'chain', problem: p };
     return null;
@@ -283,14 +302,14 @@
 
   /** 답 공개 모드의 수식 표시(모든 연산 대응). */
   function revealExpression(p: Problem): string {
-    const [a, b] = p.operands;
+    const a = p.operands[0] ?? 0; const b = p.operands[1] ?? 0;
     if (p.method === 'square') return `${a}²`;
     const sign = p.op === 'add' ? '+' : p.op === 'sub' ? '−' : p.op === 'mul' ? '×' : p.op === 'div' ? '÷' : '≈';
     return `${a} ${sign} ${b}`;
   }
   /** 답 공개 모드의 답(모든 연산 대응). div 는 몫 R 나머지, est 는 어림 대표값. */
   function revealAnswer(p: Problem): string {
-    const [a, b] = p.operands;
+    const a = p.operands[0] ?? 0; const b = p.operands[1] ?? 0;
     if (p.op === 'mul') return String(a * b);
     if (p.op === 'div') {
       const q = Math.floor(a / b);
@@ -314,6 +333,14 @@
     <DivisionBracket problem={techniqueVisual.problem} />
   {:else if techniqueVisual?.kind === 'chain' && currentProblem}
     <SubstitutionChain segments={chainSegments(currentProblem)} />
+  {:else if techniqueVisual?.kind === 'coladd'}
+    <ColumnAddGrid layout={techniqueVisual.layout} />
+  {:else if techniqueVisual?.kind === 'xmult'}
+    <CrossMultDiagram layout={techniqueVisual.layout} />
+  {:else if techniqueVisual?.kind === 'sqrt'}
+    <SquareRootDiagram layout={techniqueVisual.layout} />
+  {:else if techniqueVisual?.kind === 'modsum'}
+    <ModSumCheck result={techniqueVisual.result} />
   {/if}
 {/snippet}
 

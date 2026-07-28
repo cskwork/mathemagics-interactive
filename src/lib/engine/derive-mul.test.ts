@@ -29,7 +29,7 @@ describe('deriveMulSteps — mul-running (2×1, 3×1) answer matches a×b', () =
   for (const digits of [2, 3]) {
     it(`${digits}×1`, () => {
       const p = generateProblem(7, { op: 'mul', method: 'mul-running', digits, carry: true });
-      const [a, b] = p.operands;
+      const a = p.operands[0] ?? 0; const b = p.operands[1] ?? 0;
       expect(Number(answerFromSteps(p))).toBe(a * b);
     });
   }

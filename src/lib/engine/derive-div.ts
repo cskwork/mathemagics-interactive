@@ -12,6 +12,7 @@
  */
 import type { LocalizedText } from '../content/localized.js';
 import type { DivisionDigit, DivisionLayout, Problem, Step } from './types.js';
+import { pairOf } from './derive-internals.js';
 
 const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko } : { ko, en });
 
@@ -20,7 +21,7 @@ const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko }
  * 피제수 ÷ 제수 → 몫(좌→우 한 자리씩) + 나머지.
  */
 export function deriveDivisionLayout(problem: Problem): DivisionLayout {
-  const [dividend, divisor] = problem.operands;
+  const [dividend, divisor] = pairOf(problem);
   if (divisor === 0) throw new Error('deriveDivisionLayout: divisor is 0');
   const quotient = Math.floor(dividend / divisor);
   const remainder = dividend - quotient * divisor;

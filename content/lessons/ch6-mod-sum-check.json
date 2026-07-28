@@ -1,0 +1,15 @@
+{
+  "id": "ch6-mod-sum-check",
+  "skillId": "mod-sum-check",
+  "chapter": 6,
+  "order": 4,
+  "prerequisites": ["paper-sqrt"],
+  "title": { "ko": "모드섬 검산", "en": "Mod-sum checking" },
+  "subtitle": { "ko": "9 버리기·11 버리기로 답이 맞는지 확인", "en": "Cast out nines and elevens to check your answer" },
+  "rule": { "ko": "각 수의 자릿수 합(9 버리기)이나 교대 합(11 버리기)으로 답이 맞는지 검산해요. 4장 배수판정과 같은 원리예요.", "en": "Use the digit sum (cast out nines) or alternating sum (cast out elevens) to check an answer. Same idea as the divisibility rules in Chapter 4." },
+  "hook": { "problemSet": { "op": "mul", "method": "mod-sum-check", "digits": 2, "carry": true, "count": 1, "seed": 91 }, "intro": { "ko": "답이 맞는지 빠르게 확인해요.", "en": "Check an answer quickly." }, "outro": { "ko": "검산이 마술처럼 빨라요.", "en": "Checking feels like magic." }, "autoPlayMs": 8000 },
+  "example": { "problemSet": { "op": "mul", "method": "mod-sum-check", "digits": 2, "carry": true, "count": 2, "seed": 92 }, "intro": { "ko": "모드섬을 비교해요.", "en": "Compare the mod-sums." } },
+  "fading": { "problemSet": { "op": "mul", "method": "mod-sum-check", "digits": 2, "carry": true, "count": 3, "seed": 93 }, "intro": { "ko": "9 버리기부터 해요.", "en": "Start with casting out nines." } },
+  "practice": { "problemSet": { "op": "mul", "method": "mod-sum-check", "digits": 2, "carry": true, "count": 3, "seed": 94 }, "intro": { "ko": "검산해요. 오답 잡아내기 게임도 있어요!", "en": "Check the answer. There's a catch-the-wrong-answer game too!" }, "hints": { "point": { "ko": "자릿수 합부터 구해요.", "en": "Start with the digit sum." }, "teach": { "ko": "피연산자 모드섬의 곱과 답의 모드섬이 같아야 해요.", "en": "The product of the operands' mod-sums must match the answer's mod-sum." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
+  "strategyCards": { "thisTechnique": { "ko": "모드섬으로 검산했어요", "en": "I checked with mod-sum" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used another way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
+}

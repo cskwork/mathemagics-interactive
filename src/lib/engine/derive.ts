@@ -26,6 +26,8 @@ import type {
 import { deriveMulSteps } from './derive-mul.js';
 import { deriveDivSteps } from './derive-div.js';
 import { deriveEstSteps } from './derive-est.js';
+import { derivePaperSteps } from './derive-paper.js';
+import { pairOf } from './derive-internals.js';
 
 /** 로케일 키 객체 생성 헬퍼(ko 필수, en 선택 → 누락 시 content/localized.ts 가 ko 폴백). */
 const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko } : { ko, en });
@@ -43,14 +45,18 @@ export function opSign(op: Problem['op']): string {
       return '÷';
     case 'est':
       return '≈';
+    case 'sqrt':
+      return '√';
   }
 }
 
-/** 문제의 정확(또는 대표) 답. div 는 몫, est 는 어림 대표값. 순수 함수. */
+/** 문제의 정확(또는 대표) 답. div 는 몫, est 는 어림 대표값, sqrt 는 정수 제곱근. 순수 함수. */
 export function computeAnswer(problem: Problem): number {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   switch (problem.op) {
     case 'add':
+      // 열 덧셈(paper-column-add) 은 모든 피연산자의 합.
+      if (problem.method === 'paper-column-add') return problem.operands.reduce((s, n) => s + n, 0);
       return a + b;
     case 'sub':
       return a - b;
@@ -60,6 +66,8 @@ export function computeAnswer(problem: Problem): number {
       return Math.floor(a / b);
     case 'est':
       return a; // est 의 "대표값"은 컴포넌트가 EstimationBand.estimate 로 별도 산출.
+    case 'sqrt':
+      return Math.floor(Math.sqrt(a));
   }
 }
 
@@ -96,7 +104,7 @@ function placeName(place: number): LocalizedText {
  * SubstitutionChain) 를 쓰므로 여기서는 선형 표시용 최소 그리드만 만든다(부호 + 답 한 줄).
  */
 export function deriveGrid(problem: Problem): Grid {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   const answer = computeAnswer(problem);
   const digitCols = Math.max(String(a).length, String(b).length, String(answer).length);
 
@@ -380,7 +388,7 @@ function deriveSubLTR(a: number, b: number, grid: Grid): Step[] {
  * @throws `operands[0] < operands[1]` 인 sub 문제(음수 결과) — generate.ts 가 방지.
  */
 export function deriveSteps(problem: Problem): Step[] {
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   if (problem.op === 'sub' && a < b) {
     throw new Error(`sub requires operands[0] >= operands[1]; got ${a} - ${b}`);
   }
@@ -388,11 +396,19 @@ export function deriveSteps(problem: Problem): Step[] {
     const grid = deriveGrid(problem);
     const m = problem.method;
     if (problem.op === 'add') {
+      // 열 덧셈(paper-column-add) 은 지필 트랙으로 위임.
+      if (m === 'paper-column-add') return derivePaperSteps(problem);
       return m === 'ltr' ? deriveAddLTR(a, b, grid) : deriveAddRTL(a, b, grid);
     }
     return m === 'ltr' ? deriveSubLTR(a, b, grid) : deriveSubRTL(a, b, grid);
   }
-  if (problem.op === 'mul') return deriveMulSteps(problem);
+  if (problem.op === 'mul') {
+    if (problem.method === 'paper-cross-mult' || problem.method === 'mod-sum-check') {
+      return derivePaperSteps(problem);
+    }
+    return deriveMulSteps(problem);
+  }
   if (problem.op === 'div') return deriveDivSteps(problem);
+  if (problem.op === 'sqrt') return derivePaperSteps(problem);
   return deriveEstSteps(problem);
 }

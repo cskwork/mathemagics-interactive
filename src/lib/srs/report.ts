@@ -8,6 +8,7 @@
  * 풀었는지 물어보세요" 형태의 Localized 문장을 만든다. 텍스트는 {ko, en} 객체(PLAN §6.2).
  */
 import { generateProblem } from '../engine/generate.js';
+import { pairOf } from '../engine/derive-internals.js';
 import type { LocalizedText } from '../content/localized.js';
 import type { Method, Op } from '../engine/types.js';
 import { DAY_MS, startOfDay } from './config.js';
@@ -98,7 +99,7 @@ function tryMakeStarter(tech: LearnedTechnique, now: number): ConversationStarte
   } catch {
     return undefined;
   }
-  const [a, b] = problem.operands;
+  const [a, b] = pairOf(problem);
   const realOp = tech.op === 'est' ? tech.estOf ?? 'add' : tech.op;
   const sign = realOp === 'add' ? '+' : realOp === 'sub' ? '−' : realOp === 'mul' ? '×' : '÷';
   const expr = `${num(a)} ${sign} ${num(b)}`;
@@ -112,7 +113,7 @@ function tryMakeStarter(tech: LearnedTechnique, now: number): ConversationStarte
         ? `Ask how they worked out “${expr}” using ${tech.title.en}. ${rule.en}`
         : `Ask how they worked out “${expr}”. ${rule.ko}`
   };
-  return { skillId: tech.skillId, operands: [a, b], op: tech.op, prompt };
+  return { skillId: tech.skillId, operands: [a, b] as readonly [number, number], op: tech.op, prompt };
 }
 
 function hashStr(s: string): number {

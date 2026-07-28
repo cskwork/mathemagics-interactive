@@ -19,6 +19,8 @@ export interface GenerateOptions {
   level?: number;
   /** op='est' 일 때 어림 대상 연산. */
   estOf?: 'add' | 'sub' | 'mul' | 'div';
+  /** M5 paper-column-add: 더할 피연산자 수(기본 3). */
+  operandCount?: number;
 }
 
 /** mulberry32 — 시드 → 결정적 32비트 PRNG. [0,1) 실수를 돌려준다. */
@@ -88,11 +90,35 @@ function hasSubBorrow(a: number, b: number): boolean {
  * @throws 조건을 만족하는 문제를 찾지 못한 경우.
  */
 export function generateProblem(seed: number, opts: GenerateOptions): Problem {
-  const { op, digits, carry, method, level = 1, estOf } = opts;
+  const { op, digits, carry, method, level = 1, estOf, operandCount = 3 } = opts;
   const rng = mulberry32(seed);
   const MAX_TRIES = 2000;
 
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+    // M5 지필 트랙: 열 덧셈(여러 피연산자).
+    if (method === 'paper-column-add') {
+      const addends: number[] = [];
+      for (let i = 0; i < operandCount; i++) addends.push(numberWithDigits(rng, digits));
+      return { op: 'add', operands: addends, method, level };
+    }
+    // M5 지필 트랙: 크리스크로스 곱셈(두 수 모두 digits 자리).
+    if (method === 'paper-cross-mult') {
+      const a = numberWithDigits(rng, digits);
+      const b = numberWithDigits(rng, digits);
+      return { op: 'mul', operands: [a, b], method, level };
+    }
+    // M5 지필 트랙: 지필 제곱근(완전제곱수). digits = 근의 자릿수, 근호 아래 수 = root².
+    if (method === 'paper-sqrt') {
+      const root = numberWithDigits(rng, digits);
+      return { op: 'sqrt', operands: [root * root], method, level };
+    }
+    // M5 지필 트랙: 모드섬 검산(곱셈 결과 검증).
+    if (method === 'mod-sum-check') {
+      const a = numberWithDigits(rng, digits);
+      const b = numberWithDigits(rng, digits);
+      return { op: 'mul', operands: [a, b], method, level };
+    }
+
     if (op === 'add' || op === 'sub') {
       const a = numberWithDigits(rng, digits);
       const b = numberWithDigits(rng, digits);

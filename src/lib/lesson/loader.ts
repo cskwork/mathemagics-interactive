@@ -41,7 +41,7 @@ function isLocalizedText(v: unknown): v is { ko: string; en?: string } {
   return true;
 }
 
-const OPS: readonly Op[] = ['add', 'sub', 'mul', 'div', 'est'];
+const OPS: readonly Op[] = ['add', 'sub', 'mul', 'div', 'est', 'sqrt'];
 const METHODS: readonly Method[] = [
   'ltr',
   'rtl',
@@ -53,7 +53,11 @@ const METHODS: readonly Method[] = [
   'square',
   'div-1',
   'est-digit',
-  'est-band'
+  'est-band',
+  'paper-column-add',
+  'paper-cross-mult',
+  'paper-sqrt',
+  'mod-sum-check'
 ];
 const STRATEGIES: readonly StrategyChoice[] = ['this-technique', 'other-technique', 'just-knew'];
 const EST_OFS: readonly string[] = ['add', 'sub', 'mul', 'div'];
@@ -75,6 +79,14 @@ function isProblemSet(v: unknown): v is ProblemSet {
   if (!isNumber(v['seed']) || (v['seed'] | 0) !== v['seed']) return false;
   // estOf: 선택 필드(op='est' 권장). 값이면 add/sub/mul/div 중 하나.
   if ('estOf' in v && v['estOf'] !== undefined && !(isString(v['estOf']) && EST_OFS.includes(v['estOf']))) {
+    return false;
+  }
+  // operandCount: 선택(paper-column-add). 정수 ≥2.
+  if (
+    'operandCount' in v &&
+    v['operandCount'] !== undefined &&
+    (!isNumber(v['operandCount']) || (v['operandCount'] | 0) !== v['operandCount'] || v['operandCount'] < 2)
+  ) {
     return false;
   }
   return true;
@@ -140,9 +152,13 @@ export function isLessonFile(v: unknown): v is LessonFile {
 
 /** ProblemSet → 구체적 Problem[](M1 생성기). 중복 없이 count 개. */
 function expand(set: ProblemSet): Problem[] {
-  const opts = set.estOf
-    ? { op: set.op, method: set.method, digits: set.digits, carry: set.carry, estOf: set.estOf }
-    : { op: set.op, method: set.method, digits: set.digits, carry: set.carry };
+  const base = { op: set.op, method: set.method, digits: set.digits, carry: set.carry };
+  const opts =
+    set.estOf !== undefined
+      ? { ...base, estOf: set.estOf }
+      : set.operandCount !== undefined
+        ? { ...base, operandCount: set.operandCount }
+        : base;
   return generateProblems(set.seed, opts, set.count);
 }
 
