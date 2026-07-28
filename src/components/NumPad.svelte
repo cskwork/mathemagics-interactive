@@ -1,6 +1,6 @@
 <script lang="ts">
   /**
-   * 가상 넘패드(브리프 §2-5 / 리서치 §2.2).
+   * Hallmark · P3 H3 E4 S3 R4 V3 — 가상 넘패드 (브리프 §2-5 / 리서치 §2.2).
    *
    * 태블릿에서 OS 키보드가 화면을 가리는 것을 막고, 큰 터치 타깃(≥48px)으로 아동이 누르기 쉽게 한다.
    * 배치: 1-2-3 / 4-5-6 / 7-8-9 / 지우기-0-⌫. 물리 키보드는 DigitInput 에서 병행 처리.
@@ -46,18 +46,32 @@
 </div>
 
 <style>
+  /* Hallmark · P3 H3 E4 S3 R4 V3 — 숫자 카드 음성. 넘패드 버튼 = 무대 위 숫자 카드.
+   * 카드 깊이(inset highlight + drop) 로 손가락에 닿는 질감. tabular-nums 로 정렬. */
   .numpad {
     display: grid;
     grid-template-columns: repeat(3, var(--tap));
-    gap: 0.5rem;
+    gap: var(--space-2);
     justify-content: center;
   }
   .num {
     width: var(--tap);
     height: var(--tap);
     font-size: 1.4rem;
-    font-weight: 700;
+    font-weight: 800;
+    font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
     padding: 0;
+    background: var(--stage-lit);
+    color: var(--house-bright);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-inset), var(--shadow-cell);
+  }
+  .num:hover {
+    background: var(--stage-rise);
+  }
+  .num:active {
+    transform: translateY(1px);
+    box-shadow: var(--shadow-inset);
   }
 </style>

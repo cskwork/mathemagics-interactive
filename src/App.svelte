@@ -1,3 +1,7 @@
+<!-- Hallmark · P4 H4 E4 S4 R4 V4 — 프로시니엄 프레임 + 라우트 스위치 (M7 산출물 3).
+  - 헤더 = 무대 프롬프트: 좌 워드마크 · (중앙) 활성 공연자 칩 · 우 로케일 스위처.
+  - 하단 얇은 앰버 선 = 프로시니엄(edge of stage) 암시. 과하지 않게 1px.
+  - 라우트 영역 진입 시 curtain-rise(막 올림). reduced-motion 은 전역 즉시 전환. -->
 <script lang="ts">
   import { m } from './lib/paraglide/messages.js';
   import { createRouter } from './lib/router/hash-router.svelte.js';
@@ -6,6 +10,7 @@
   import Home from './routes/Home.svelte';
   import SettingsPage from './routes/Settings.svelte';
   import Playground from './routes/Playground.svelte';
+  import LocaleSwitcher from './components/LocaleSwitcher.svelte';
 
   const app = createAppState();
   const router = createRouter();
@@ -28,32 +33,125 @@
       router.navigate('profiles');
     }
   });
+
+  const profile = $derived(app.activeProfile());
+  // 라우트가 바뀔 때마다 curtain-rise 를 재생하기 위한 키.
+  const routeKey = $derived(router.current() ?? 'profiles');
 </script>
 
 <main class="app">
-  <header class="stack" style="margin-bottom: 1.5rem;">
-    <div>
-      <h1>{m.app_title()}</h1>
-      <p class="muted" style="margin: 0;">{m.app_tagline()}</p>
+  <header class="proscenium">
+    <a class="wordmark" href="#/profiles" aria-label={m.app_title()}>
+      <span class="wordmark-mark" aria-hidden="true">◆</span>
+      <span class="wordmark-text">{m.app_title()}</span>
+    </a>
+
+    {#if profile}
+      <div class="chip" aria-label={m.stage_chip_label()}>
+        <span class="chip-avatar" aria-hidden="true">{profile.avatar}</span>
+        <span class="chip-name">{profile.name}</span>
+      </div>
+    {/if}
+
+    <div class="header-tail">
+      <LocaleSwitcher onchange={(locale) => app.setLocale(locale)} />
     </div>
   </header>
 
-  {#if bootError}
-    <p class="card" role="alert">{bootError}</p>
-  {:else if !app.ready()}
-    <p class="muted">{m.loading()}</p>
-  {:else if router.unknownHash()}
-    <div class="stack">
-      <p class="card">{m.not_found()}</p>
-      <div><button onclick={() => router.navigate('profiles')}>{m.nav_profiles()}</button></div>
-    </div>
-  {:else if router.current() === 'home'}
-    <Home {app} {router} />
-  {:else if router.current() === 'settings'}
-    <SettingsPage {app} {router} />
-  {:else if router.current() === 'playground'}
-    <Playground />
-  {:else}
-    <ProfilePicker {app} {router} />
-  {/if}
+  <div class="stage">
+    {#key routeKey}
+      <div class="rise">
+        {#if bootError}
+          <p class="card" role="alert">{bootError}</p>
+        {:else if !app.ready()}
+          <p class="muted">{m.loading()}</p>
+        {:else if router.unknownHash()}
+          <section class="stack">
+            <p class="card">{m.not_found()}</p>
+            <div><button onclick={() => router.navigate('profiles')}>{m.nav_profiles()}</button></div>
+          </section>
+        {:else if router.current() === 'home'}
+          <Home {app} {router} />
+        {:else if router.current() === 'settings'}
+          <SettingsPage {app} {router} />
+        {:else if router.current() === 'playground'}
+          <Playground />
+        {:else}
+          <ProfilePicker {app} {router} />
+        {/if}
+      </div>
+    {/key}
+  </div>
 </main>
+
+<style>
+  .proscenium {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-3);
+    margin-bottom: var(--space-5);
+    /* 프로시니엄 — 무대 가장자리의 얇은 앰버 선 */
+    border-bottom: 1px solid var(--stage-edge);
+    box-shadow: 0 1px 0 0 var(--spotlight-wash);
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: var(--house-bright);
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: var(--tracking-display);
+    font-size: 1.05rem;
+  }
+  .wordmark-mark {
+    color: var(--spotlight);
+    font-size: 0.7rem;
+    transform: translateY(-1px);
+  }
+  .wordmark-text {
+    white-space: nowrap;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: calc(var(--tap) * 0.72);
+    padding: 0 var(--space-3) 0 var(--space-2);
+    background: var(--stage-mid);
+    border: 1px solid var(--stage-line);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-card);
+  }
+  .chip-avatar {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  .chip-name {
+    font-size: var(--text-small);
+    font-weight: 600;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 로케일 스위처를 헤더 우측으로 밀어 붙인다. 좁은 폭에서는 아래로 흐른다. */
+  .header-tail {
+    margin-left: auto;
+  }
+
+  .stage {
+    min-width: 0;
+  }
+
+  @media (max-width: 360px) {
+    .chip-name {
+      max-width: 5.5rem;
+    }
+  }
+</style>

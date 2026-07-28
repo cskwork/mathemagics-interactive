@@ -1,6 +1,6 @@
 <script lang="ts">
   /**
-   * 세로셈 그리드 렌더러 — 리서치 vertical-notation-editors.md §1.3 (커스텀 CSS Grid).
+   * Hallmark · P4 H4 E4 S4 R4 V4 — 세로셈 그리드 렌더러 (리서치 vertical-notation-editors.md §1.3).
    *
    * 자릿수 1개 = 그리드 셀 1개. `font-variant-numeric: tabular-nums` 로 숫자 폭을 통일한다.
    * 행(위→아래): carry(받아올림, 위첨자 크기) · op1 · op2(부호+밑줄) · answer(답).
@@ -95,11 +95,14 @@
     display: grid;
     gap: 0;
     --cell-size: 2.75rem;
+    font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;
     justify-content: start;
   }
 
+  /* Hallmark · P4 H4 E4 S4 R4 V4 — "무대 위 카드" 숫자판.
+   * 셀 = 조명을 받은 카드 한 장: 양각(inset highlight) + 미세 그림자로 깊이. */
   .cell {
     display: flex;
     align-items: center;
@@ -107,30 +110,32 @@
     width: var(--cell-size);
     height: var(--cell-size);
     font-size: 1.5rem;
-    font-weight: 600;
-    border-radius: 6px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-inset), var(--shadow-cell);
     transition:
-      background-color 0.18s ease,
-      color 0.18s ease,
-      box-shadow 0.18s ease,
-      transform 0.18s ease;
+      background-color var(--motion-base) ease,
+      color var(--motion-base) ease,
+      box-shadow var(--motion-base) ease,
+      transform var(--motion-base) ease;
   }
 
   /* carry 행: 위첨자 크기로 받아올림 숫자 표시 */
   .cell--carry {
     font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--accent);
+    font-weight: 600;
+    color: var(--spotlight);
     height: calc(var(--cell-size) * 0.7);
+    box-shadow: none;
   }
 
   .cell--answer {
-    color: var(--accent);
+    color: var(--spotlight);
   }
 
   /* op2 행 아래 밑줄 */
   .cell--underlined {
-    border-bottom: 3px solid var(--text);
+    border-bottom: 3px solid var(--house-bright);
   }
 
   .cell--idle {
@@ -138,31 +143,33 @@
   }
 
   .cell--filled {
-    color: var(--text);
+    color: var(--house-bright);
   }
 
   .cell--highlight {
-    background: rgba(255, 201, 77, 0.18);
-    color: var(--text);
-    box-shadow: inset 0 0 0 2px var(--accent);
+    background: var(--spotlight-wash-strong);
+    color: var(--house-bright);
+    box-shadow: inset 0 0 0 2px var(--spotlight), var(--shadow-cell);
   }
 
   .cell--correct {
-    background: rgba(76, 217, 100, 0.22);
-    color: #6ee297;
-    box-shadow: inset 0 0 0 2px #6ee297;
+    background: var(--applause-wash);
+    color: var(--applause);
+    box-shadow: inset 0 0 0 2px var(--applause), var(--shadow-cell);
+    /* 마이크로인터랙션 card-settle — 정답 카드가 무대에 내려앉는 미세 바운스 */
+    animation: card-settle var(--motion-base) var(--ease-stage);
   }
 
   .cell--wrong {
-    background: rgba(255, 107, 107, 0.22);
-    color: var(--danger);
-    box-shadow: inset 0 0 0 2px var(--danger);
+    background: var(--miss-wash);
+    color: var(--miss);
+    box-shadow: inset 0 0 0 2px var(--miss), var(--shadow-cell);
     animation: shake 0.32s ease;
   }
 
   .cell--active {
-    box-shadow: inset 0 0 0 3px var(--accent);
-    background: rgba(255, 201, 77, 0.12);
+    box-shadow: inset 0 0 0 3px var(--spotlight), var(--shadow-cell);
+    background: var(--spotlight-wash);
   }
 
   /* 받아내림 취소선: 손으로 긋는 사선 느낌(리서치 §1.3) */
@@ -176,7 +183,7 @@
     top: 50%;
     width: 120%;
     height: 2px;
-    background: var(--danger);
+    background: var(--miss);
     transform: rotate(-32deg);
   }
 
@@ -193,11 +200,14 @@
     }
   }
 
+  /* card-settle / spotlight-sweep 키프레임은 전역(app.css)에 정의. */
+
   @media (prefers-reduced-motion: reduce) {
     .cell {
       transition-duration: 0.01ms;
     }
-    .cell--wrong {
+    .cell--wrong,
+    .cell--correct {
       animation: none;
     }
   }
