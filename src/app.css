@@ -142,18 +142,18 @@ button:disabled,
 /* primary — 스포트라이트/앰버(주 행동) */
 .btn--primary,
 button.primary {
-  background: var(--spotlight);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--spotlight) 92%, white 8%), var(--spotlight));
   color: var(--spotlight-ink);
   font-weight: 800;
   box-shadow: var(--shadow-card);
 }
 .btn--primary:hover,
 button.primary:hover {
-  background: color-mix(in srgb, var(--spotlight) 88%, white 12%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--spotlight) 88%, white 16%), color-mix(in srgb, var(--spotlight) 96%, white 4%));
 }
 .btn--primary:active,
 button.primary:active {
-  background: color-mix(in srgb, var(--spotlight) 82%, var(--stage-floor) 18%);
+  background: linear-gradient(180deg, var(--spotlight), color-mix(in srgb, var(--spotlight) 82%, var(--stage-floor) 18%));
 }
 
 /* secondary — 무대 표면(명시적 변형 클래스) */
@@ -294,6 +294,19 @@ input::placeholder {
     transform: translateY(0) scale(1);
   }
 }
+@keyframes stage-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
 /* 적용 유틸리티 클래스 — prefers-reduced-motion 에서는 효과 없음(아래 블록). */
 .rise {
@@ -309,6 +322,9 @@ input::placeholder {
   background-size: 60% 100%;
   background-repeat: no-repeat;
   animation: spotlight-sweep var(--motion-slow) ease;
+}
+.done-emoji {
+  animation: stage-pop var(--motion-slow) var(--ease-stage) both;
 }
 
 /* ── reduced-motion — 전역 즉시 전환(PLAN §7.2 / hallmark 규약) ──── */

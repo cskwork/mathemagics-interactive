@@ -12,12 +12,12 @@
 
 :root {
   /* ── 무대 서피스 (객석 → 무대 바닥 → 조명 받은 영역) ─────────────────────── */
-  --stage-floor: #0f1020; /* 가장 어두움 — 페이지 배경·가장자리 객석 */
-  --stage-mid: #1b1d33; /* 카드·패널 표면 */
-  --stage-lit: #262943; /* 조명을 받아 한 단 밝은 표면(버튼 secondary·활성 칩) */
-  --stage-rise: #33375a; /* hover 시 한 단 더 떠오르는 표면 */
-  --stage-line: #3a3e63; /* 표면 경계선·입력 테두리 */
-  --stage-edge: #4a4f7a; /* 좀 더 또렷한 경계(프로시니엄 프레임·구분선) */
+  --stage-floor: #1a0b22; /* 가장 어두움 — 페이지 배경·가장자리 객석 */
+  --stage-mid: #271334; /* 카드·패널 표면 */
+  --stage-lit: #371f47; /* 조명을 받아 한 단 밝은 표면(버튼 secondary·활성 칩) */
+  --stage-rise: #492d5c; /* hover 시 한 단 더 떠오르는 표면 */
+  --stage-line: #523a6a; /* 표면 경계선·입력 테두리 */
+  --stage-edge: #644a7e; /* 좀 더 또렷한 경계(프로시니엄 프레임·구분선) */
 
   /* ── 스포트라이트 (앰버) — 주 행동·강조 ─────────────────────────────── */
   --spotlight: #ffc94d; /* 객석 조명·스포트라이트 본색 */
@@ -52,13 +52,13 @@
     ui-monospace, monospace;
 
   /* 타입 스케일(의도적 위계 — 시스템 폰트 일변도 탈피) */
-  --text-display: clamp(2rem, 6vw, 3rem); /* 오늘의 공연·섹션 헤드 */
-  --text-title: clamp(1.4rem, 4vw, 1.9rem); /* 화면 제목 */
+  --text-display: clamp(2.4rem, 8vw, 3.6rem); /* 오늘의 공연·섹션 헤드 */
+  --text-title: clamp(1.6rem, 5vw, 2.15rem); /* 화면 제목 */
   --text-lead: 1.125rem; /* 리드 카피 */
   --text-body: 1rem; /* 본문(≥16px — PLAN §7.2 경도 제약) */
   --text-small: 0.9rem; /* 보조·컨트롤 라벨 */
   --text-caption: 0.8rem; /* 자막바·메타 */
-  --tracking-display: -0.02em; /* 대형 디스플레이는 약간 좁혀 포스터 느낌 */
+  --tracking-display: -0.03em; /* 대형 디스플레이는 약간 좁혀 포스터 느낌 */
   --tracking-numeric: 0; /* 자릿수 정렬은 tabular-nums 가 담당 */
 
   /* ── 리듬(간격 스케일) ───────────────────────────────────────────── */
@@ -72,9 +72,9 @@
   --app-max: 46rem; /* 본문 영역 최대폭 — 좁은 폭에서는 뷰포트에 맞춤 */
 
   /* ── 반경 ───────────────────────────────────────────────────────── */
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 10px;
+  --radius: 18px;
+  --radius-lg: 26px;
   --radius-pill: 999px;
 
   /* ── 그림자/깊이 ─────────────────────────────────────────────────── */
@@ -96,9 +96,9 @@
   /* ── 스포트라이트 배경(무대 중앙 방사형) ─────────────────────────── */
   /* 주요 행동 영역에 엷게 까는 객석 조선. 배경 대비 6–10% 로 과하지 않게. */
   --stage-spotlight-bg: radial-gradient(
-    120% 80% at 50% 0%,
-    var(--spotlight-wash) 0%,
-    transparent 62%
+    135% 85% at 50% 0%,
+    var(--spotlight-wash-strong) 0%,
+    transparent 66%
   );
 
   color-scheme: dark;
