@@ -20,6 +20,8 @@
   import Catch from './routes/Catch.svelte';
   import Memory from './routes/Memory.svelte';
   import LocaleSwitcher from './components/LocaleSwitcher.svelte';
+  import Icon from './components/Icon.svelte';
+  import Avatar from './components/Avatar.svelte';
 
   const app = createAppState();
   const router = createRouter();
@@ -52,13 +54,13 @@
 <main class="app">
   <header class="proscenium">
     <a class="wordmark" href="#/profiles" aria-label={m.app_title()}>
-      <span class="wordmark-mark" aria-hidden="true">◆</span>
+      <span class="wordmark-mark" aria-hidden="true"><Icon name="diamond" /></span>
       <span class="wordmark-text">{m.app_title()}</span>
     </a>
 
     {#if profile}
       <div class="chip" aria-label={m.stage_chip_label()}>
-        <span class="chip-avatar" aria-hidden="true">{profile.avatar}</span>
+        <span class="chip-avatar" aria-hidden="true"><Avatar id={profile.avatar} /></span>
         <span class="chip-name">{profile.name}</span>
       </div>
     {/if}

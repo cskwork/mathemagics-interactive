@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from './Icon.svelte';
   import type { ModSumResult } from '../lib/engine/types.js';
 
   interface Props {
@@ -42,7 +43,7 @@
         <span class="circ circ--sm">{result.mod9Answer}</span>
       </p>
       <p class="ms-verdict" class:ok={result.mod9Match} class:bad={!result.mod9Match}>
-        {result.mod9Match ? '✓ ' + m.modsum_pass() : '✗ ' + m.modsum_fail()}
+        {#if result.mod9Match}<Icon name="check" /> {m.modsum_pass()}{:else}<Icon name="x" /> {m.modsum_fail()}{/if}
       </p>
     </div>
     <div class="ms-cell">
@@ -53,7 +54,7 @@
         <span class="circ circ--sm">{result.mod11Answer}</span>
       </p>
       <p class="ms-verdict" class:ok={result.mod11Match} class:bad={!result.mod11Match}>
-        {result.mod11Match ? '✓' : '✗'}
+        {#if result.mod11Match}<Icon name="check" />{:else}<Icon name="x" />{/if}
       </p>
     </div>
   </div>

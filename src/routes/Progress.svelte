@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from '../components/Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import { loadAllLessons } from '../lib/lesson/loader.js';
@@ -96,7 +97,7 @@
     {@const st = streak()}
     {#if st.count > 0}
       <article class="card streak-card" aria-label={m.progress_streak_label()}>
-        <span class="streak-mark" aria-hidden="true">🔥</span>
+        <span class="streak-mark" aria-hidden="true"><Icon name="flame" /></span>
         <span class="streak-text">{m.progress_streak_days({ n: st.count })}</span>
       </article>
     {/if}
@@ -175,10 +176,12 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    border-left: 3px solid var(--applause);
+    background: var(--applause-wash);
+    border: 1px solid color-mix(in srgb, var(--applause) 40%, var(--stage-line));
   }
   .streak-mark {
     font-size: 1.4rem;
+    color: var(--spotlight);
   }
   .streak-text {
     font-family: var(--font-display);

@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from '../components/Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import { loadAllLessons } from '../lib/lesson/loader.js';
@@ -211,7 +212,7 @@
       </div>
       <div class="numpad-mini" role="group" aria-label={m.numpad_label()}>
         {#each ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0'] as k (k)}
-          <button class="np-key" onclick={() => typeKey(k)} aria-label={k === '⌫' ? m.numpad_backspace() : k}>{k}</button>
+          <button class="np-key" onclick={() => typeKey(k)} aria-label={k === '⌫' ? m.numpad_backspace() : k}>{#if k === '⌫'}<Icon name="backspace" />{:else}{k}{/if}</button>
         {/each}
       </div>
       <div class="row controls">
@@ -220,7 +221,7 @@
     </div>
   {:else if finished}
     <div class="card stage-deck done" role="group" aria-label={m.stage_done_title()}>
-      <p class="done-emoji" aria-hidden="true">🎭</p>
+      <p class="done-emoji" aria-hidden="true"><Icon name="masks" /></p>
       <p class="done-title">{m.stage_done_title()}</p>
       <p class="muted">{m.stage_done_subtitle()}</p>
       <p class="muted small">{m.stage_problems_solved({ n: solvedCount })} · {m.stage_time()}: {fmt(elapsed)}</p>
@@ -345,6 +346,7 @@
   .done-emoji {
     font-size: 3rem;
     margin: 0;
+    color: var(--spotlight);
   }
   .done-title {
     font-family: var(--font-display);

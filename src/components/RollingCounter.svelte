@@ -77,9 +77,9 @@
     gap: var(--space-2);
     align-items: baseline;
     padding: 0.2rem 0.5rem;
-    background: var(--stage-floor);
+    background: var(--spotlight-wash);
     border-radius: var(--radius);
-    border-left: 3px solid var(--spotlight);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 38%, var(--stage-line));
   }
   .total-label {
     font-size: var(--text-small);

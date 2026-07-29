@@ -248,9 +248,8 @@
 
   /* 자막바(caption) — 시각적으로 보이는 aria-live 영역(M7 산출물 7) */
   .bubble {
-    background: var(--stage-floor);
-    border: 1px solid var(--stage-line);
-    border-left: 3px solid var(--spotlight);
+    background: var(--spotlight-wash);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 38%, var(--stage-line));
     border-radius: var(--radius);
     padding: 0.85rem 1rem;
     min-height: 3rem;

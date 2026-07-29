@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from '../components/Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import { loadAllLessons } from '../lib/lesson/loader.js';
@@ -92,7 +93,9 @@
             {@const locked = nodeLocked(node, completed)}
             {@const rec = recordFor(node.skillId)}
             <article class="card lesson-row" class:locked class:completed={done}>
-              <div class="lesson-mark" aria-hidden="true">{done ? '★' : locked ? '🔒' : '◆'}</div>
+              <div class="lesson-mark" aria-hidden="true">
+                {#if done}<Icon name="star" />{:else if locked}<Icon name="lock" />{:else}<Icon name="diamond" />{/if}
+              </div>
               <div class="lesson-body">
                 <h4>{resolveLocalized(node.title, activeLocale())}</h4>
                 {#if done && rec}
@@ -116,7 +119,9 @@
           {/each}
           {#if magicSlot}
             <article class="card magic-slot" class:open={magicOpen}>
-              <div class="lesson-mark" aria-hidden="true">{magicOpen ? '🎩' : '✦'}</div>
+              <div class="lesson-mark" aria-hidden="true">
+                {#if magicOpen}<Icon name="top-hat" />{:else}<Icon name="sparkle" />{/if}
+              </div>
               <div class="lesson-body">
                 <h4>{m.tree_magic_slot()}</h4>
                 <p class="muted small">{magicOpen ? m.tree_magic_open() : m.tree_magic_locked()}</p>

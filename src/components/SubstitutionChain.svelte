@@ -82,10 +82,10 @@
   .chain-narr {
     font-size: var(--text-lead);
     color: var(--house-bright);
-    border-left: 3px solid var(--spotlight);
     padding: 0.5rem 0.75rem;
     margin: var(--space-2) 0 0;
-    background: var(--stage-floor);
+    background: var(--spotlight-wash);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 38%, var(--stage-line));
     border-radius: var(--radius);
   }
   @keyframes chain-in {
