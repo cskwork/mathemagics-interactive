@@ -12,6 +12,11 @@ dev-dist/
 # 생성물 — `npm run i18n` (package.json prepare 훅)이 messages/*.json 에서 만든다
 src/lib/paraglide/
 
+# e2e(Playwright) 생성물 — `npm run test:e2e` 로 재생성되므로 커밋하지 않는다
+e2e/artifacts/
+e2e/test-results/
+e2e/report/
+
 # 로컬 데이터
 *.sqlite
 *.db

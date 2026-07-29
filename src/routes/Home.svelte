@@ -1,6 +1,6 @@
-<!-- Hallmark · P4 H4 E4 S3 R4 V4 — 백스테이지 대시보드 뼈대 (M7 산출물 3).
-  - "오늘의 공연" 스포트라이트 카드(입장 CTA) + "내 레퍼토리" 자리표(M2+ 콘텐츠가 채울 자리).
-  - 솔직성: 레슨은 M2부터. "공연 시작" CTA 는 가짜 기능이 아니라 비활성 + 안내 문구로 둔다. -->
+<!-- Hallmark · P4 H4 E4 S3 R4 V4 — 백스테이지 대시보드 (M7 산출물 3).
+  - "오늘의 공연" 스포트라이트 카드(연습 입장 CTA) + "내 레퍼토리" 기법/모드 진입판.
+  - M2(레슨)·M3(연습)·M5(공연/마술)·M6(기억술) 가 열려 CTA 가 실제 라우트로 연결된다. -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';

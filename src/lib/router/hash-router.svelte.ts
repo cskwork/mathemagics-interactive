@@ -33,6 +33,9 @@ export const DEFAULT_ROUTE: Route = 'profiles';
 const PATH_TO_ROUTE: Record<string, Route> = {
   '': 'profiles',
   '/': 'profiles',
+  // #/profiles 도 profiles 로 도달 — App.svelte 워드마크(href="#/profiles") 정합.
+  // 없으면 unknown → not-found 분기로 떨어져 "없는 화면이에요" 가 뜬다 (M7 검증에서 발견).
+  '/profiles': 'profiles',
   '/home': 'home',
   '/settings': 'settings',
   '/dev/playground': 'playground',

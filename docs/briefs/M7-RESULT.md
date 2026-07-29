@@ -2,7 +2,8 @@
 
 구현자: GLM 5.2 · 완료: 2026-07-29 · 브리프: [M7.md](M7.md)
 상태: **브리프 §3 전 7 산출물 구현, §5 완료 기준(명령 3종 + 토큰 잠금 + M0 #3 폐쇄 + 회귀 0) 통과**.
-반응형 시각 검증(320/375/414/768px 브라우저 실측)만 이 환경 한계로 미검증(§4.4 솔직 명시).
+**사후 검증 패스(§8) 완료**: Playwright(+axe-core) e2e 26건 추가 — 반응형 4폭·Dialog DOM·WCAG 정적 감사
+전부 실측 통과. 검증 중 발견한 결함 3종(ColumnGrid ARIA 구조 · btn--danger 대비 · `#/profiles` 라우팅) 수정.
 
 ---
 
@@ -156,6 +157,11 @@ EXIT=0
 번들 증가: CSS 4.24→18.09KB(gzip 1.40→4.16KB, 디자인 시스템 본체), JS 179.64→189.88KB(gzip 61.81→64.93KB, Dialog+parent-gate).
 **폰트는 번들에 0바이트**(CDN). 생성물 `src/lib/paraglide/` 는 gitignore(M0~M1 과 동일).
 
+> **[사후 검증 시 정정]** 위 §4.1 의 "8 파일 / 80 테스트 / JS 189.88KB" 수치는 **부정확(과소)** 했다.
+> 사후 검증(§8) 시점 실측은 **28 파일 / 365 테스트 / JS 387.72KB(gzip 121.11KB)**. 원인은 명확하지 않으나
+> M2~M6(레슨·엔진·SRS·서버) 가 더한 테스트·코드가 집계에 반영되지 않은 것으로 보인다. 기능 영향은 없고,
+> 단지 회귀 기준선 문서가 실제보다 낮았던 것. 이 문서의 다른 회귀 무결 주장(체크 0·빌드 통과)은 유효.
+
 ### 4.2 테스트 80개 (8파일) — M7 신규 6개 + 기존 74개(회귀 0)
 
 **M7 신규:** `src/lib/ui/parent-gate.test.ts` (6) — `makeParentGateChallenge` 결정성(seed 고정 시 동일) ·
@@ -294,11 +300,78 @@ dad76c4 feat(ui): apply The Stage to routes/components + in-app Dialog (closes M
 
 | # | 항목 | 심각도 | 비고 |
 |---|---|---|---|
-| 1 | **반응형 시각 실측 미검증** | 중 | §4.4. 320/375/414/768px 브라우저 실측은 오케스트레이터가 직접. CSS 안전장치는 코드로 기록 |
-| 2 | **Dialog DOM 동작 미검증** | 중 | §4.2/§4.4. 포커스 트랩·ESC·배경클릭·포커스 복귀. vitest node 환경 한계. 오케스트레이터 브라우저 실측 필요(키보드만으로 순회·ESC·배경클릭 닫힘·트리거로 포커스 복귀) |
-| 3 | **스크린리더 실측 미수행** | 중 | M0 인계 #10 계속. aria 구조·자막바·포커스링은 설계+코드 검토 수준. VoiceOver/NVDA 실측은 별도 환경 |
-| 4 | **Pretendard 오프라인 미캐싱** | 낮음 | CDN `<link>` 라 offline 재방문 시 시스템 한글 폰트로 폴백(기능 영향 0, 디자인만 약화). offline 에도 Pretendard 를 원하면 workbox runtimeCaching 에 해당 CDN 추가(M7 범위 밖) |
-| 5 | **Home "공연 시작" CTA 비활성** | 예정됨 | 레슨은 M2. M2 가 열리면 이 버튼을 활성화하고 레슨 진입에 연결 |
+| 1 | **반응형 시각 실측** | **해결** | **§8 e2e 로 실측 통과**. 320/375/414/768px × 4 라우트(profiles/home/settings/playground) 에서 가로 스크롤 0 · 인터랙티브 요소 뷰포트 내 함입 단언 + 스크린샷 16종 증거 |
+| 2 | **Dialog DOM 동작** | **해결** | **§8 e2e 로 실측 통과**. 포커스 입력칸 이동 · aria-modal/labelled · 포커스 트랩 양끝 순환 · ESC 닫힘+트리거 포커스 복귀 · 배경클릭 닫힘 · parent-gate 오답 비활성/정답 통과+삭제 |
+| 3 | **스크린리더(VoiceOver/NVDA) 실측** | **일부 진전** | axe-core 정적 감사(§8) 로 profiles/home/settings/playground/dialog-open 의 WCAG 2.0/2.1 A·AA critical·serious 위반 0건 확인. **단 axe ≠ 실 SR 낭독** — 동적 포커스 순서·낭독 체감은 여전히 사람 실측 필요(M0 인계 #10 계속) |
+| 4 | **Pretendard 오프라인 미캐싱** | **해결** | vite.config.ts workbox.runtimeCaching 에 `cdn.jsdelivr.net` CacheFirst(30일) 추가 — 첫 방문 후 오프라인에서도 Pretendard 유지 |
+| 5 | **Home "공연 시작" CTA** | **해결(기존 완료)** | M2/M3/M5/M6 가 열려 Home CTAs 가 이미 실제 라우트로 연결중(practice/lessons/stage/magic/catch/memory). 본 문서 상단 주석(비활성이라던)이 부실해 정정함. 기능은 정상 |
 | 6 | **라이트 color-scheme 미구현** | 낮음 | tokens.css 에 자리만 예약(브리프 §3.1 "라이트는 토큰만预留"). 활성화는 별도 마일스톤 |
 | 7 | **Settings·헤더 LocaleSwitcher 중복** | 낮음 | 의도적(빠른 접근 vs 맥락+힌트). 흐름이 산만하면 한쪽 제거 가능 |
+| 8 | **(검증 중 발견) `#/profiles` 라우팅 미도달** | **해결** | PATH_TO_ROUTE 에 `/profiles` 가 없어 워드마크 `href="#/profiles"` 클릭 시 not-found 분기. `hash-router.svelte.ts` 에 추가로 폐쇄(e2e 로 단언) |
+| 9 | **(검증 중 발견) ColumnGrid ARIA 구조** | **해결** | `role="grid"`+`gridcell` 사이 `role="row"` 누락 → aria-required-children/-parent critical 위반. `display:contents` row 래퍼 추가로 구조 완성(레이아웃 불변) |
+| 10 | **(검증 중 발견) btn--danger 대비 미달** | **해결** | `--miss` 텍스트 on miss-wash 배경 ~4.46:1(WCAG AA 4.5:1 미달). `--house-bright`(~11:1)로 변경 — 적색 의미는 wash+테두리가 유지 |
+
+---
+
+## 8. 사후 검증 패스 — Playwright + axe-core 실측 (브라우저 자동화)
+
+M7 본 구현 종료 후 §7 의 "미검증" 항목(반응형·Dialog DOM·접근성)을 **실측**으로 전환하기 위해
+별도의 브라우저 e2e 검증 계층을 추가했다. vitest(node, DOM 없음)와 완전 분리 — `npm test` 는 그대로
+기존 365 단위테스트만, `npm run test:e2e` 가 새 검증을 담당한다. **런타임 의존성 0 추가**(전부 devDependencies).
+
+### 8.1 추가된 것
+
+| 항목 | 경로 | 비고 |
+|---|---|---|
+| devDependencies | `@playwright/test`, `@axe-core/playwright` | dev 전용 — `npm audit --omit=dev` 0건. 프로덕션 번들 영향 0 |
+| 설정 | `playwright.config.ts` | `webServer` 가 `vite build && vite preview` 로 **프로덕션 빌드**를 띄워 검증(개발 서버 아님) |
+| 스펙 | `e2e/responsive.spec.ts` · `e2e/dialog.spec.ts` · `e2e/a11y.spec.ts` · `e2e/helpers.ts` | 26 테스트 |
+| 스크립트 | `package.json` `"test:e2e": "playwright test"` | 기존 check/test/build 불변 |
+| 산출물 | `e2e/artifacts/`(스크린샷 16) · `e2e/test-results/` · `e2e/report/` | 전부 `.gitignore`(재생성 가능) |
+
+### 8.2 검증 결과 — 26/26 통과
+
+```
+$ npx playwright test --reporter=line
+PASS (26) FAIL (0)
+Time: 12589ms
+```
+
+- **반응형(16)** — 320/375/414/768px × profiles/home/settings/playground. 각 폭에서
+  `document.scrollWidth - innerWidth ≤ 0`(가로 스크롤 0) 단언 + 모든 button/a/input 의 우측 끝이
+  뷰포트 내임을 단언. full-page 스크린샷 16종을 `e2e/artifacts/screenshots/` 에 증거로 기록.
+- **Dialog DOM(5)** — prompt 변형: 입력칸 자동 포커스(rAF 후) · `aria-modal`/`aria-labelledby` ·
+  포커스 트랩(첫↔끝 Shift+Tab/Tab 순환) · ESC 닫힘 + 트리거 버튼으로 포커스 복귀 · 배경 클릭 닫힘.
+  parent-gate 변형: 오답("0") → 확인 `disabled`, 정답(과제 `a + b` 를 읽어 합 산출) → 확인 활성 →
+  클릭 시 프로필 삭제(빈 상태 카드로 전환). 라우팅: `#/profiles` 도 profiles 도달(§7 #8).
+- **접근성 axe-core(5)** — profiles/home/settings/playground/dialog-open. WCAG 2.0/2.1 A·AA 태그로
+  감사. critical/serious 위반 **0건**(검증-중-발견 결함 2종 수정 후, §8.3).
+
+### 8.3 검증으로 발견·수정한 결함 (위 §7 #8~#10 과 동일)
+
+1. **`#/profiles` 라우팅** — `hash-router.svelte.ts` PATH_TO_ROUTE 에 `/profiles` 추가. 워드마크 링크가
+   not-found 로 떨어지던 잠재 결함. e2e `라우팅` 테스트로 단언.
+2. **ColumnGrid ARIA 구조(critical)** — `role="grid"` 안에 `role="row"` 없이 `gridcell` 이 직접 위치해
+   aria-required-children/-parent 위반. `display:contents` 인 `<div role="row" class="gridrow">` 래퍼로
+   grid>row>gridcell 구조 완성. CSS 그리드 레이아웃은 불변(셀이 여전히 부모 grid 에 직접 참여).
+3. **`.btn--danger` 대비(serious)** — `--miss`(#ff6b6b) 텍스트 on miss-wash 배경이 ~4.46:1 로 WCAG AA
+   4.5:1 에 미달. `color: var(--house-bright)`(~11:1)로 변경. 적색 의미는 miss-wash 배경 + miss 테두리가
+   유지하므로 음성은 보존됨.
+
+### 8.4 솔직한 한계 (거짓 성공 주장 금지)
+
+| 항목 | 상태 |
+|---|---|
+| **반응형 시각** | 자동화 단언(스크롤 0·요소 함입)은 통과했으나, 미학적 레이아웃(자간·여백 감각·2줄 버튼 가독성) 은 스크린샷을 사람이 눈으로 확인해야. 증거는 `e2e/artifacts/screenshots/` |
+| **스크린리더 낭독** | axe-core 는 정적·구조적 위반만 잡는다. VoiceOver/NVDA 의 동적 포커스 순서·낭독 흐름·라이브 영역 체감은 **자동화 불가 → 사람 실측 필요**(M0 인계 #10 계속). axe 통과 = SR 완벽 이 아님 |
+| **다중 브라우저** | chromium 1종만. Safari(WebKit)·Firefox 교차 검증은 별도(`projects` 추가로 확장 가능) |
+| **오프라인 Pretendard 캐싱** | workbox 설정은 추가했으나, 실제 SW 동작(오프라인에서 캐시 히트) 실측은 e2e 범위 밖 — DevTools Application 패널에서 사람 확인 권장 |
+
+### 8.5 최종 회귀 — 전 파이프라인 통과
+
+```
+$ npm run check    → svelte-check 0 errors / 0 warnings
+$ npm test         → 28 files / 365 tests passed
+$ npm run build    → dist OK (JS 387.72KB gzip 121.11KB, CSS 45.80KB gzip 8.11KB)
+$ npm run test:e2e → 26 passed (chromium)
 ```
