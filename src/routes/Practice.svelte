@@ -8,6 +8,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from '../components/Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import { deriveGrid, deriveSteps } from '../lib/engine/derive.js';
@@ -205,7 +206,7 @@
     <p class="muted">{m.loading()}</p>
   {:else if phase === 'empty'}
     <div class="card empty">
-      <p class="emoji" aria-hidden="true">✨</p>
+      <p class="emoji" aria-hidden="true"><Icon name="sparkles" /></p>
       <p>{m.practice_empty()}</p>
       <div class="row controls">
         <button class="btn--primary" onclick={() => router.navigate('home')}>{m.practice_back_home()}</button>
@@ -230,7 +231,7 @@
     </div>
   {:else if phase === 'done'}
     <div class="card done" role="group" aria-label={m.practice_done_title()}>
-      <p class="done-emoji" aria-hidden="true">🎩</p>
+      <p class="done-emoji" aria-hidden="true"><Icon name="top-hat" /></p>
       <p class="done-title">{m.practice_done_title()}</p>
       <p class="muted">{m.practice_done_subtitle()}</p>
       <p class="muted small">{m.practice_session_stats({ correct: correctCount, total: results.length })}</p>
@@ -262,6 +263,7 @@
   .done-emoji {
     font-size: 3rem;
     margin: 0;
+    color: var(--spotlight);
   }
   .done-title {
     font-family: var(--font-display);
@@ -271,8 +273,8 @@
 
   /* "어떤 트릭?" 판단 배너 — interleaving 의 핵심(전략 선택 훈련). */
   .trick-banner {
-    background: var(--stage-mid);
-    border-left: 3px solid var(--spotlight);
+    background: color-mix(in srgb, var(--stage-mid) 85%, var(--spotlight) 15%);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 35%, var(--stage-line));
     display: flex;
     flex-direction: column;
     gap: var(--space-1);

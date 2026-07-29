@@ -10,6 +10,7 @@
 -->
 <script lang="ts">
   import { m } from '../paraglide/messages.js';
+  import Icon from '../../components/Icon.svelte';
   import { activeLocale } from '../i18n/locale.svelte.js';
   import { resolveLocalized } from '../content/localized.js';
   import { deriveGrid, deriveSteps } from '../engine/derive.js';
@@ -484,7 +485,7 @@
       {/if}
     {:else if lessonState.phase === 'done'}
       <div class="card done" role="group" aria-label={m.lesson_done_title()}>
-        <p class="done-emoji" aria-hidden="true">🎩</p>
+        <p class="done-emoji" aria-hidden="true"><Icon name="top-hat" /></p>
         <p class="done-title">{m.lesson_done_title()}</p>
         <p class="muted">{m.lesson_done_subtitle()}</p>
         <p class="muted small">
@@ -521,8 +522,8 @@
 
   /* 소개/규칙 카드 — 무대 표면 위 안내문 */
   .intro-card {
-    background: var(--stage-mid);
-    border-left: 3px solid var(--spotlight);
+    background: color-mix(in srgb, var(--stage-mid) 85%, var(--spotlight) 15%);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 35%, var(--stage-line));
   }
   .intro-text {
     font-size: var(--text-lead);
@@ -544,9 +545,8 @@
 
   /* 힌트 말풍선 — 자막바 톤 유지하되 스포트라이트 강조 */
   .bubble.hint {
-    background: var(--stage-floor);
-    border: 1px solid var(--stage-line);
-    border-left: 3px solid var(--spotlight);
+    background: var(--spotlight-wash);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 38%, var(--stage-line));
     border-radius: var(--radius);
     padding: 0.85rem 1rem;
     color: var(--house-bright);
@@ -615,6 +615,7 @@
   .done-emoji {
     font-size: 3rem;
     margin: 0;
+    color: var(--spotlight);
   }
 
   @media (prefers-reduced-motion: reduce) {

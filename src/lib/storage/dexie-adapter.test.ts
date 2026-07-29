@@ -26,7 +26,7 @@ afterEach(async () => {
 });
 
 function profile(id: string, name = id): Profile {
-  return { id, name, avatar: '🐧', createdAt: 1_700_000_000_000 };
+  return { id, name, avatar: 'penguin', createdAt: 1_700_000_000_000 };
 }
 
 function progress(profileId: string, skillId: string, lastPlayedAt: number): ProgressRecord {

@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from '../components/Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import { MAGIC_TRICKS, findMagicTrick } from '../lib/magic/tricks.js';
@@ -86,7 +87,7 @@
             disabled={!open}
             onclick={() => (globalThis.location.hash = `#/magic?id=${trick.id}`)}
           >
-            <span class="trick-mark" aria-hidden="true">{open ? '🎩' : '✦'}</span>
+            <span class="trick-mark" aria-hidden="true">{#if open}<Icon name="top-hat" />{:else}<Icon name="sparkle" />{/if}</span>
             <span class="trick-title">{resolveLocalized(trick.title, activeLocale())}</span>
             {#if !open}<span class="muted small">{m.magic_locked()}</span>{/if}
           </button>

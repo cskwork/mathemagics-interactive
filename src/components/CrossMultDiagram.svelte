@@ -124,7 +124,7 @@
     stroke: var(--spotlight);
     stroke-width: 1.5;
     opacity: 0.25;
-    transition: opacity var(--motion-base) ease, stroke-width var(--motion-base) ease;
+    transition: opacity var(--motion-base) ease;
   }
   :global(.xmult-svg .diag--active) {
     opacity: 1;

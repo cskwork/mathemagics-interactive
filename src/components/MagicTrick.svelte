@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from './Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import type { MagicTrick } from '../lib/magic/tricks.js';
@@ -94,7 +95,7 @@
     <div class="card stage-deck mission" role="group" aria-label={m.magic_mission()}>
       <p class="kicker">{m.magic_mission()}</p>
       <p class="mission-title">{m.magic_mission_hint()}</p>
-      <p class="done-emoji" aria-hidden="true">🎩</p>
+      <p class="done-emoji" aria-hidden="true"><Icon name="top-hat" /></p>
       <p class="muted">{m.magic_done()}</p>
     </div>
   {/if}
@@ -187,6 +188,7 @@
   .done-emoji {
     font-size: 3rem;
     margin: 0;
+    color: var(--spotlight);
   }
   .controls {
     justify-content: center;

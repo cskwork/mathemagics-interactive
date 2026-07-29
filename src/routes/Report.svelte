@@ -137,8 +137,8 @@
 
   /* 대화 소재 카드 — 스포트라이트 강조(가장 행동 지향적 정보). */
   .starter-card {
-    background: var(--stage-mid);
-    border-left: 3px solid var(--spotlight);
+    background: color-mix(in srgb, var(--stage-mid) 85%, var(--spotlight) 15%);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 35%, var(--stage-line));
     display: flex;
     flex-direction: column;
     gap: var(--space-2);

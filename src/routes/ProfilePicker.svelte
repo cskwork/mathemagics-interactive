@@ -7,8 +7,8 @@
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import Dialog from '../lib/components/Dialog.svelte';
-
-  const AVATARS = ['🐧', '🦊', '🐢', '🦉', '🐙', '🦄', '🐝', '🐳'] as const;
+  import Icon from '../components/Icon.svelte';
+  import Avatar, { AVATAR_IDS } from '../components/Avatar.svelte';
 
   interface Props {
     app: AppState;
@@ -18,7 +18,7 @@
 
   let creating = $state(false);
   let draftName = $state('');
-  let draftAvatar = $state<string>(AVATARS[0]);
+  let draftAvatar = $state<string>(AVATAR_IDS[0]);
   let busy = $state(false);
 
   // 인앱 다이얼로그 상태(이름변경/삭제). 네이티브 prompt/confirm 대체.
@@ -29,7 +29,7 @@
 
   function openForm(): void {
     draftName = '';
-    draftAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)] ?? AVATARS[0];
+    draftAvatar = AVATAR_IDS[Math.floor(Math.random() * AVATAR_IDS.length)] ?? AVATAR_IDS[0];
     creating = true;
   }
 
@@ -79,7 +79,7 @@
 
   {#if app.profiles().length === 0}
     <div class="card card--empty">
-      <span class="empty-mark" aria-hidden="true">◆</span>
+      <span class="empty-mark" aria-hidden="true"><Icon name="diamond" /></span>
       <p>{m.stage_cast_empty()}</p>
     </div>
   {:else}
@@ -87,7 +87,7 @@
       {#each app.profiles() as profile (profile.id)}
         <li class="cast-row">
           <button class="cast-pick" onclick={() => choose(profile.id)}>
-            <span class="cast-avatar" aria-hidden="true">{profile.avatar}</span>
+            <span class="cast-avatar" aria-hidden="true"><Avatar id={profile.avatar} /></span>
             <span class="cast-name">{profile.name}</span>
           </button>
           <span class="cast-actions">
@@ -114,12 +114,12 @@
       <fieldset class="avatars">
         <legend>{m.profiles_avatar_label()}</legend>
         <div class="row">
-          {#each AVATARS as avatar (avatar)}
+          {#each AVATAR_IDS as avatar (avatar)}
             <button
               type="button"
               class="avatar-btn"
               aria-pressed={draftAvatar === avatar}
-              onclick={() => (draftAvatar = avatar)}>{avatar}</button
+              onclick={() => (draftAvatar = avatar)}><Avatar id={avatar} /></button
             >
           {/each}
         </div>

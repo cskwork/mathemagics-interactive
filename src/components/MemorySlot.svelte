@@ -5,6 +5,7 @@
   색/폰트는 전부 M7 토큰(var(--*)). inline 리터럴 0.
 -->
 <script lang="ts">
+  import Icon from './Icon.svelte';
   interface SlotEntry {
     slot: string;
     value: number;
@@ -38,7 +39,7 @@
           aria-label={`${e.slot}: ${e.value}${e.word ? ' (' + e.word + ')' : ''}`}
         >
           {#if e.hand}
-            <span class="hand-icon" aria-hidden="true">✋</span>
+            <span class="hand-icon" aria-hidden="true"><Icon name="hand" /></span>
           {/if}
           <span class="value">{e.value.toLocaleString()}</span>
           {#if e.digits}

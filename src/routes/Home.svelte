@@ -3,6 +3,7 @@
   - M2(레슨)·M3(연습)·M5(공연/마술)·M6(기억술) 가 열려 CTA 가 실제 라우트로 연결된다. -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from '../components/Icon.svelte';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
 
@@ -42,27 +43,27 @@
       <p class="muted small">{m.home_repertoire_hint()}</p>
       <div class="repertoire-grid">
         <button class="card rep-card" onclick={() => router.navigate('progress')}>
-          <span class="rep-mark" aria-hidden="true">📊</span>
+          <span class="rep-mark" aria-hidden="true"><Icon name="bar-chart" /></span>
           <span>{m.home_progress_cta()}</span>
         </button>
         <button class="card rep-card" onclick={() => router.navigate('report')}>
-          <span class="rep-mark" aria-hidden="true">💬</span>
+          <span class="rep-mark" aria-hidden="true"><Icon name="chat" /></span>
           <span>{m.home_report_cta()}</span>
         </button>
         <button class="card rep-card" onclick={() => router.navigate('stage')}>
-          <span class="rep-mark" aria-hidden="true">🎭</span>
+          <span class="rep-mark" aria-hidden="true"><Icon name="masks" /></span>
           <span>{m.nav_stage()}</span>
         </button>
         <button class="card rep-card" onclick={() => router.navigate('magic')}>
-          <span class="rep-mark" aria-hidden="true">🎩</span>
+          <span class="rep-mark" aria-hidden="true"><Icon name="top-hat" /></span>
           <span>{m.nav_magic()}</span>
         </button>
         <button class="card rep-card" onclick={() => router.navigate('catch')}>
-          <span class="rep-mark" aria-hidden="true">🔍</span>
+          <span class="rep-mark" aria-hidden="true"><Icon name="search" /></span>
           <span>{m.catch_heading()}</span>
         </button>
         <button class="card rep-card" onclick={() => router.navigate('memory')}>
-          <span class="rep-mark" aria-hidden="true">🧠</span>
+          <span class="rep-mark" aria-hidden="true"><Icon name="brain" /></span>
           <span>{m.memory_heading()}</span>
         </button>
       </div>

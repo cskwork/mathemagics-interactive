@@ -11,6 +11,7 @@
    * `prefers-reduced-motion` 시 셀 전환을 즉시(very short duration)로 만든다.
    */
   import { m } from '../lib/paraglide/messages.js';
+  import Icon from './Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import ColumnGrid, { type CellRender } from './ColumnGrid.svelte';
@@ -172,14 +173,14 @@
   </div>
 
   <div class="row controls" role="group" aria-label={m.player_play()}>
-    <button onclick={restart} aria-label={m.player_restart()} disabled={index === 0 && !playing}>⏮</button>
-    <button onclick={prev} aria-label={m.player_prev()} disabled={index === 0}>◀</button>
+    <button onclick={restart} aria-label={m.player_restart()} disabled={index === 0 && !playing}><Icon name="restart" /></button>
+    <button onclick={prev} aria-label={m.player_prev()} disabled={index === 0}><Icon name="prev" /></button>
     {#if playing}
-      <button class="primary" onclick={pause} aria-label={m.player_pause()}>⏸</button>
+      <button class="primary" onclick={pause} aria-label={m.player_pause()}><Icon name="pause" /></button>
     {:else}
-      <button class="primary" onclick={play} aria-label={m.player_play()} disabled={atEnd}>▶</button>
+      <button class="primary" onclick={play} aria-label={m.player_play()} disabled={atEnd}><Icon name="play" /></button>
     {/if}
-    <button onclick={next} aria-label={m.player_next()} disabled={atEnd}>▶</button>
+    <button onclick={next} aria-label={m.player_next()} disabled={atEnd}><Icon name="play" /></button>
     <button class="speed" onclick={toggleSpeed} aria-label={m.player_speed()} aria-pressed={speed === 0.5}>
       {speed}×
     </button>
@@ -192,9 +193,8 @@
   /* 자막바(caption) — aria-live 낭독 영역을 시각적으로도 보이게(M7 산출물 7).
    * 무대 앞 자막: 하단 가로형 바, 본문 대비 뚜렷한 표면. */
   .bubble {
-    background: var(--stage-floor);
-    border: 1px solid var(--stage-line);
-    border-left: 3px solid var(--spotlight);
+    background: var(--spotlight-wash);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 38%, var(--stage-line));
     border-radius: var(--radius);
     padding: 0.85rem 1rem;
     min-height: 3rem;
