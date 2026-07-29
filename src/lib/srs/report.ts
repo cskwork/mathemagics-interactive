@@ -50,9 +50,14 @@ export function isThisWeek(completedAt: number, now: number): boolean {
   return startOfDay(completedAt) >= startOfDay(now) - 7 * DAY_MS + 1;
 }
 
-/** 주(week) 식별용 정수 — 대화 소재 시드 안정화. */
+/** 주(week) 식별용 정수 — 대화 소재 시드 안정화.
+ *  같은 달력 주(월~일)는 같은 시드가 되도록 그 주의 **월요일** day-number 를 쓴다.
+ *  이전의 `floor(day/7)` 스킴은 1970-01-01(목) 기준 epoch-7 버킷이라 달력 주와 어긋나,
+ *  어떤 타임존(예: UTC)에서는 연속한 날(수/목)이 버킷 경계를 넘어 시드가 갈리는 flake 가 됐다. */
 function weekSeed(now: number): number {
-  return Math.floor(startOfDay(now) / DAY_MS / 7);
+  const sod = startOfDay(now);
+  const dayOfWeek = (new Date(sod).getDay() + 6) % 7; // Mon=0 … Sun=6
+  return Math.floor((sod - dayOfWeek * DAY_MS) / DAY_MS);
 }
 
 /** 숫자 → 로케일 표현(ko/en). 큰 수는 천 단위 구분(일반적 가독성). */
