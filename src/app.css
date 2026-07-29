@@ -174,17 +174,18 @@ button.primary:active {
   color: var(--house-bright);
 }
 
-/* danger — 어깨(miss/적색) */
+/* danger — 어깨(miss/적색). 본문색은 house-bright(고대비) — miss 적색 텍스트는
+   miss-wash 배경과 ~4.46:1 로 WCAG AA(4.5:1)에 미달(M7 검증 axe 실측). 적색 의미는
+   miss-wash 배경 + miss 테두리가 담당한다. hover 와 일관되게 본문은 밝게. */
 .btn--danger,
 button.danger {
-  color: var(--miss);
+  color: var(--house-bright);
   background: var(--miss-wash);
   border-color: color-mix(in srgb, var(--miss) 45%, transparent);
 }
 .btn--danger:hover,
 button.danger:hover {
   background: color-mix(in srgb, var(--miss) 28%, var(--stage-mid) 72%);
-  color: var(--house-bright);
 }
 .btn--danger:active,
 button.danger:active {

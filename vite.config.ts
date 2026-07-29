@@ -55,6 +55,18 @@ export default defineConfig({
           {
             urlPattern: ({ url }) => url.pathname.includes('/api/'),
             handler: 'NetworkOnly'
+          },
+          {
+            // Pretendard Variable(CDN)을 오프라인에서도 쓰도록 첫 방문 후 캐시.
+            // 버전(@v1.3.9)이 URL 에 고정돼 CacheFirst 가 안전. 미캐싱 시 오프라인 재방문은
+            // 시스템 한글 폰트로 폴백(기능 영향 0, 디자인만 약화)하던 M7 인계 #4 를 폐쇄.
+            urlPattern: ({ url }) => url.origin === 'https://cdn.jsdelivr.net',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pretendard-font',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 16, maxAgeSeconds: 60 * 60 * 24 * 30 }
+            }
           }
         ]
       },

@@ -74,19 +74,24 @@
   style={`grid-template-columns: repeat(${grid.cols.length}, var(--cell-size));`}
 >
   {#each grid.rows as row (row.id)}
-    {#each grid.cols as col (col)}
-      {@const place = grid.placeValueOf[col] ?? -1}
-      <div
-        class="{cellClass(row.id, col)} {row.underline ? 'cell--underlined' : ''}"
-        role="gridcell"
-        data-row={row.id}
-        data-col={col}
-        data-place={place}
-        aria-label={label(row.id, col)}
-      >
-        <span class="cell-value">{displayValue(row.id, col)}</span>
-      </div>
-    {/each}
+    <!-- role="row" + display:contents — ARIA grid 구조(grid>row>gridcell)를 갖추되
+         레이아웃은 기존과 동일하게 셀이 .colgrid 의 CSS grid 에 직접 참여한다.
+         없으면 gridcell 이 row 부모를 가져 aria-required-parent/children 위반(M7 검증 실측). -->
+    <div class="gridrow" role="row">
+      {#each grid.cols as col (col)}
+        {@const place = grid.placeValueOf[col] ?? -1}
+        <div
+          class="{cellClass(row.id, col)} {row.underline ? 'cell--underlined' : ''}"
+          role="gridcell"
+          data-row={row.id}
+          data-col={col}
+          data-place={place}
+          aria-label={label(row.id, col)}
+        >
+          <span class="cell-value">{displayValue(row.id, col)}</span>
+        </div>
+      {/each}
+    </div>
   {/each}
 </div>
 
@@ -99,6 +104,11 @@
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;
     justify-content: start;
+  }
+
+  /* ARIA row 래퍼 — 박스는 만들지 않고 자식(셀)이 부모 grid 에 직접 참여(display:contents). */
+  .gridrow {
+    display: contents;
   }
 
   /* Hallmark · P4 H4 E4 S4 R4 V4 — "무대 위 카드" 숫자판.
