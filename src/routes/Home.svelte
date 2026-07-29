@@ -25,7 +25,7 @@
     <article class="spotlight-card" aria-labelledby="today-show">
       <div class="spotlight-card-beam" aria-hidden="true"></div>
       <div class="spotlight-card-body">
-        <p class="kicker">{m.home_today_show()}</p>
+        <h3 class="kicker" id="today-show">{m.home_today_show()}</h3>
         <p class="muted lead">{m.home_practice_hint()}</p>
         <div class="cta-row">
           <button class="btn--primary cta" onclick={() => router.navigate('practice')}>

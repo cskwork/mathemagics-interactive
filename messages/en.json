@@ -2,6 +2,8 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
 
   "app_title": "Mathemagics",
+  "app_skip_to_content": "Skip to content",
+  "app_stage_label": "Main stage",
   "app_tagline": "Calculation tricks you do in your head",
 
   "nav_profiles": "Profiles",

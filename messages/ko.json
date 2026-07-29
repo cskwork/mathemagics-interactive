@@ -2,6 +2,8 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
 
   "app_title": "매스매직스",
+  "app_skip_to_content": "콘텐츠로 건너뛰기",
+  "app_stage_label": "공연 무대",
   "app_tagline": "머릿속으로 계산하는 마술",
 
   "nav_profiles": "프로필",

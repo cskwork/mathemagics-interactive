@@ -49,9 +49,22 @@
   const profile = $derived(app.activeProfile());
   // 라우트가 바뀔 때마다 curtain-rise 를 재생하기 위한 키.
   const routeKey = $derived(router.current() ?? 'profiles');
+
+  // 라우트 전환 시 본문 영역(#main-stage)으로 포커스 옮김 — 스크린리더·키보드.
+  // 최초 진입은 건너뛴다(프로필 입력 등으로 포커스를 빼앗지 않게).
+  let firstRoute = true;
+  $effect(() => {
+    void routeKey;
+    if (firstRoute) {
+      firstRoute = false;
+      return;
+    }
+    document.getElementById('main-stage')?.focus();
+  });
 </script>
 
 <main class="app">
+  <a class="skip-link" href="#main-stage">{m.app_skip_to_content()}</a>
   <header class="proscenium">
     <a class="wordmark" href="#/profiles" aria-label={m.app_title()}>
       <span class="wordmark-mark" aria-hidden="true"><Icon name="diamond" /></span>
@@ -70,7 +83,7 @@
     </div>
   </header>
 
-  <div class="stage">
+  <div class="stage" id="main-stage" tabindex="-1" role="group" aria-label={m.app_stage_label()}>
     {#key routeKey}
       <div class="rise">
         {#if bootError}
@@ -177,6 +190,36 @@
 
   .stage {
     min-width: 0;
+  }
+  .stage:focus {
+    outline: none;
+  }
+
+  .skip-link {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .skip-link:focus {
+    position: fixed;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: 20;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip-path: none;
+    padding: var(--space-2) var(--space-3);
+    background: var(--spotlight);
+    color: var(--spotlight-ink);
+    border-radius: var(--radius);
+    font-weight: 800;
   }
 
   @media (max-width: 360px) {
