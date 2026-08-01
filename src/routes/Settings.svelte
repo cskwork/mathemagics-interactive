@@ -15,7 +15,6 @@
 
   const settings = $derived(app.settings());
 
-  // ── 내보내기 ─────────────────────────────────────────────────────────────────
   let exportState = $state<'idle' | 'loading' | 'done' | 'error'>('idle');
 
   async function doExport(): Promise<void> {
@@ -36,7 +35,6 @@
     }
   }
 
-  // ── 가져오기 (파일 선택 → 미리보기 다이얼로그 → merge/replace 적용) ──────────
   let importDialogOpen = $state(false);
   let preview = $state<ExportBundle | null>(null);
   let importError = $state<string | null>(null);
@@ -79,80 +77,100 @@
   }
 </script>
 
-<section class="stack">
+<section class="settings">
   <h2>{m.settings_heading()}</h2>
 
-  {#if settings}
-    <div class="card stack">
-      <div class="stack" style="gap: 0.25rem;">
-        <strong>{m.settings_language()}</strong>
-        <span class="muted">{m.settings_language_hint()}</span>
+  <!-- Preferences group -->
+  <div class="group">
+    <h3 class="group-title">{m.settings_language()}</h3>
+    <div class="group-body">
+      {#if settings}
+        <div class="row-item">
+          <div class="row-label">
+            <span>{m.settings_language()}</span>
+            <span class="muted sub">{m.settings_language_hint()}</span>
+          </div>
+          <LocaleSwitcher onchange={(locale) => app.setLocale(locale)} />
+        </div>
+
+        <div class="row-item">
+          <label for="sound-toggle">{m.settings_sound()}</label>
+          <button
+            class="toggle"
+            id="sound-toggle"
+            role="switch"
+            aria-checked={settings.soundOn}
+            aria-label={m.settings_sound()}
+            onclick={() => app.updateSettings({ soundOn: !settings.soundOn })}
+          >
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="row-item">
+          <label for="daily-goal">{m.settings_daily_goal()}</label>
+          <div class="number-input">
+            <input
+              id="daily-goal"
+              type="number"
+              min="1"
+              max="60"
+              value={settings.dailyGoalMinutes}
+              onchange={(e) => app.updateSettings({ dailyGoalMinutes: Number(e.currentTarget.value) })}
+            />
+            <span class="muted">분</span>
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  <!-- Storage info -->
+  <div class="group">
+    <h3 class="group-title">{m.storage_mode_label()}</h3>
+    <div class="group-body">
+      <div class="info-row">
+        <span>{app.storageMode() === 'server' ? m.storage_mode_server() : m.storage_mode_local()}</span>
       </div>
-      <LocaleSwitcher onchange={(locale) => app.setLocale(locale)} />
+      {#if app.storageMode() === 'local'}
+        <div class="info-row">
+          <span class="muted sub">
+            {app.persistence() === 'granted' ? m.storage_persist_granted() : m.storage_persist_denied()}
+          </span>
+        </div>
+      {/if}
     </div>
-
-    <div class="card row" style="justify-content: space-between;">
-      <label for="sound-toggle">{m.settings_sound()}</label>
-      <input
-        id="sound-toggle"
-        type="checkbox"
-        checked={settings.soundOn}
-        onchange={(e) => app.updateSettings({ soundOn: e.currentTarget.checked })}
-      />
-    </div>
-
-    <div class="card row" style="justify-content: space-between;">
-      <label for="daily-goal">{m.settings_daily_goal()}</label>
-      <input
-        id="daily-goal"
-        type="number"
-        min="1"
-        max="60"
-        style="max-width: 6rem;"
-        value={settings.dailyGoalMinutes}
-        onchange={(e) => app.updateSettings({ dailyGoalMinutes: Number(e.currentTarget.value) })}
-      />
-    </div>
-  {/if}
-
-  <div class="card stack" style="gap: 0.25rem;">
-    <strong>{m.storage_mode_label()}</strong>
-    <span class="muted">
-      {app.storageMode() === 'server' ? m.storage_mode_server() : m.storage_mode_local()}
-    </span>
-    {#if app.storageMode() === 'local'}
-      <span class="muted">
-        {app.persistence() === 'granted' ? m.storage_persist_granted() : m.storage_persist_denied()}
-      </span>
-    {/if}
   </div>
 
-  <!-- M6 산출물 5: ExportBundle UI — 내보내기/가져오기(미리보기 + merge/replace). -->
-  <div class="card stack">
-    <strong>{m.export_section()}</strong>
-    <span class="muted">{m.export_hint()}</span>
-    <div class="row" style="gap: var(--space-2); flex-wrap: wrap;">
-      <button
-        class="btn--primary"
-        data-state={exportState === 'loading' ? 'loading' : exportState === 'done' ? 'success' : undefined}
-        onclick={doExport}
-        disabled={exportState === 'loading'}
-      >
-        {m.export_button()}
-      </button>
-      <label class="btn--secondary" style="cursor: pointer;">
-        {m.import_button()}
-        <input type="file" accept="application/json,.json" onchange={onFile} hidden />
-      </label>
+  <!-- Data export/import -->
+  <div class="group">
+    <h3 class="group-title">{m.export_section()}</h3>
+    <div class="group-body">
+      <p class="muted sub">{m.export_hint()}</p>
+      <div class="export-actions">
+        <button
+          class="btn--primary"
+          data-state={exportState === 'loading' ? 'loading' : exportState === 'done' ? 'success' : undefined}
+          onclick={doExport}
+          disabled={exportState === 'loading'}
+        >
+          {m.export_button()}
+        </button>
+        <label class="btn--secondary file-label">
+          {m.import_button()}
+          <input type="file" accept="application/json,.json" onchange={onFile} hidden />
+        </label>
+      </div>
+      {#if exportState === 'done'}<p class="muted success-text">{m.export_done()}</p>{/if}
+      {#if importError}<p class="error-text">{importError}</p>{/if}
     </div>
-    {#if exportState === 'done'}<span class="muted">{m.export_done()}</span>{/if}
-    {#if importError}<span class="muted" style="color: var(--miss);">{importError}</span>{/if}
   </div>
 
-  <div><button onclick={() => router.navigate('home')}>{m.settings_back()}</button></div>
+  <button class="btn--ghost back-btn" onclick={() => router.navigate('home')}>
+    ← {m.settings_back()}
+  </button>
 </section>
 
-<!-- 가져오기 미리보기 다이얼로그: 적용 전 내용 확인 + merge/replace 선택. -->
 <Dialog
   bind:open={importDialogOpen}
   title={m.import_preview_title()}
@@ -171,6 +189,141 @@
 {/if}
 
 <style>
+  .settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .settings h2 {
+    font-size: var(--text-title);
+  }
+
+  /* ── Groups ── */
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .group-title {
+    font-size: var(--text-small);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--house-light);
+    margin-bottom: var(--space-2);
+    padding-left: var(--space-1);
+  }
+  .group-body {
+    background: var(--gradient-card);
+    border: 1px solid var(--stage-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  /* ── Row items ── */
+  .row-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--stage-line);
+  }
+  .row-item:last-child {
+    border-bottom: none;
+  }
+  .row-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .sub {
+    font-size: var(--text-caption);
+  }
+
+  /* ── Toggle switch ── */
+  .toggle {
+    position: relative;
+    width: 3rem;
+    height: 1.75rem;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: var(--stage-floor);
+    box-shadow: inset 0 0 0 1px var(--stage-line);
+    cursor: pointer;
+    padding: 0;
+    min-height: auto;
+    min-width: auto;
+    transition: background var(--motion-base) ease;
+  }
+  .toggle[aria-checked='true'] {
+    background: var(--spotlight);
+    box-shadow: none;
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(1.75rem - 4px);
+    height: calc(1.75rem - 4px);
+    border-radius: 50%;
+    background: var(--house-bright);
+    transition: transform var(--motion-base) var(--ease-stage);
+  }
+  .toggle[aria-checked='true'] .toggle-thumb {
+    transform: translateX(1.25rem);
+    background: var(--spotlight-ink);
+  }
+
+  /* ── Number input ── */
+  .number-input {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .number-input input {
+    width: 4rem;
+    text-align: center;
+  }
+
+  /* ── Info rows ── */
+  .info-row {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--stage-line);
+  }
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  /* ── Export ── */
+  .export-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+  }
+  .file-label {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+  }
+  .success-text {
+    color: var(--applause);
+    padding: 0 var(--space-4) var(--space-3);
+    font-size: var(--text-small);
+  }
+  .error-text {
+    color: var(--miss);
+    padding: 0 var(--space-4) var(--space-3);
+    font-size: var(--text-small);
+  }
+
+  /* ── Back ── */
+  .back-btn {
+    align-self: flex-start;
+    margin-top: var(--space-2);
+  }
+
   .overlay {
     position: fixed;
     inset: 0;

@@ -133,11 +133,9 @@
     align-items: center;
     gap: var(--space-3);
     flex-wrap: wrap;
-    padding-bottom: var(--space-3);
-    margin-bottom: var(--space-5);
-    /* 프로시니엄 — 무대 가장자리의 얇은 앰버 선 */
-    border-bottom: 1px solid var(--stage-edge);
-    box-shadow: 0 1px 0 0 var(--spotlight-wash);
+    padding-bottom: var(--space-4);
+    margin-bottom: var(--space-6);
+    border-bottom: 1px solid var(--stage-line);
   }
   .wordmark {
     display: inline-flex;
@@ -148,11 +146,15 @@
     font-family: var(--font-display);
     font-weight: 800;
     letter-spacing: var(--tracking-display);
-    font-size: 1.05rem;
+    font-size: 1rem;
+    transition: opacity var(--motion-base) ease;
+  }
+  .wordmark:hover {
+    opacity: 0.8;
   }
   .wordmark-mark {
     color: var(--spotlight);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     transform: translateY(-1px);
   }
   .wordmark-text {
@@ -163,7 +165,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-height: calc(var(--tap) * 0.72);
+    min-height: calc(var(--tap) * 0.68);
     padding: 0 var(--space-3) 0 var(--space-2);
     background: var(--stage-mid);
     border: 1px solid var(--stage-line);
@@ -171,7 +173,7 @@
     box-shadow: var(--shadow-card);
   }
   .chip-avatar {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     line-height: 1;
   }
   .chip-name {
@@ -183,7 +185,6 @@
     white-space: nowrap;
   }
 
-  /* 로케일 스위처를 헤더 우측으로 밀어 붙인다. 좁은 폭에서는 아래로 흐른다. */
   .header-tail {
     margin-left: auto;
   }
@@ -224,7 +225,7 @@
 
   @media (max-width: 360px) {
     .chip-name {
-      max-width: 5.5rem;
+      max-width: 5rem;
     }
   }
 </style>

@@ -1,7 +1,3 @@
-<!-- Hallmark · P4 H4 E4 S4 R4 V4 — "오늘의 공연자" 출연진 명단 (M7 산출물 3·4).
-  - 프로필 = 무대 프로그램 팜플렛의 출연진. 빈 상태는 "첫 공연자를 등록하세요".
-  - 네이티브 prompt/confirm 제거 → 인앱 Dialog(M0 인계 #3 폐쇄). 이름변경=prompt 변형,
-    삭제=parent-gate 산술 과제(COPPA). 네이티브 대화상자 호출 0건. -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
@@ -21,7 +17,6 @@
   let draftAvatar = $state<string>(AVATAR_IDS[0]);
   let busy = $state(false);
 
-  // 인앱 다이얼로그 상태(이름변경/삭제). 네이티브 prompt/confirm 대체.
   let renameOpen = $state(false);
   let renameTarget = $state<{ id: string; name: string } | undefined>(undefined);
   let deleteOpen = $state(false);
@@ -71,24 +66,30 @@
   }
 </script>
 
-<section class="stack cast">
+<section class="cast">
   <header class="cast-head">
     <h2>{m.stage_cast_heading()}</h2>
     <p class="muted">{m.stage_cast_hint()}</p>
   </header>
 
-  {#if app.profiles().length === 0}
-    <div class="card card--empty">
-      <span class="empty-mark" aria-hidden="true"><Icon name="diamond" /></span>
-      <p>{m.stage_cast_empty()}</p>
+  {#if app.profiles().length === 0 && !creating}
+    <!-- Warm empty state -->
+    <div class="welcome">
+      <div class="welcome-icon" aria-hidden="true"><Icon name="sparkles" /></div>
+      <p class="welcome-title">{m.stage_cast_empty()}</p>
+      <button class="btn--primary welcome-btn" onclick={openForm}>
+        <Icon name="users" />
+        <span>{m.profiles_add()}</span>
+      </button>
     </div>
-  {:else}
+  {:else if app.profiles().length > 0}
     <ul class="roster" role="list">
       {#each app.profiles() as profile (profile.id)}
         <li class="cast-row">
           <button class="cast-pick" onclick={() => choose(profile.id)}>
             <span class="cast-avatar" aria-hidden="true"><Avatar id={profile.avatar} /></span>
             <span class="cast-name">{profile.name}</span>
+            <span class="cast-arrow" aria-hidden="true"><Icon name="chevron-right" /></span>
           </button>
           <span class="cast-actions">
             <button class="btn--ghost" onclick={() => askRename(profile.id, profile.name)}>
@@ -104,16 +105,23 @@
   {/if}
 
   {#if creating}
-    <form class="card stack" onsubmit={submit}>
-      <label class="field">
-        <span class="field-label">{m.profiles_name_label()}</span>
+    <form class="form-card" onsubmit={submit}>
+      <div class="field">
+        <label for="profile-name" class="field-label">{m.profiles_name_label()}</label>
         <!-- svelte-ignore a11y_autofocus -->
-        <input bind:value={draftName} placeholder={m.profiles_name_placeholder()} autofocus maxlength="20" />
-      </label>
+        <input
+          id="profile-name"
+          bind:value={draftName}
+          placeholder={m.profiles_name_placeholder()}
+          maxlength="20"
+          autocomplete="off"
+          autofocus
+        />
+      </div>
 
       <fieldset class="avatars">
         <legend>{m.profiles_avatar_label()}</legend>
-        <div class="row">
+        <div class="avatar-grid">
           {#each AVATAR_IDS as avatar (avatar)}
             <button
               type="button"
@@ -125,15 +133,18 @@
         </div>
       </fieldset>
 
-      <div class="row">
+      <div class="form-actions">
         <button class="btn--primary" type="submit" disabled={busy || draftName.trim() === ''} data-state={busy ? 'loading' : undefined}>
           {m.profiles_save()}
         </button>
         <button type="button" onclick={() => (creating = false)}>{m.profiles_cancel()}</button>
       </div>
     </form>
-  {:else}
-    <div><button class="btn--primary" onclick={openForm}>{m.profiles_add()}</button></div>
+  {:else if app.profiles().length > 0}
+    <button class="btn--primary add-btn" onclick={openForm}>
+      <Icon name="users" />
+      <span>{m.profiles_add()}</span>
+    </button>
   {/if}
 </section>
 
@@ -162,21 +173,54 @@
 />
 
 <style>
+  .cast {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
   .cast-head h2 {
+    font-size: var(--text-title);
     margin-bottom: var(--space-1);
   }
-  .card--empty {
-    text-align: center;
-    color: var(--house-light);
+  .cast-head p {
+    font-size: var(--text-small);
+  }
+
+  /* ── Welcome empty state ── */
+  .welcome {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-4);
+    padding: var(--space-7) var(--space-5);
+    text-align: center;
   }
-  .empty-mark {
+  .welcome-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: var(--spotlight-wash);
     color: var(--spotlight);
+    font-size: 2rem;
+    animation: stage-pop var(--motion-slow) var(--ease-stage) both;
+  }
+  .welcome-title {
+    font-size: var(--text-lead);
+    color: var(--house-light);
+    max-width: 18rem;
+  }
+  .welcome-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-body);
+    padding: 0 var(--space-5);
   }
 
+  /* ── Roster ── */
   .roster {
     list-style: none;
     margin: 0;
@@ -189,12 +233,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3);
-    background: var(--stage-mid);
+    gap: var(--space-2);
+    background: var(--gradient-card);
     border: 1px solid var(--stage-line);
     border-radius: var(--radius);
     padding: var(--space-2) var(--space-3);
     box-shadow: var(--shadow-card);
+    transition: border-color var(--motion-base) ease;
+  }
+  .cast-row:hover {
+    border-color: var(--stage-edge);
   }
   .cast-pick {
     display: flex;
@@ -204,11 +252,12 @@
     min-width: 0;
     background: none;
     border: 0;
-    padding: var(--space-1) 0;
+    padding: var(--space-2) 0;
     text-align: left;
     cursor: pointer;
     color: var(--house-bright);
     font: inherit;
+    border-radius: var(--radius-sm);
   }
   .cast-pick:hover {
     background: transparent;
@@ -219,24 +268,54 @@
   }
   .cast-name {
     font-weight: 700;
+    font-size: var(--text-body);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1 1 auto;
+  }
+  .cast-arrow {
+    color: var(--house-light);
+    font-size: 0.9rem;
+    opacity: 0.5;
+    transition: opacity var(--motion-base) ease, transform var(--motion-base) ease;
+  }
+  .cast-pick:hover .cast-arrow {
+    opacity: 1;
+    transform: translateX(2px);
   }
   .cast-actions {
     display: flex;
-    gap: var(--space-1);
+    gap: 0;
     flex: 0 0 auto;
   }
+  .cast-actions button {
+    min-height: calc(var(--tap) * 0.8);
+    padding: 0 var(--space-2);
+    font-size: var(--text-small);
+    border-radius: var(--radius-sm);
+  }
 
+  /* ── Form ── */
+  .form-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    background: var(--gradient-card);
+    border: 1px solid var(--stage-line);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-stage);
+  }
   .field {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-2);
   }
   .field-label {
     font-size: var(--text-small);
     color: var(--house-light);
+    font-weight: 600;
   }
   .avatars {
     border: 0;
@@ -246,26 +325,57 @@
   .avatars legend {
     font-size: var(--text-small);
     color: var(--house-light);
+    font-weight: 600;
     padding: 0;
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  .avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(calc(var(--tap) + 0.5rem), 1fr));
+    gap: var(--space-2);
   }
   .avatar-btn {
     font-size: 1.5rem;
-    width: var(--tap);
-    height: var(--tap);
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: var(--tap);
     padding: 0;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--motion-fast) var(--ease-spring);
+  }
+  .avatar-btn:active {
+    transform: scale(0.92);
   }
   .avatar-btn[aria-pressed='true'] {
     box-shadow: inset 0 0 0 3px var(--spotlight);
+    background: var(--spotlight-wash);
+  }
+  .form-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
   }
 
-  /* 좁은 폭: 출연 행이 1열로 — 이름이 두 줄로 떨어지지 않게 축소. */
+  /* ── Add button ── */
+  .add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    align-self: flex-start;
+  }
+
   @media (max-width: 360px) {
     .cast-row {
       flex-wrap: wrap;
     }
     .cast-pick {
-      min-width: 60%;
+      min-width: 55%;
+    }
+    .cast-actions button {
+      font-size: var(--text-caption);
     }
   }
 </style>

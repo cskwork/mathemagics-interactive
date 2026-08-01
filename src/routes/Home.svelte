@@ -1,6 +1,3 @@
-<!-- Hallmark · P4 H4 E4 S3 R4 V4 — 백스테이지 대시보드 (M7 산출물 3).
-  - "오늘의 공연" 스포트라이트 카드(연습 입장 CTA) + "내 레퍼토리" 기법/모드 진입판.
-  - M2(레슨)·M3(연습)·M5(공연/마술)·M6(기억술) 가 열려 CTA 가 실제 라우트로 연결된다. -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import Icon from '../components/Icon.svelte';
@@ -17,19 +14,23 @@
 </script>
 
 {#if profile}
-  <section class="stack backstage">
+  <section class="home">
+    <!-- Greeting -->
     <div class="greet">
-      <h2>{m.home_greeting({ name: profile.name })}</h2>
+      <p class="greet-sub">{m.home_greeting({ name: '' }).replace(',', '')}</p>
+      <h2 class="greet-name">{profile.name}!</h2>
     </div>
 
-    <article class="spotlight-card" aria-labelledby="today-show">
-      <div class="spotlight-card-beam" aria-hidden="true"></div>
-      <div class="spotlight-card-body">
-        <h3 class="kicker" id="today-show">{m.home_today_show()}</h3>
-        <p class="muted lead">{m.home_practice_hint()}</p>
-        <div class="cta-row">
-          <button class="btn--primary cta" onclick={() => router.navigate('practice')}>
-            {m.home_practice_cta()}
+    <!-- Today's Show — hero spotlight card -->
+    <article class="hero" aria-labelledby="today-show">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-body">
+        <span class="hero-kicker" id="today-show">{m.home_today_show()}</span>
+        <p class="hero-hint">{m.home_practice_hint()}</p>
+        <div class="hero-cta">
+          <button class="btn--primary hero-btn" onclick={() => router.navigate('practice')}>
+            <span>{m.home_practice_cta()}</span>
+            <span class="arrow" aria-hidden="true">→</span>
           </button>
           <button class="btn--ghost" onclick={() => router.navigate('lessons')}>
             {m.nav_lessons()}
@@ -38,114 +39,164 @@
       </div>
     </article>
 
-    <section class="repertoire" aria-labelledby="repertoire-h">
-      <h3 id="repertoire-h" class="muted">{m.home_repertoire()}</h3>
-      <p class="muted small">{m.home_repertoire_hint()}</p>
-      <div class="repertoire-grid">
-        <button class="card rep-card" onclick={() => router.navigate('progress')}>
-          <span class="rep-mark" aria-hidden="true"><Icon name="bar-chart" /></span>
-          <span>{m.home_progress_cta()}</span>
+    <!-- Repertoire grid -->
+    <section class="rep" aria-labelledby="rep-h">
+      <div class="rep-head">
+        <h3 id="rep-h">{m.home_repertoire()}</h3>
+        <p class="muted rep-hint">{m.home_repertoire_hint()}</p>
+      </div>
+      <div class="rep-grid">
+        <button class="rep-card" onclick={() => router.navigate('progress')}>
+          <span class="rep-icon" aria-hidden="true"><Icon name="bar-chart" /></span>
+          <span class="rep-label">{m.home_progress_cta()}</span>
         </button>
-        <button class="card rep-card" onclick={() => router.navigate('report')}>
-          <span class="rep-mark" aria-hidden="true"><Icon name="chat" /></span>
-          <span>{m.home_report_cta()}</span>
+        <button class="rep-card" onclick={() => router.navigate('report')}>
+          <span class="rep-icon" aria-hidden="true"><Icon name="chat" /></span>
+          <span class="rep-label">{m.home_report_cta()}</span>
         </button>
-        <button class="card rep-card" onclick={() => router.navigate('stage')}>
-          <span class="rep-mark" aria-hidden="true"><Icon name="masks" /></span>
-          <span>{m.nav_stage()}</span>
+        <button class="rep-card" onclick={() => router.navigate('stage')}>
+          <span class="rep-icon" aria-hidden="true"><Icon name="masks" /></span>
+          <span class="rep-label">{m.nav_stage()}</span>
         </button>
-        <button class="card rep-card" onclick={() => router.navigate('magic')}>
-          <span class="rep-mark" aria-hidden="true"><Icon name="top-hat" /></span>
-          <span>{m.nav_magic()}</span>
+        <button class="rep-card" onclick={() => router.navigate('magic')}>
+          <span class="rep-icon" aria-hidden="true"><Icon name="top-hat" /></span>
+          <span class="rep-label">{m.nav_magic()}</span>
         </button>
-        <button class="card rep-card" onclick={() => router.navigate('catch')}>
-          <span class="rep-mark" aria-hidden="true"><Icon name="search" /></span>
-          <span>{m.catch_heading()}</span>
+        <button class="rep-card" onclick={() => router.navigate('catch')}>
+          <span class="rep-icon" aria-hidden="true"><Icon name="search" /></span>
+          <span class="rep-label">{m.catch_heading()}</span>
         </button>
-        <button class="card rep-card" onclick={() => router.navigate('memory')}>
-          <span class="rep-mark" aria-hidden="true"><Icon name="brain" /></span>
-          <span>{m.memory_heading()}</span>
+        <button class="rep-card" onclick={() => router.navigate('memory')}>
+          <span class="rep-icon" aria-hidden="true"><Icon name="brain" /></span>
+          <span class="rep-label">{m.memory_heading()}</span>
         </button>
       </div>
     </section>
 
-    <div class="row nav-row">
-      <button onclick={() => router.navigate('settings')}>{m.nav_settings()}</button>
+    <!-- Bottom nav -->
+    <div class="bottom-nav">
+      <button class="nav-btn" onclick={() => router.navigate('settings')}>
+        <Icon name="settings" />
+        <span>{m.nav_settings()}</span>
+      </button>
       <button
-        class="btn--ghost"
+        class="nav-btn"
         onclick={() => {
           app.clearActiveProfile();
           router.navigate('profiles');
-        }}>{m.home_switch_profile()}</button
-      >
+        }}>
+        <Icon name="users" />
+        <span>{m.home_switch_profile()}</span>
+      </button>
     </div>
   </section>
 {/if}
 
 <style>
-  .greet h2 {
-    font-size: var(--text-title);
+  .home {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
   }
 
-  /* 오늘의 공연 — 스포트라이트 받은 무대 중앙. 엷은 방사광 + 양각. */
-  .spotlight-card {
+  /* ── Greeting ── */
+  .greet {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .greet-sub {
+    font-size: var(--text-body);
+    color: var(--house-light);
+    font-weight: 500;
+  }
+  .greet-name {
+    font-size: var(--text-title);
+    font-weight: 800;
+    color: var(--house-bright);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-display);
+  }
+
+  /* ── Hero spotlight card ── */
+  .hero {
     position: relative;
     overflow: hidden;
     border-radius: var(--radius-lg);
-    background: var(--stage-mid);
+    background: var(--gradient-card);
     border: 1px solid var(--stage-line);
-    box-shadow: var(--shadow-stage);
+    box-shadow: var(--shadow-spotlight);
   }
-  .spotlight-card-beam {
+  .hero-glow {
     position: absolute;
     inset: 0;
     background: var(--stage-spotlight-bg);
     pointer-events: none;
   }
-  .spotlight-card-body {
+  .hero-body {
     position: relative;
     padding: var(--space-6) var(--space-5);
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-3);
   }
-  .kicker {
+  .hero-kicker {
     font-family: var(--font-display);
     font-weight: 800;
     font-size: var(--text-display);
     letter-spacing: var(--tracking-display);
     color: var(--house-bright);
-    margin: 0;
-    line-height: 1.1;
+    line-height: 1.08;
   }
-  .lead {
+  .hero-hint {
     font-size: var(--text-lead);
+    color: var(--house-light);
+    line-height: 1.4;
   }
-  .cta-row {
+  .hero-cta {
     display: flex;
     align-items: center;
     gap: var(--space-3);
     flex-wrap: wrap;
-    margin-top: var(--space-3);
+    margin-top: var(--space-2);
   }
-  .cta {
+  .hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     min-width: 10rem;
+    font-size: var(--text-body);
+    font-weight: 800;
+    padding: 0 var(--space-5);
+  }
+  .hero-btn .arrow {
+    transition: transform var(--motion-base) var(--ease-stage);
+    font-weight: 700;
+  }
+  .hero-btn:hover .arrow {
+    transform: translateX(3px);
   }
 
-  .repertoire h3 {
+  /* ── Repertoire ── */
+  .rep {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .rep-head h3 {
     font-size: var(--text-small);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 700;
+    color: var(--house-light);
   }
-  .small {
+  .rep-hint {
     font-size: var(--text-small);
   }
-  .repertoire-grid {
+  .rep-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
     gap: var(--space-3);
-    margin-top: var(--space-3);
   }
   .rep-card {
     display: flex;
@@ -153,19 +204,66 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    min-height: 5.5rem;
+    min-height: 6rem;
+    padding: var(--space-4) var(--space-2);
     text-align: center;
     font-weight: 600;
+    font-size: var(--text-small);
+    background: var(--gradient-card);
+    border: 1px solid var(--stage-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
     cursor: pointer;
+    transition:
+      border-color var(--motion-base) ease,
+      transform var(--motion-fast) ease,
+      box-shadow var(--motion-base) ease;
   }
   .rep-card:hover {
     border-color: var(--spotlight);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card), 0 0 20px var(--spotlight-wash);
   }
-  .rep-mark {
-    font-size: 1.6rem;
+  .rep-card:active {
+    transform: translateY(0);
+  }
+  .rep-icon {
+    font-size: 1.8rem;
+    color: var(--spotlight);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--spotlight-wash);
+  }
+  .rep-label {
+    color: var(--house-bright);
   }
 
-  .nav-row {
-    margin-top: var(--space-2);
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    display: flex;
+    gap: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--stage-line);
+  }
+  .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: none;
+    border: none;
+    color: var(--house-light);
+    font-weight: 600;
+    font-size: var(--text-small);
+    padding: var(--space-2) 0;
+    cursor: pointer;
+    transition: color var(--motion-base) ease;
+  }
+  .nav-btn:hover {
+    background: none;
+    color: var(--house-bright);
   }
 </style>
