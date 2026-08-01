@@ -1,8 +1,3 @@
-<!--
-  Hallmark · P4 H4 E4 S4 R4 V4 — 스킬 트리 화면 (docs/briefs/M4.md 산출물 7).
-  #/lessons 를 챕터별 트리 뷰로 확장: 잠금/해제(PLAN §3.2 의존성) + 마술 해금 슬롯(내용물은 M5).
-  잠금/완료 판정은 순수 함수(isLessonUnlocked + 진도 레코드). 트리 구조는 skill-tree.ts.
--->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import Icon from '../components/Icon.svelte';
@@ -39,7 +34,7 @@
   }
 
   $effect(() => {
-    void app.activeProfile(); // 의존성 — 프로필 전환 시 재실행
+    void app.activeProfile();
     void refresh();
   });
 
@@ -59,6 +54,9 @@
   function nodeLocked(node: SkillNode, completed: Set<string>): boolean {
     return !isLessonUnlocked(node.prerequisites, completed);
   }
+  function completedCount(chapterNodes: SkillNode[], completed: Set<string>): number {
+    return chapterNodes.filter((n) => completed.has(n.skillId)).length;
+  }
 
   function openLesson(skillId: string): void {
     globalThis.location.hash = `#/lesson?id=${encodeURIComponent(skillId)}`;
@@ -71,55 +69,65 @@
   }
 </script>
 
-<section class="stack tree">
+<section class="tree">
   <header class="tree-head">
     <h2>{m.tree_heading()}</h2>
-    <p class="muted small">{m.lessons_locked_hint()}</p>
+    <p class="muted">{m.lessons_locked_hint()}</p>
   </header>
 
   {#if !loaded}
-    <p class="muted">{m.loading()}</p>
+    <p class="muted loading">{m.loading()}</p>
   {:else}
     {#each chapters as ch (ch)}
       {@const completed = completedSet()}
       {@const chapterNodes = nodes.filter((n) => n.chapter === ch)}
       {@const magicSlot = CHAPTER_MAGIC_SLOTS[ch]}
       {@const magicOpen = magicSlot ? isMagicUnlocked(ch, nodes, completed) : false}
-      <section class="chapter-block">
-        <h3 class="chapter-title">{chapterLabel(ch)}</h3>
+      {@const done = completedCount(chapterNodes, completed)}
+      {@const total = chapterNodes.length}
+      <section class="chapter">
+        <div class="chapter-head">
+          <h3 class="chapter-title">{chapterLabel(ch)}</h3>
+          {#if total > 0}
+            <span class="chapter-count">{done}/{total}</span>
+          {/if}
+        </div>
         <div class="chapter-nodes">
           {#each chapterNodes as node (node.skillId)}
-            {@const done = isCompleted(node.skillId, completed)}
+            {@const isDone = isCompleted(node.skillId, completed)}
             {@const locked = nodeLocked(node, completed)}
             {@const rec = recordFor(node.skillId)}
-            <article class="card lesson-row" class:locked class:completed={done}>
-              <div class="lesson-mark" aria-hidden="true">
-                {#if done}<Icon name="star" />{:else if locked}<Icon name="lock" />{:else}<Icon name="diamond" />{/if}
+            <article class="lesson" class:locked class:completed={isDone}>
+              <div class="lesson-status" aria-hidden="true">
+                {#if isDone}<Icon name="check" />{:else if locked}<Icon name="lock" />{:else}<Icon name="diamond" />{/if}
               </div>
               <div class="lesson-body">
                 <h4>{resolveLocalized(node.title, activeLocale())}</h4>
-                {#if done && rec}
-                  <p class="muted small meta">{m.lessons_stars({ n: rec.stars })}</p>
+                {#if isDone && rec}
+                  <div class="stars" aria-label={m.lessons_stars({ n: rec.stars })}>
+                    {#each Array(rec.stars) as _}<span class="star">★</span>{/each}
+                    {#each Array(3 - rec.stars) as _}<span class="star-empty">★</span>{/each}
+                  </div>
                 {/if}
               </div>
               <div class="lesson-action">
                 {#if locked}
-                  <span class="lock-label">{m.tree_locked()}</span>
+                  <span class="lock-text">{m.tree_locked()}</span>
                 {:else}
                   <button
-                    class="btn--primary"
+                    class="btn--primary lesson-btn"
                     onclick={() => openLesson(node.skillId)}
-                    aria-label={done ? m.lessons_replay() : m.lessons_start()}
+                    aria-label={isDone ? m.lessons_replay() : m.lessons_start()}
                   >
-                    {done ? m.lessons_replay() : m.lessons_start()}
+                    {isDone ? m.lessons_replay() : m.lessons_start()}
                   </button>
                 {/if}
               </div>
             </article>
           {/each}
           {#if magicSlot}
-            <article class="card magic-slot" class:open={magicOpen}>
-              <div class="lesson-mark" aria-hidden="true">
+            <article class="lesson magic-slot" class:open={magicOpen}>
+              <div class="lesson-status magic" aria-hidden="true">
                 {#if magicOpen}<Icon name="top-hat" />{:else}<Icon name="sparkle" />{/if}
               </div>
               <div class="lesson-body">
@@ -128,7 +136,7 @@
               </div>
               {#if magicOpen}
                 <div class="lesson-action">
-                  <button class="btn--secondary" onclick={() => openMagic(magicSlot)}>
+                  <button class="btn--secondary lesson-btn" onclick={() => openMagic(magicSlot)}>
                     {m.tree_magic_open()}
                   </button>
                 </div>
@@ -140,27 +148,36 @@
     {/each}
   {/if}
 
-  <div class="row nav-row">
-    <button onclick={() => router.navigate('home')}>{m.lesson_back_home()}</button>
-  </div>
+  <button class="btn--ghost back-btn" onclick={() => router.navigate('home')}>
+    ← {m.lesson_back_home()}
+  </button>
 </section>
 
 <style>
-  .tree-head h2 {
-    font-size: var(--text-title);
-  }
-  .tree-head p {
-    margin: 0;
-  }
-  .chapter-block {
+  .tree {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-3) 0;
-    border-top: 1px solid var(--stage-edge);
+    gap: var(--space-5);
   }
-  .chapter-block:first-of-type {
-    border-top: none;
+  .tree-head h2 {
+    font-size: var(--text-title);
+    margin-bottom: var(--space-1);
+  }
+  .tree-head p {
+    font-size: var(--text-small);
+  }
+
+  /* ── Chapter ── */
+  .chapter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .chapter-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
   }
   .chapter-title {
     font-family: var(--font-display);
@@ -168,37 +185,62 @@
     font-size: var(--text-lead);
     color: var(--spotlight);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     margin: 0;
+  }
+  .chapter-count {
+    font-size: var(--text-small);
+    color: var(--house-light);
+    font-weight: 600;
+    background: var(--stage-mid);
+    padding: 0.15rem 0.6rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--stage-line);
   }
   .chapter-nodes {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
   }
-  .lesson-row {
+
+  /* ── Lesson row ── */
+  .lesson {
     display: grid;
     grid-template-columns: auto 1fr auto;
     gap: var(--space-3);
     align-items: center;
+    background: var(--gradient-card);
+    border: 1px solid var(--stage-line);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-card);
+    transition: border-color var(--motion-base) ease;
   }
-  .lesson-mark {
-    font-size: 1.4rem;
-    color: var(--spotlight);
-    width: calc(var(--tap));
-    height: calc(var(--tap));
+  .lesson:not(.locked):hover {
+    border-color: var(--stage-edge);
+  }
+  .lesson-status {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 1.2rem;
+    color: var(--spotlight);
+    background: var(--spotlight-wash);
+    flex-shrink: 0;
   }
-  .lesson-row.completed .lesson-mark {
+  .lesson.completed .lesson-status {
     color: var(--applause);
+    background: var(--applause-wash);
   }
-  .lesson-row.locked {
-    opacity: 0.6;
+  .lesson.locked {
+    opacity: 0.55;
   }
-  .lesson-row.locked .lesson-mark {
+  .lesson.locked .lesson-status {
     color: var(--house-light);
+    background: var(--stage-mid);
   }
   .lesson-body {
     min-width: 0;
@@ -206,46 +248,66 @@
   .lesson-body h4 {
     margin: 0;
     font-size: var(--text-body);
+    font-weight: 700;
   }
-  .meta {
-    color: var(--house-light);
-    margin: 0;
+  .stars {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+  }
+  .star {
+    color: var(--spotlight);
+    font-size: 0.85rem;
+  }
+  .star-empty {
+    color: var(--stage-edge);
+    font-size: 0.85rem;
+    opacity: 0.4;
   }
   .lesson-action {
     min-width: var(--tap);
   }
-  .lock-label {
+  .lesson-btn {
+    font-size: var(--text-small);
+    padding: 0 var(--space-4);
+    min-height: calc(var(--tap) * 0.85);
+  }
+  .lock-text {
     font-size: var(--text-small);
     color: var(--house-light);
     white-space: nowrap;
   }
-  /* 마술 해금 슬롯 — 보상 자리표. 내용물은 M5. */
+
+  /* ── Magic slot ── */
   .magic-slot {
     border: 1px dashed var(--stage-line);
-    background: var(--stage-spotlight-bg);
   }
   .magic-slot.open {
     border-style: solid;
     border-color: var(--spotlight);
+    box-shadow: var(--shadow-card), 0 0 16px var(--spotlight-wash);
   }
-  .magic-slot .lesson-mark {
+  .lesson-status.magic {
     color: var(--spotlight);
   }
   .magic-slot .lesson-body h4 {
     color: var(--spotlight);
   }
-  .nav-row {
-    margin-top: var(--space-3);
+
+  /* ── Back ── */
+  .back-btn {
+    align-self: flex-start;
+    margin-top: var(--space-2);
   }
 
   @media (max-width: 360px) {
-    .lesson-row {
+    .lesson {
       grid-template-columns: auto 1fr;
     }
     .lesson-action {
       grid-column: 1 / -1;
     }
-    .lesson-action button {
+    .lesson-btn {
       width: 100%;
     }
   }

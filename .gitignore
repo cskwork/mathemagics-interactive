@@ -22,11 +22,13 @@ e2e/report/
 *.db
 data/
 
-# OS/에디터
+# 에디터 / 로컬 도구 설정
 .DS_Store
 *.log
 .env
 .env.*
+.opencode/
+.bun-debug.log*
 
 # impeccable-ignore-start
 # Ephemeral output, runtime state, and per-dev overrides.

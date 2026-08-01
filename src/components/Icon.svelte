@@ -24,7 +24,10 @@
     | 'restart'
     | 'check'
     | 'x'
-    | 'backspace';
+    | 'backspace'
+    | 'settings'
+    | 'users'
+    | 'chevron-right';
 </script>
 
 <script lang="ts">
@@ -124,6 +127,16 @@
   {:else if name === 'backspace'}
     <path d="M21 6 H8.5 L3 12 L8.5 18 H21 Z" />
     <path d="M11 9.5 L15.5 14 M15.5 9.5 L11 14" />
+  {:else if name === 'settings'}
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2 V5 M12 19 V22 M2 12 H5 M19 12 H22 M5 5 L7 7 M17 17 L19 19 M5 19 L7 17 M17 7 L19 5" />
+  {:else if name === 'users'}
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M3.5 20 C3.5 16 6 14 9 14 C12 14 14.5 16 14.5 20" />
+    <path d="M16 5.5 C18 6 19.5 7.8 19.5 10 C19.5 12 18 13.8 16 14.3" />
+    <path d="M18 20 C18 17.5 17 16 15.5 15" />
+  {:else if name === 'chevron-right'}
+    <path d="M9 5 L16 12 L9 19" />
   {/if}
 </svg>
 
