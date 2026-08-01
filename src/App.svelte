@@ -22,7 +22,8 @@
   import LocaleSwitcher from './components/LocaleSwitcher.svelte';
   import Icon from './components/Icon.svelte';
   import Avatar from './components/Avatar.svelte';
-  import { initTheme, toggleTheme, theme } from './lib/ui/theme.svelte.js';
+  import { initTheme, toggleTheme, theme, setLangAttribute } from './lib/ui/theme.svelte.js';
+  import { activeLocale } from './lib/i18n/locale.svelte.js';
 
   const app = createAppState();
   const router = createRouter();
@@ -34,6 +35,11 @@
 
   // Initialize theme as early as possible
   initTheme();
+
+  // Sync <html lang> with active locale for screen readers
+  $effect(() => {
+    setLangAttribute(activeLocale());
+  });
 
   $effect(() => {
     app.boot().catch((err: unknown) => {
@@ -87,8 +93,8 @@
       <button
         class="theme-toggle"
         onclick={() => toggleTheme()}
-        aria-label={currentTheme === 'light' ? '다크 모드' : '라이트 모드'}
-        title={currentTheme === 'light' ? '다크 모드' : '라이트 모드'}
+        aria-label={currentTheme === 'light' ? m.theme_dark() : m.theme_light()}
+        title={currentTheme === 'light' ? m.theme_dark() : m.theme_light()}
       >
         <Icon name={currentTheme === 'light' ? 'moon' : 'sun'} />
       </button>

@@ -336,7 +336,7 @@
     if (p.op === 'div') {
       const q = Math.floor(a / b);
       const r = a - q * b;
-      return r === 0 ? String(q) : `${q} 나머지 ${r}`;
+      return r === 0 ? String(q) : `${q} ${m.math_remainder()} ${r}`;
     }
     if (p.op === 'est') {
       const band = estimationBand(p);

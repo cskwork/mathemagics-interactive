@@ -32,10 +32,10 @@
     {#each layout.steps as st, i (i)}
       <li class="sqrt-step" class:step--active={activeStep === i}>
         {#if i === 0}
-          <span class="step-note">√{st.broughtDown} → {st.digit}²={st.product}, 나머지 {st.remainder}</span>
+          <span class="step-note">√{st.broughtDown} → {st.digit}²={st.product}, {m.math_remainder()} {st.remainder}</span>
         {:else}
           <span class="step-note"
-            >{st.trialBase}_×_ 맞추기 → {st.digit} ({st.trialBase}{st.digit}×{st.digit}={st.product}), 나머지
+            >{st.trialBase}_×_ {m.math_match()} → {st.digit} ({st.trialBase}{st.digit}×{st.digit}={st.product}), {m.math_remainder()}
             {st.remainder}</span
           >
         {/if}
