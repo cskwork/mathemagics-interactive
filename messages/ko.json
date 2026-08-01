@@ -32,6 +32,7 @@
   "settings_language_hint": "언어는 프로필마다 따로 저장돼요.",
   "settings_sound": "소리",
   "settings_daily_goal": "하루 목표 (분)",
+  "settings_daily_goal_unit": "분",
   "settings_back": "돌아가기",
 
   "storage_mode_label": "저장 위치",
