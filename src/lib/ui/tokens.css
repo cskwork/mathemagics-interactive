@@ -10,39 +10,39 @@
  */
 
 :root {
-  /* ── 무대 서피스 (객석 → 무대 바닥 → 조명 받은 영역) ─────────────────────── */
-  /* Deepened floor for drama; richer purple gradients with more violet warmth */
-  --stage-floor: #140a1c; /* 가장 어두움 — 페이지 배경·가장자리 객석 (deeper for contrast) */
-  --stage-mid: #221031; /* 카드·패널 표면 (slightly warmer violet) */
-  --stage-lit: #341c46; /* 조명을 받아 한 단 밝은 표면(버튼 secondary·활성 칩) */
-  --stage-rise: #4a2b60; /* hover 시 한 단 더 떠오르는 표면 */
-  --stage-line: #4e3668; /* 표면 경계선·입력 테두리 (brighter for visibility) */
-  --stage-edge: #6b4f87; /* 좀 더 또렷한 경계(프로시니엄 프레임·구분선) */
+  /* ── LIGHT THEME (default) ────────────────────────────────────────── */
+  /* Bright airy stage — warm paper, soft amber accents */
 
-  /* ── 스포트라이트 (워머 골드) — 주 행동·강조 ─────────────────────────── */
-  /* Shifted slightly warmer for premium gold feel rather than pure amber */
-  --spotlight: #ffb838; /* 객석 조명·스포트라이트 본색 (warmer gold) */
-  --spotlight-bright: #ffd06e; /* 하이라이트용 더 밝은 앰버 */
-  --spotlight-ink: #1a1200; /* 앰버 위 잉크(어두운 글자) — 대비 확보 */
-  --spotlight-wash: rgba(255, 184, 56, 0.10); /* 앰버 엷은 침전 — 활성 셀·호버 */
-  --spotlight-wash-strong: rgba(255, 184, 56, 0.18); /* 앰버 진한 침전 — 하이라이트 셀 */
-  --spotlight-glow: rgba(255, 184, 56, 0.30); /* 포커스 링 헤일로 */
+  /* Stage surfaces */
+  --stage-floor: #f5f1ea; /* page background — warm paper */
+  --stage-mid: #ffffff; /* cards/panels — clean white */
+  --stage-lit: #f0ebe2; /* secondary buttons, subtle surface */
+  --stage-rise: #e8e2d4; /* hover surface */
+  --stage-line: #d8d0c2; /* borders, input edges */
+  --stage-edge: #c5bba8; /* frame, dividers */
 
-  /* ── 박수 (성공 초록) ─────────────────────────────────────────────── */
-  --applause: #5fdb89; /* 정답·성공 글자/테두리 (slightly brighter for contrast) */
-  --applause-deep: #3bc94f; /* wash 베이스 */
-  --applause-wash: rgba(95, 219, 137, 0.18);
+  /* Spotlight (warm amber) */
+  --spotlight: #e89400; /* main accent — warm amber */
+  --spotlight-bright: #ffaa1c; /* highlight amber */
+  --spotlight-ink: #1a1000; /* dark text on amber */
+  --spotlight-wash: rgba(232, 148, 0, 0.08); /* subtle amber tint */
+  --spotlight-wash-strong: rgba(232, 148, 0, 0.14); /* stronger tint */
+  --spotlight-glow: rgba(232, 148, 0, 0.25); /* focus ring halo */
 
-  /* ── 어깸 (오답 적색) ─────────────────────────────────────────────── */
-  --miss: #ff6b6b; /* 오답·파괴적 행동 */
-  --miss-wash: rgba(255, 107, 107, 0.18);
+  /* Success green */
+  --applause: #2a9b4a; /* correct answer green (darker for light bg) */
+  --applause-deep: #1f7a38;
+  --applause-wash: rgba(42, 155, 74, 0.12);
 
-  /* ── 객석 조명 (텍스트 계통) ──────────────────────────────────────── */
-  /* Brightened body text for WCAG AAA-adjacent contrast on dark surfaces */
-  --house-bright: #f5f3fa; /* 본문 — 무대 위 밝은 글자 (slightly brighter) */
-  --house-light: #b4b8d6; /* 보조 텍스트·캡션 — brightened for readability */
+  /* Error red */
+  --miss: #d63838;
+  --miss-wash: rgba(214, 56, 56, 0.10);
 
-  /* ── 타이포그래피 (2+1 규약) ───────────────────────────────────────── */
+  /* Text */
+  --house-bright: #1a1620; /* body text — dark on light */
+  --house-light: #6b6577; /* muted text */
+
+  /* Typography */
   --font-display: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR',
     system-ui, sans-serif;
   --font-body: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR',
@@ -50,17 +50,17 @@
   --font-numeric: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR',
     ui-monospace, monospace;
 
-  /* 타입 스케일 */
-  --text-display: clamp(2.2rem, 7vw, 3.2rem); /* 오늘의 공연·섹션 헤드 */
-  --text-title: clamp(1.5rem, 4.5vw, 2rem); /* 화면 제목 */
-  --text-lead: 1.125rem; /* 리드 카피 */
-  --text-body: 1rem; /* 본문(≥16px) */
-  --text-small: 0.875rem; /* 보조·컨트롤 라벨 */
-  --text-caption: 0.8rem; /* 자막바·메타 */
+  /* Type scale */
+  --text-display: clamp(2.2rem, 7vw, 3.2rem);
+  --text-title: clamp(1.5rem, 4.5vw, 2rem);
+  --text-lead: 1.125rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-caption: 0.8rem;
   --tracking-display: -0.03em;
   --tracking-numeric: 0;
 
-  /* ── 리듬(간격 스케일) ───────────────────────────────────────────── */
+  /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -68,45 +68,45 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --space-7: 3rem;
-  --space-8: 4rem; /* 섹션 간 여유 */
-  --app-max: 44rem; /* 본문 영역 최대폭 — slightly tighter for focus */
+  --space-8: 4rem;
+  --app-max: 44rem;
 
-  /* ── 반경 ───────────────────────────────────────────────────────── */
+  /* Radius */
   --radius-sm: 10px;
   --radius: 16px;
   --radius-lg: 24px;
   --radius-pill: 999px;
 
-  /* ── 그림자/깊이 ─────────────────────────────────────────────────── */
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 4px 16px rgba(0, 0, 0, 0.30),
-    0 1px 3px rgba(0, 0, 0, 0.20);
-  --shadow-cell: 0 2px 6px rgba(0, 0, 0, 0.25);
+  /* Shadows — softer on light */
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.03) inset, 0 2px 8px rgba(60, 50, 30, 0.08),
+    0 1px 2px rgba(60, 50, 30, 0.05);
+  --shadow-cell: 0 1px 4px rgba(60, 50, 30, 0.10);
   --shadow-inset: inset 0 0 0 1px var(--stage-line);
-  --shadow-stage: 0 16px 48px rgba(0, 0, 0, 0.40), 0 4px 12px rgba(0, 0, 0, 0.20);
-  --shadow-spotlight: 0 0 40px rgba(255, 184, 56, 0.08), 0 16px 48px rgba(0, 0, 0, 0.40);
+  --shadow-stage: 0 12px 32px rgba(60, 50, 30, 0.10), 0 4px 8px rgba(60, 50, 30, 0.05);
+  --shadow-spotlight: 0 0 40px rgba(232, 148, 0, 0.06), 0 12px 32px rgba(60, 50, 30, 0.10);
 
-  /* ── 동작 시간 ───────────────────────────────────────────────────── */
+  /* Motion */
   --motion-fast: 120ms;
   --motion-base: 200ms;
   --motion-slow: 420ms;
   --ease-stage: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── 터치 타깃(≥48px) ──────────────────────────────────────────────── */
+  /* Touch */
   --tap: 48px;
 
-  /* ── 스포트라이트 배경(무대 중앙 방사형) ─────────────────────────── */
+  /* Spotlight background */
   --stage-spotlight-bg: radial-gradient(
     135% 85% at 50% 0%,
     var(--spotlight-wash-strong) 0%,
     transparent 66%
   );
 
-  /* ── 그라데이션 (카드·영역 깊이용) ──────────────────────────────── */
-  --gradient-card: linear-gradient(180deg, var(--stage-mid) 0%, color-mix(in srgb, var(--stage-mid) 85%, var(--stage-floor) 15%) 100%);
+  /* Gradients */
+  --gradient-card: linear-gradient(180deg, var(--stage-mid) 0%, color-mix(in srgb, var(--stage-mid) 90%, var(--stage-floor) 10%) 100%);
   --gradient-spotlight: linear-gradient(135deg, var(--spotlight-wash-strong) 0%, transparent 60%);
 
-  color-scheme: dark;
+  color-scheme: light;
   font-family: var(--font-body);
   font-size: var(--text-body);
   line-height: 1.5;
@@ -114,8 +114,46 @@
   background: var(--stage-floor);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    /* 라이트 토큰은 향후 마일스톤에서 활성화 */
-  }
+/* ── DARK THEME (switchable via data-theme="dark") ─────────────────── */
+[data-theme='dark'] {
+  /* Stage surfaces — deep violet-black for drama */
+  --stage-floor: #140a1c;
+  --stage-mid: #221031;
+  --stage-lit: #341c46;
+  --stage-rise: #4a2b60;
+  --stage-line: #4e3668;
+  --stage-edge: #6b4f87;
+
+  /* Spotlight — warmer gold */
+  --spotlight: #ffb838;
+  --spotlight-bright: #ffd06e;
+  --spotlight-ink: #1a1200;
+  --spotlight-wash: rgba(255, 184, 56, 0.10);
+  --spotlight-wash-strong: rgba(255, 184, 56, 0.18);
+  --spotlight-glow: rgba(255, 184, 56, 0.30);
+
+  /* Success */
+  --applause: #5fdb89;
+  --applause-deep: #3bc94f;
+  --applause-wash: rgba(95, 219, 137, 0.18);
+
+  /* Error */
+  --miss: #ff6b6b;
+  --miss-wash: rgba(255, 107, 107, 0.18);
+
+  /* Text — bright on dark */
+  --house-bright: #f5f3fa;
+  --house-light: #b4b8d6;
+
+  /* Shadows — deeper on dark */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 4px 16px rgba(0, 0, 0, 0.30),
+    0 1px 3px rgba(0, 0, 0, 0.20);
+  --shadow-cell: 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-stage: 0 16px 48px rgba(0, 0, 0, 0.40), 0 4px 12px rgba(0, 0, 0, 0.20);
+  --shadow-spotlight: 0 0 40px rgba(255, 184, 56, 0.08), 0 16px 48px rgba(0, 0, 0, 0.40);
+
+  color-scheme: dark;
+  background: var(--stage-floor);
 }
+
+
