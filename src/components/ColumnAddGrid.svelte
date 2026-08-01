@@ -73,7 +73,7 @@
       class="cell cell--sum"
       class:cell--highlight={activePlace === place}
       role="gridcell"
-      aria-label={`${placeLabel(place)} 합 ${d}`}
+      aria-label={`${placeLabel(place)} ${m.math_sum()} ${d}`}
     >
       <span class="cell-value">{d}</span>
     </div>

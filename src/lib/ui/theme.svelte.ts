@@ -30,6 +30,13 @@ export function initTheme(): void {
   apply(theme);
 }
 
+/** Update <html lang> attribute for screen readers / accessibility. */
+export function setLangAttribute(lang: string): void {
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('lang', lang);
+  }
+}
+
 export function theme(): Theme {
   return current;
 }

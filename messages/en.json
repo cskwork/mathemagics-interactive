@@ -33,6 +33,11 @@
   "settings_sound": "Sound",
   "settings_daily_goal": "Daily goal (minutes)",
   "settings_daily_goal_unit": "min",
+  "theme_dark": "Dark mode",
+  "theme_light": "Light mode",
+  "math_remainder": "remainder",
+  "math_match": "match",
+  "math_sum": "sum",
   "settings_back": "Back",
 
   "storage_mode_label": "Saved in",
