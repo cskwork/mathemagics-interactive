@@ -27,7 +27,9 @@
     | 'backspace'
     | 'settings'
     | 'users'
-    | 'chevron-right';
+    | 'chevron-right'
+    | 'sun'
+    | 'moon';
 </script>
 
 <script lang="ts">
@@ -137,6 +139,11 @@
     <path d="M18 20 C18 17.5 17 16 15.5 15" />
   {:else if name === 'chevron-right'}
     <path d="M9 5 L16 12 L9 19" />
+  {:else if name === 'sun'}
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2 V4 M12 20 V22 M2 12 H4 M20 12 H22 M5 5 L6.5 6.5 M17.5 17.5 L19 19 M5 19 L6.5 17.5 M17.5 6.5 L19 5" />
+  {:else if name === 'moon'}
+    <path d="M21 12.8 C20.5 17 16.5 21 12 21 C7 21 3 17 3 12 C3 7.5 6.5 3.5 11 3 C8.5 5 7 7.8 7 11 C7 15.5 10 19 14.5 19 C17 19 19.3 17.8 21 12.8 Z" />
   {/if}
 </svg>
 

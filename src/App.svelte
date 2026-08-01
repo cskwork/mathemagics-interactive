@@ -22,13 +22,18 @@
   import LocaleSwitcher from './components/LocaleSwitcher.svelte';
   import Icon from './components/Icon.svelte';
   import Avatar from './components/Avatar.svelte';
+  import { initTheme, toggleTheme, getTheme } from './lib/ui/theme.svelte.js';
 
   const app = createAppState();
   const router = createRouter();
+  const theme = $derived(getTheme());
 
   let bootError = $state<string | undefined>(undefined);
 
   $effect(() => router.start());
+
+  // Initialize theme as early as possible
+  initTheme();
 
   $effect(() => {
     app.boot().catch((err: unknown) => {
@@ -79,6 +84,14 @@
     {/if}
 
     <div class="header-tail">
+      <button
+        class="theme-toggle"
+        onclick={() => toggleTheme()}
+        aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}
+        title={theme === 'light' ? '다크 모드' : '라이트 모드'}
+      >
+        <Icon name={theme === 'light' ? 'moon' : 'sun'} />
+      </button>
       <LocaleSwitcher onchange={(locale) => app.setLocale(locale)} />
     </div>
   </header>
@@ -187,6 +200,32 @@
 
   .header-tail {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--tap) * 0.68);
+    height: calc(var(--tap) * 0.68);
+    min-width: auto;
+    min-height: auto;
+    padding: 0;
+    border: 1px solid var(--stage-line);
+    border-radius: var(--radius-pill);
+    background: var(--stage-mid);
+    color: var(--house-light);
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: color var(--motion-base) ease, border-color var(--motion-base) ease;
+  }
+  .theme-toggle:hover {
+    color: var(--spotlight);
+    border-color: var(--stage-edge);
+    background: var(--stage-mid);
   }
 
   .stage {
