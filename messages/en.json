@@ -32,6 +32,7 @@
   "settings_language_hint": "Language is saved per profile.",
   "settings_sound": "Sound",
   "settings_daily_goal": "Daily goal (minutes)",
+  "settings_daily_goal_unit": "min",
   "settings_back": "Back",
 
   "storage_mode_label": "Saved in",

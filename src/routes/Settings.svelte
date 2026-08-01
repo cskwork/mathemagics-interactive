@@ -118,7 +118,7 @@
               value={settings.dailyGoalMinutes}
               onchange={(e) => app.updateSettings({ dailyGoalMinutes: Number(e.currentTarget.value) })}
             />
-            <span class="muted">분</span>
+            <span class="muted">{m.settings_daily_goal_unit()}</span>
           </div>
         </div>
       {/if}

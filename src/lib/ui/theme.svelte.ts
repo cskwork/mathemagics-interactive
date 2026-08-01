@@ -11,12 +11,13 @@ const STORAGE_KEY = 'mathemagics.theme';
 let current = $state<Theme>('light');
 
 function apply(theme: Theme): void {
-  document.documentElement.setAttribute('data-theme', theme);
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
 }
 
 export function initTheme(): void {
-  // Determine initial theme
-  let theme: Theme = 'light'; // default to light
+  let theme: Theme = 'light';
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'light' || stored === 'dark') {
@@ -29,15 +30,15 @@ export function initTheme(): void {
   apply(theme);
 }
 
-export function getTheme(): Theme {
+export function theme(): Theme {
   return current;
 }
 
-export function setTheme(theme: Theme): void {
-  current = theme;
-  apply(theme);
+export function setTheme(next: Theme): void {
+  current = next;
+  apply(next);
   try {
-    localStorage.setItem(STORAGE_KEY, theme);
+    localStorage.setItem(STORAGE_KEY, next);
   } catch {
     // ignore
   }
