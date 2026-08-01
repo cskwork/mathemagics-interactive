@@ -185,8 +185,10 @@ export class AppState {
   /** 활성 프로필의 모든 SRS 카드. 진도·보고서 화면이 사용. */
   async loadAllCards(): Promise<SrsCard[]> {
     if (this.#activeId === undefined) return [];
-    // getDueCards(now=+∞, 큰 limit) 로 전체 회수 — 어댑터에 listAllCards 가 없으므로.
-    return this.adapter().getDueCards(this.#activeId, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+    // getDueCards(now=+∞, limit=100000) 로 전체 회수.
+    // limit 은 IndexedDB getAll 의 count 파라미터(unsigned long 32-bit)로 전달되므로
+    // Number.MAX_SAFE_INTEGER 를 쓰면 "outside unsigned long" 에러가 발생한다.
+    return this.adapter().getDueCards(this.#activeId, Number.MAX_SAFE_INTEGER, 100_000);
   }
 
   /** 지금 복습 예정(due ≤ now) 카드. 연습 세션 시작용. */
