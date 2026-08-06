@@ -133,6 +133,7 @@
   .strategy-title {
     font-weight: 600;
     margin: 0;
+    overflow-wrap: anywhere;
   }
 
   /* 대화 소재 카드 — 스포트라이트 강조(가장 행동 지향적 정보). */

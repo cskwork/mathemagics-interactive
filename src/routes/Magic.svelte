@@ -139,5 +139,6 @@
   .trick-title {
     font-weight: 700;
     color: var(--house-bright);
+    overflow-wrap: anywhere;
   }
 </style>
