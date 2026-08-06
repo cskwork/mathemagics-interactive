@@ -249,6 +249,7 @@
     margin: 0;
     font-size: var(--text-body);
     font-weight: 700;
+    overflow-wrap: anywhere;
   }
   .stars {
     display: flex;

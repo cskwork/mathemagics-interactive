@@ -133,7 +133,7 @@
         {:else if router.current() === 'magic'}
           <Magic {app} {router} />
         {:else if router.current() === 'catch'}
-          <Catch {router} />
+          <Catch {app} {router} />
         {:else if router.current() === 'memory'}
           <Memory {app} {router} />
         {:else if router.current() === 'playground'}

@@ -11,12 +11,13 @@
   import { resolveLocalized } from '../lib/content/localized.js';
   import { loadAllLessons } from '../lib/lesson/loader.js';
   import { proficiencyOf } from '../lib/srs/integration.js';
-  import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { generateProblem } from '../lib/engine/generate.js';
   import { computeAnswer } from '../lib/engine/derive.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import type { ProgressRecord, SrsCard } from '../lib/storage/types.js';
+  import { DEFAULT_SRS_CONFIG, DAY_MS } from '../lib/srs/config.js';
+  import { initialStreak, updateStreak } from '../lib/srs/streak.js';
 
   interface Props {
     app: AppState;
@@ -57,6 +58,7 @@
   let startMs = $state(0);
   let elapsed = $state(0);
   let solvedCount = $state(0);
+  let currentProblem = $state<{ a: number; b: number; sign: string } | undefined>(undefined);
   let currentAnswer = $state(0);
   let currentInput = $state('');
   let currentSeed = $state(1);
@@ -88,6 +90,10 @@
         ? { op: ps.op, method: ps.method, digits: ps.digits, carry: ps.carry, operandCount: ps.operandCount }
         : { op: ps.op, method: ps.method, digits: ps.digits, carry: ps.carry };
     const p = generateProblem(currentSeed, opts);
+    const a = p.operands[0] ?? 0;
+    const b = p.operands[1] ?? 0;
+    const sign = p.method === 'square' ? '²' : p.op === 'add' ? '+' : p.op === 'sub' ? '−' : p.op === 'mul' ? '×' : p.op === 'div' ? '÷' : '≈';
+    currentProblem = { a, b, sign };
     currentAnswer = computeAnswer(p);
     currentInput = '';
   }
@@ -127,6 +133,40 @@
       if (prev === undefined || elapsed < prev) {
         bests[pickedSkill] = elapsed;
         await app.updateSettings({ stageBests: bests });
+      }
+
+      // 진도 저장: 공연에서 푼 문제를 진도에 누적.
+      const prog = await app.loadProgress(pickedSkill);
+      const base = prog ?? {
+        profileId: app.activeProfileId() ?? '',
+        skillId: pickedSkill,
+        attempts: 0,
+        correct: 0,
+        lastPlayedAt: Date.now(),
+        stars: 0 as const
+      };
+      await app.saveProgress({
+        ...base,
+        practiceAttempts: (base.practiceAttempts ?? 0) + solvedCount,
+        practiceCorrect: (base.practiceCorrect ?? 0) + solvedCount,
+        lastPlayedAt: Date.now()
+      });
+
+      // 스트릭 갱신.
+      const settings = app.settings();
+      if (settings) {
+        const prevStreak = {
+          streakCount: settings.streakCount ?? 0,
+          lastStreakDayMs: settings.lastStreakDayMs ?? 0,
+          freezesAvailable: settings.freezesAvailable ?? DEFAULT_SRS_CONFIG.streakDefaultFreezes
+        };
+        const streakBase = prevStreak.streakCount === 0 ? initialStreak(DEFAULT_SRS_CONFIG) : prevStreak;
+        const upd = updateStreak(streakBase, Date.now(), solvedCount, DEFAULT_SRS_CONFIG);
+        await app.updateSettings({
+          streakCount: upd.state.streakCount,
+          lastStreakDayMs: upd.state.lastStreakDayMs,
+          freezesAvailable: upd.state.freezesAvailable
+        });
       }
     }
   }
@@ -206,7 +246,7 @@
           <strong class="counter-val">{fmt(elapsed)}</strong>
         </div>
       </div>
-      <p class="prompt" aria-live="polite">답: {currentAnswer}</p>
+      <p class="prompt" aria-live="polite">{currentProblem ? `${currentProblem.a}${currentProblem.sign}${currentProblem.sign === '²' ? '' : currentProblem.b} = ?` : ''}</p>
       <div class="input-line">
         <span class="input-val">{currentInput}</span>
       </div>
@@ -305,15 +345,17 @@
   .counter-val {
     font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
-    font-size: 1.8rem;
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
     color: var(--spotlight);
   }
   .prompt {
     font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
-    font-size: 1.6rem;
+    font-size: clamp(1.3rem, 6vw, 1.6rem);
     color: var(--house-bright);
     margin: 0;
+    text-align: center;
+    overflow-wrap: anywhere;
   }
   .input-line {
     min-width: 8rem;

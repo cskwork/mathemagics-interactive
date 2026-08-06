@@ -64,7 +64,7 @@
       })
   );
 
-  const streak = $derived(() => {
+  const streak = $derived.by(() => {
     const s = app.settings();
     return {
       count: s?.streakCount ?? 0,
@@ -213,6 +213,7 @@
   .tech-title {
     font-weight: 600;
     margin: 0;
+    overflow-wrap: anywhere;
   }
   .badge {
     font-size: var(--text-small);

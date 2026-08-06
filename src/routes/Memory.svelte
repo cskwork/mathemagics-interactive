@@ -10,6 +10,9 @@
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import { systemForLocale, findWordsForDigits, KO_DICTIONARY, EN_DICTIONARY } from '../lib/memory/engine.js';
   import type { WordEntry } from '../lib/memory/types.js';
+  import type { ProgressRecord } from '../lib/storage/types.js';
+  import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
+  import { initialStreak, updateStreak } from '../lib/srs/streak.js';
 
   interface Props {
     app: AppState;
@@ -44,6 +47,44 @@
     }
   }
 
+  const MEMORY_SKILL_ID = 'memory-practice';
+  let solvedCount = $state(0);
+
+  async function saveMemoryProgress(): Promise<void> {
+    const prog = await app.loadProgress(MEMORY_SKILL_ID);
+    const base = prog ?? {
+      profileId: app.activeProfileId() ?? '',
+      skillId: MEMORY_SKILL_ID,
+      attempts: 0,
+      correct: 0,
+      lastPlayedAt: Date.now(),
+      stars: 0 as const
+    };
+    await app.saveProgress({
+      ...base,
+      practiceAttempts: (base.practiceAttempts ?? 0) + 1,
+      practiceCorrect: (base.practiceCorrect ?? 0) + 1,
+      lastPlayedAt: Date.now()
+    });
+
+    // 스트릭 갱신.
+    const settings = app.settings();
+    if (settings) {
+      const prev = {
+        streakCount: settings.streakCount ?? 0,
+        lastStreakDayMs: settings.lastStreakDayMs ?? 0,
+        freezesAvailable: settings.freezesAvailable ?? DEFAULT_SRS_CONFIG.streakDefaultFreezes
+      };
+      const streakBase = prev.streakCount === 0 ? initialStreak(DEFAULT_SRS_CONFIG) : prev;
+      const upd = updateStreak(streakBase, Date.now(), 1, DEFAULT_SRS_CONFIG);
+      await app.updateSettings({
+        streakCount: upd.state.streakCount,
+        lastStreakDayMs: upd.state.lastStreakDayMs,
+        freezesAvailable: upd.state.freezesAvailable
+      });
+    }
+  }
+
   let current = $state<WordEntry | undefined>(undefined);
   let guess = $state('');
   let result = $state<'idle' | 'correct' | 'wrong'>('idle');
@@ -69,6 +110,8 @@
   }
 
   function next(): void {
+    solvedCount += 1;
+    void saveMemoryProgress();
     makeRound();
   }
 
@@ -150,8 +193,8 @@
     gap: var(--space-2);
   }
   .mode-switch button {
-    flex: 1;
-    min-width: 10rem;
+    flex: 1 1 8rem;
+    min-width: 0;
   }
   .mode-switch button.active {
     background: var(--spotlight);
@@ -168,6 +211,8 @@
     padding: var(--space-4);
     background: var(--stage-floor);
     border-radius: var(--radius-lg);
+    word-break: break-all;
+    overflow-wrap: anywhere;
   }
   .field {
     display: flex;

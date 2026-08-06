@@ -30,6 +30,7 @@ h3 {
   /* hallmark 규약: 헤더에 이탤릭 금지 — 강조는 웨이트·색·언더라인으로. */
   font-style: normal;
   font-family: var(--font-display);
+  overflow-wrap: anywhere;
 }
 
 h1 {

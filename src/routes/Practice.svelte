@@ -97,6 +97,8 @@
     const updated = reviewCard(c, 'good', Date.now(), DEFAULT_SRS_CONFIG);
     results = [...results, { original: c, updated, rating: 'good' }];
     correctCount += 1;
+    // 진도 즉시 저장: 문제를 풀 때마다 저장(중간에 나가도 진도 유지).
+    void savePracticeProgress(c.skillId ?? '', 1, 1);
     advance();
   }
 
@@ -105,7 +107,21 @@
     if (!c) return;
     const updated = reviewCard(c, 'again', Date.now(), DEFAULT_SRS_CONFIG);
     results = [...results, { original: c, updated, rating: 'again' }];
+    void savePracticeProgress(c.skillId ?? '', 1, 0);
     advance();
+  }
+
+  /** 개별 문제 풀이 시 즉시 진도 저장(세션 중간 종료 대비). */
+  async function savePracticeProgress(skillId: string, attempts: number, correct: number): Promise<void> {
+    if (!skillId) return;
+    const prog = await app.loadProgress(skillId);
+    const base = prog ?? emptyProgress(skillId);
+    await app.saveProgress({
+      ...base,
+      practiceAttempts: (base.practiceAttempts ?? 0) + attempts,
+      practiceCorrect: (base.practiceCorrect ?? 0) + correct,
+      lastPlayedAt: Date.now()
+    });
   }
 
   function advance(): void {
@@ -291,6 +307,7 @@
     font-weight: 800;
     font-size: var(--text-lead);
     margin: 0;
+    overflow-wrap: anywhere;
   }
 
   .stage-deck {

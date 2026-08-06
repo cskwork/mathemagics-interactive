@@ -10,6 +10,12 @@
   const INIT_SEED = 5;
   const INIT_ITEMS = 4;
 
+  interface Props {
+    /** 오답을 잡을 때마다 호출(진도 저장용). */
+    oncaught?: () => void;
+  }
+  const { oncaught }: Props = $props();
+
   let round: CatchRound = $state(makeRound(INIT_SEED, INIT_ITEMS, 'mul'));
   let picked = $state<number | undefined>(undefined);
   let solved = $state(false);
@@ -25,6 +31,7 @@
     if (i === round.wrongIndex) {
       solved = true;
       sweepKey += 1;
+      oncaught?.();
     }
   }
   function nextRound(): void {

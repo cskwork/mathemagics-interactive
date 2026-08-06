@@ -147,6 +147,7 @@
     letter-spacing: var(--tracking-display);
     color: var(--house-bright);
     line-height: 1.08;
+    overflow-wrap: anywhere;
   }
   .hero-hint {
     font-size: var(--text-lead);

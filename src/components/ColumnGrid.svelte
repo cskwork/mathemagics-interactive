@@ -99,11 +99,13 @@
   .colgrid {
     display: grid;
     gap: 0;
-    --cell-size: 2.75rem;
+    --cell-size: clamp(2rem, 11vw, 2.75rem);
     font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;
     justify-content: start;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   /* ARIA row 래퍼 — 박스는 만들지 않고 자식(셀)이 부모 grid 에 직접 참여(display:contents). */
