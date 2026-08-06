@@ -7,6 +7,7 @@
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import Icon from '../components/Icon.svelte';
+  import Ripple from '../lib/components/canvasui/Ripple.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import { loadAllLessons } from '../lib/lesson/loader.js';
@@ -260,19 +261,21 @@
       </div>
     </div>
   {:else if finished}
-    <div class="card stage-deck done" role="group" aria-label={m.stage_done_title()}>
-      <p class="done-emoji" aria-hidden="true"><Icon name="masks" /></p>
-      <p class="done-title">{m.stage_done_title()}</p>
-      <p class="muted">{m.stage_done_subtitle()}</p>
-      <p class="muted small">{m.stage_problems_solved({ n: solvedCount })} · {m.stage_time()}: {fmt(elapsed)}</p>
-      {#if isNewRecord}
-        <p class="record">{m.stage_new_record()}</p>
-      {/if}
-      <div class="row controls">
-        <button class="btn--primary" onclick={() => { finished = false; }}>{m.stage_again()}</button>
-        <button class="btn--ghost" onclick={goHome}>{m.lesson_back_home()}</button>
+    <Ripple options={{ amplitude: 0.6, speed: 0.8, refraction: 80, shine: 0.8, trigger: 'click', interval: 3 }}>
+      <div class="card stage-deck done" role="group" aria-label={m.stage_done_title()}>
+        <p class="done-emoji" aria-hidden="true"><Icon name="masks" /></p>
+        <p class="done-title">{m.stage_done_title()}</p>
+        <p class="muted">{m.stage_done_subtitle()}</p>
+        <p class="muted small">{m.stage_problems_solved({ n: solvedCount })} · {m.stage_time()}: {fmt(elapsed)}</p>
+        {#if isNewRecord}
+          <p class="record">{m.stage_new_record()}</p>
+        {/if}
+        <div class="row controls">
+          <button class="btn--primary" onclick={() => { finished = false; }}>{m.stage_again()}</button>
+          <button class="btn--ghost" onclick={goHome}>{m.lesson_back_home()}</button>
+        </div>
       </div>
-    </div>
+    </Ripple>
   {/if}
 </section>
 

@@ -11,6 +11,7 @@
 <script lang="ts">
   import { m } from '../paraglide/messages.js';
   import Icon from '../../components/Icon.svelte';
+  import Ripple from '../components/canvasui/Ripple.svelte';
   import { activeLocale } from '../i18n/locale.svelte.js';
   import { resolveLocalized } from '../content/localized.js';
   import { deriveGrid, deriveSteps } from '../engine/derive.js';
@@ -484,18 +485,20 @@
         </div>
       {/if}
     {:else if lessonState.phase === 'done'}
-      <div class="card done" role="group" aria-label={m.lesson_done_title()}>
-        <p class="done-emoji" aria-hidden="true"><Icon name="top-hat" /></p>
-        <p class="done-title">{m.lesson_done_title()}</p>
-        <p class="muted">{m.lesson_done_subtitle()}</p>
-        <p class="muted small">
-          {m.lessons_stars({ n: finalStars })} · {m.lessons_accuracy({ pct: finalAcc })}
-        </p>
-        <div class="row controls">
-          <button class="btn--primary" onclick={goLessons}>{m.lessons_back_to_list()}</button>
-          <button class="btn--ghost" onclick={() => router.navigate('home')}>{m.lesson_back_home()}</button>
+      <Ripple options={{ amplitude: 0.5, speed: 0.7, refraction: 70, shine: 0.7, trigger: 'click', interval: 4 }}>
+        <div class="card done" role="group" aria-label={m.lesson_done_title()}>
+          <p class="done-emoji" aria-hidden="true"><Icon name="top-hat" /></p>
+          <p class="done-title">{m.lesson_done_title()}</p>
+          <p class="muted">{m.lesson_done_subtitle()}</p>
+          <p class="muted small">
+            {m.lessons_stars({ n: finalStars })} · {m.lessons_accuracy({ pct: finalAcc })}
+          </p>
+          <div class="row controls">
+            <button class="btn--primary" onclick={goLessons}>{m.lessons_back_to_list()}</button>
+            <button class="btn--ghost" onclick={() => router.navigate('home')}>{m.lesson_back_home()}</button>
+          </div>
         </div>
-      </div>
+      </Ripple>
     {/if}
   </section>
 {/if}
