@@ -161,19 +161,12 @@
       }
 
       // 3. 게이트 통과 표시(단조 잠금).
+      // 연습 누적 진도는 onSolved/showAnswer 에서 이미 개별 저장했으므로 여기서 중복 저장하지 않음.
       const prog = await app.loadProgress(sid);
       const decision = proficiencyOf(sid, allCards, prog, DEFAULT_SRS_CONFIG);
       if (decision.newlyPassed) {
         await app.saveProgress({ ...(prog ?? emptyProgress(sid)), gatePassedAt: now });
       }
-      // 연습 누적 진도 갱신.
-      const base = prog ?? emptyProgress(sid);
-      await app.saveProgress({
-        ...base,
-        practiceAttempts: (base.practiceAttempts ?? 0) + agg.total,
-        practiceCorrect: (base.practiceCorrect ?? 0) + agg.correct,
-        lastPlayedAt: now
-      });
     }
 
     // 4. 스트릭 갱신(관대 — 최소량 1 이상이면).
