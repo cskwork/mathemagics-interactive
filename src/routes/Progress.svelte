@@ -94,7 +94,7 @@
   {#if !loaded}
     <p class="muted">{m.loading()}</p>
   {:else}
-    {@const st = streak()}
+    {@const st = streak}
     {#if st.count > 0}
       <article class="card streak-card" aria-label={m.progress_streak_label()}>
         <span class="streak-mark" aria-hidden="true"><Icon name="flame" /></span>

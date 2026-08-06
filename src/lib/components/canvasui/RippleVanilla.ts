@@ -217,7 +217,7 @@ export function createRipple(
   gl.attachShader(program, fragmentShader);
   gl.linkProgram(program);
 
-  const uniforms: Record<string, WebGLUniformLocation> = {};
+  const uniforms: Record<string, WebGLUniformLocation | null> = {};
   const count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
   for (let i = 0; i < count; i++) {
     const info = gl.getActiveUniform(program, i)!;
@@ -313,6 +313,7 @@ export function createRipple(
     const width = config.wavelength * Math.max(config.rings, 1) * 0.5;
     for (let i = ripples.length - 1; i >= 0; i--) {
       const rp = ripples[i];
+      if (!rp) continue;
       rp.age += delta;
       const gone =
         rp.age * speedPx > diag + width * 3 ||
@@ -327,8 +328,9 @@ export function createRipple(
     gl!.useProgram(program);
     gl!.activeTexture(gl!.TEXTURE0);
     gl!.bindTexture(gl!.TEXTURE_2D, contentTexture);
-    gl!.uniform1i(uniforms.uContent, 0);
-    gl!.uniform2f(uniforms.uResolution, output.width, output.height);
+    const loc = (name: string) => uniforms[name] ?? null;
+    gl!.uniform1i(loc('uContent'), 0);
+    gl!.uniform2f(loc('uResolution'), output.width, output.height);
     for (let i = 0; i < MAX_RIPPLES; i++) {
       const rp = ripples[i];
       rippleData[i * 4] = rp ? rp.x * dpr : 0;
@@ -336,20 +338,20 @@ export function createRipple(
       rippleData[i * 4 + 2] = rp ? rp.age : 0;
       rippleData[i * 4 + 3] = rp ? rp.amp * Math.max(config.amplitude, 0) : 0;
     }
-    gl!.uniform4fv(uniforms.uRipples, rippleData);
-    gl!.uniform1i(uniforms.uCount, ripples.length);
-    gl!.uniform1f(uniforms.uSpeed, BASE_SPEED * Math.max(config.speed, 0.05) * dpr);
-    gl!.uniform1f(uniforms.uWavelength, Math.max(config.wavelength, 4) * dpr);
+    gl!.uniform4fv(loc('uRipples'), rippleData);
+    gl!.uniform1i(loc('uCount'), ripples.length);
+    gl!.uniform1f(loc('uSpeed'), BASE_SPEED * Math.max(config.speed, 0.05) * dpr);
+    gl!.uniform1f(loc('uWavelength'), Math.max(config.wavelength, 4) * dpr);
     gl!.uniform1f(
-      uniforms.uWidth,
+      loc('uWidth'),
       Math.max(config.wavelength, 4) * Math.max(config.rings, 1) * 0.5 * dpr,
     );
-    gl!.uniform1f(uniforms.uDecay, Math.max(config.decay, 0.05));
-    gl!.uniform1f(uniforms.uRefraction, Math.max(config.refraction, 0) * dpr);
-    gl!.uniform1f(uniforms.uDispersion, Math.max(config.dispersion, 0));
-    gl!.uniform1f(uniforms.uShine, Math.max(config.shine, 0));
-    gl!.uniform1f(uniforms.uHasContent, htmlInCanvas ? 1 : 0);
-    gl!.uniform1f(uniforms.uMaxX, contentMaxX);
+    gl!.uniform1f(loc('uDecay'), Math.max(config.decay, 0.05));
+    gl!.uniform1f(loc('uRefraction'), Math.max(config.refraction, 0) * dpr);
+    gl!.uniform1f(loc('uDispersion'), Math.max(config.dispersion, 0));
+    gl!.uniform1f(loc('uShine'), Math.max(config.shine, 0));
+    gl!.uniform1f(loc('uHasContent'), htmlInCanvas ? 1 : 0);
+    gl!.uniform1f(loc('uMaxX'), contentMaxX);
     gl!.bindFramebuffer(gl!.FRAMEBUFFER, null);
     gl!.viewport(0, 0, output.width, output.height);
     gl!.drawArrays(gl!.TRIANGLE_STRIP, 0, 4);

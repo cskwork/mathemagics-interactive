@@ -10,7 +10,6 @@
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import { systemForLocale, findWordsForDigits, KO_DICTIONARY, EN_DICTIONARY } from '../lib/memory/engine.js';
   import type { WordEntry } from '../lib/memory/types.js';
-  import type { ProgressRecord } from '../lib/storage/types.js';
   import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
 
