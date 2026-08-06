@@ -17,7 +17,7 @@
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import type { ProgressRecord, SrsCard } from '../lib/storage/types.js';
-  import { DEFAULT_SRS_CONFIG, DAY_MS } from '../lib/srs/config.js';
+  import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
 
   interface Props {
