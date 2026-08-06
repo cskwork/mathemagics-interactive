@@ -1,6 +1,7 @@
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import Icon from '../components/Icon.svelte';
+  import Ripple from '../lib/components/canvasui/Ripple.svelte';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
 
@@ -21,23 +22,25 @@
       <h2 class="greet-name">{profile.name}!</h2>
     </div>
 
-    <!-- Today's Show — hero spotlight card -->
-    <article class="hero" aria-labelledby="today-show">
-      <div class="hero-glow" aria-hidden="true"></div>
-      <div class="hero-body">
-        <span class="hero-kicker" id="today-show">{m.home_today_show()}</span>
-        <p class="hero-hint">{m.home_practice_hint()}</p>
-        <div class="hero-cta">
-          <button class="btn--primary hero-btn" onclick={() => router.navigate('practice')}>
-            <span>{m.home_practice_cta()}</span>
-            <span class="arrow" aria-hidden="true">→</span>
-          </button>
-          <button class="btn--ghost" onclick={() => router.navigate('lessons')}>
-            {m.nav_lessons()}
-          </button>
+    <!-- Today's Show — hero spotlight card with ripple effect -->
+    <Ripple options={{ amplitude: 0.4, speed: 0.6, refraction: 60, shine: 0.6, trigger: 'click' }}>
+      <article class="hero" aria-labelledby="today-show">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="hero-body">
+          <span class="hero-kicker" id="today-show">{m.home_today_show()}</span>
+          <p class="hero-hint">{m.home_practice_hint()}</p>
+          <div class="hero-cta">
+            <button class="btn--primary hero-btn" onclick={() => router.navigate('practice')}>
+              <span>{m.home_practice_cta()}</span>
+              <span class="arrow" aria-hidden="true">→</span>
+            </button>
+            <button class="btn--ghost" onclick={() => router.navigate('lessons')}>
+              {m.nav_lessons()}
+            </button>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </Ripple>
 
     <!-- Repertoire grid -->
     <section class="rep" aria-labelledby="rep-h">
