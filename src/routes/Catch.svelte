@@ -7,7 +7,6 @@
   import CatchWrongGame from '../components/CatchWrongGame.svelte';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
-  import type { ProgressRecord } from '../lib/storage/types.js';
   import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
 

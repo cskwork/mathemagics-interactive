@@ -30,6 +30,8 @@
       { source: sourceCanvas, content: contentEl, output: outputCanvas },
       options
     );
+    // container is the wrapper element (used by bind:this in template)
+    container.dataset.cuReady = 'true';
     return () => {
       instance?.destroy();
       instance = null;
