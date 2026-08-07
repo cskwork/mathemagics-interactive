@@ -112,6 +112,18 @@
     letter-spacing: 0.08em;
     font-weight: 700;
     margin-top: var(--space-4);
+    color: var(--house-light);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .section-h::before {
+    content: '';
+    width: 3px;
+    height: 1em;
+    background: var(--spotlight);
+    border-radius: var(--radius-pill);
+    display: inline-block;
   }
   .small {
     font-size: var(--text-small);
@@ -129,11 +141,16 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    transition: border-color var(--motion-base) ease;
+  }
+  .strategy-item:hover {
+    border-color: var(--stage-edge);
   }
   .strategy-title {
-    font-weight: 600;
+    font-weight: 700;
     margin: 0;
     overflow-wrap: anywhere;
+    color: var(--spotlight);
   }
 
   /* 대화 소재 카드 — 스포트라이트 강조(가장 행동 지향적 정보). */
@@ -144,6 +161,17 @@
     flex-direction: column;
     gap: var(--space-2);
     margin-top: var(--space-4);
+    box-shadow: var(--shadow-card), 0 0 20px var(--spotlight-wash);
+    position: relative;
+    overflow: hidden;
+  }
+  .starter-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--spotlight);
   }
   .starter-title {
     font-family: var(--font-display);
