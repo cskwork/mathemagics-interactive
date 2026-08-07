@@ -1,15 +1,9 @@
-<!--
-  Hallmark · P3 H4 E4 S3 R4 V3 — 누계 롤링 카운터 (docs/briefs/M4.md 산출물 4).
-  부분곱 + running total 을 세로 나열. 누계 숫자가 number-roll 전환으로 갱신.
-  partialProducts(순수 함수) 결과를 소비. 색/폰트 전부 M7 토큰.
--->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import type { PartialProduct } from '../lib/engine/types.js';
 
   interface Props {
     parts: readonly PartialProduct[];
-    /** 진행 단계(0..parts.length). 미지정 시 전체. */
     step?: number;
   }
   const { parts, step = 99 }: Props = $props();
@@ -20,10 +14,10 @@
 
 <div class="roller" role="img" aria-label={m.roller_label()}>
   {#each parts.slice(0, shown) as p, i (i)}
-    <div class="pp-row">
+    <div class="pp-row bounce-in" style="animation-delay: {i * 0.05}s">
       <span class="pp-expr">{p.factor} × {p.unit}</span>
       <span class="pp-sign pp-sign--{p.sign}">{p.sign}</span>
-      <span class="pp-product">{p.product}</span>
+      <span class="pp-product">= {p.product}</span>
     </div>
     <div class="total-row" aria-live="polite">
       <span class="total-label">{m.roller_total()}</span>
@@ -33,7 +27,10 @@
     </div>
   {/each}
   {#if shown >= parts.length && parts.length > 0}
-    <p class="final">{m.roller_final({ n: finalTotal })}</p>
+    <div class="final bounce-in">
+      <span class="final-eq">=</span>
+      <span class="final-val">{finalTotal}</span>
+    </div>
   {/if}
 </div>
 
@@ -53,12 +50,14 @@
     align-items: baseline;
     color: var(--house-light);
     font-size: var(--text-body);
+    padding: 0.15rem 0;
   }
   .pp-expr {
     text-align: right;
   }
   .pp-sign {
     font-weight: 800;
+    font-size: 1.1em;
   }
   .pp-sign--plus {
     color: var(--applause);
@@ -76,10 +75,11 @@
     justify-content: flex-end;
     gap: var(--space-2);
     align-items: baseline;
-    padding: 0.2rem 0.5rem;
+    padding: 0.25rem 0.6rem;
     background: var(--spotlight-wash);
     border-radius: var(--radius);
     border: 1px solid color-mix(in srgb, var(--spotlight) 38%, var(--stage-line));
+    box-shadow: var(--shadow-cell);
   }
   .total-label {
     font-size: var(--text-small);
@@ -91,30 +91,43 @@
     font-size: 1.3rem;
     font-weight: 800;
     color: var(--spotlight);
+    text-shadow: 0 0 6px var(--spotlight-glow);
   }
   .roll {
     animation: num-roll var(--motion-base) var(--ease-stage);
   }
   .final {
-    margin: var(--space-2) 0 0;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    padding: var(--space-2) var(--space-4);
+    background: var(--applause-wash);
+    border-radius: var(--radius);
+    border: 1px solid color-mix(in srgb, var(--applause) 30%, var(--stage-line));
+  }
+  .final-eq {
+    font-size: 1.2rem;
+    color: var(--house-light);
+  }
+  .final-val {
     font-weight: 800;
     color: var(--applause);
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    text-shadow: 0 0 8px var(--applause-wash);
   }
   @keyframes num-roll {
     from {
       opacity: 0;
-      transform: translateY(-0.4em);
+      transform: translateY(-0.4em) scale(0.9);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .roll {
-      animation: none;
-    }
+    .roll, .bounce-in { animation: none; }
   }
 </style>

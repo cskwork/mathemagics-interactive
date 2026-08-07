@@ -6,6 +6,7 @@
    * 배치: 1-2-3 / 4-5-6 / 7-8-9 / 지우기-0-⌫. 물리 키보드는 DigitInput 에서 병행 처리.
    */
   import { m } from '../lib/paraglide/messages.js';
+  import { playSound } from '../lib/ui/sound.js';
 
   interface Props {
     ondigit: (d: string) => void;
@@ -36,7 +37,7 @@
   {#each layout as b (b.k)}
     <button
       class="num"
-      onclick={b.act}
+      onclick={() => { playSound('click'); b.act(); }}
       {disabled}
       aria-label={typeof b.label === 'function' ? b.label() : b.label}
     >

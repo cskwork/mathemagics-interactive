@@ -339,3 +339,104 @@ input::placeholder {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ── Enhanced micro-interactions — M7+ splendidness upgrades ────────── */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--spotlight-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px var(--spotlight-glow);
+  }
+}
+@keyframes float-up {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3) translateY(20px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) translateY(-5px);
+  }
+  70% {
+    transform: scale(0.98) translateY(0);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 var(--spotlight-glow);
+  }
+  70% {
+    box-shadow: 0 0 0 12px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* Utility classes for new animations */
+.bounce-in {
+  animation: bounce-in var(--motion-slow) var(--ease-spring) both;
+}
+.glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+.pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Shimmer effect for loading / accent text */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--house-bright) 0%,
+    var(--spotlight) 50%,
+    var(--house-bright) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Enhanced card hover lift — applied globally to .card where interactive */
+.card {
+  transition: transform var(--motion-base) var(--ease-stage), box-shadow var(--motion-base) ease;
+}
+
+/* Floating score popup animation utility */
+.score-popup {
+  position: absolute;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--applause);
+  pointer-events: none;
+  animation: float-up 0.8s ease-out forwards;
+  z-index: 50;
+}

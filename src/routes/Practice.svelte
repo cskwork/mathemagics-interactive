@@ -22,6 +22,8 @@
   import { loadAllLessons } from '../lib/lesson/loader.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
   import DigitInput from '../components/DigitInput.svelte';
+  import Celebration from '../lib/components/canvasui/Celebration.svelte';
+  import { playSound } from '../lib/ui/sound.js';
 
   interface Props {
     app: AppState;
@@ -38,6 +40,7 @@
   let correctCount = $state(0);
   /** 복습 결과(원본 카드 → 갱신된 카드 + rating). 종료 시 일괄 persist. */
   let results: { original: SrsCard; updated: SrsCard; rating: 'again' | 'good' }[] = $state([]);
+  let celebration: Celebration | undefined = $state(undefined);
 
   async function startSession(): Promise<void> {
     phase = 'loading';
@@ -133,6 +136,8 @@
   }
 
   async function finishSession(): Promise<void> {
+    playSound('achievement');
+    setTimeout(() => celebration?.rain(40), 200);
     const now = Date.now();
     // 1. 복습한 카드 persist.
     for (const r of results) await app.upsertCard(r.updated);
@@ -239,15 +244,23 @@
       <button class="btn--ghost" onclick={showAnswer}>{m.lesson_hint_bottom_out()}</button>
     </div>
   {:else if phase === 'done'}
-    <div class="card done" role="group" aria-label={m.practice_done_title()}>
-      <p class="done-emoji" aria-hidden="true"><Icon name="top-hat" /></p>
+    <div class="done-wrap">
+      <Celebration bind:this={celebration} />
+      <div class="card done" role="group" aria-label={m.practice_done_title()}>
+      <p class="done-emoji bounce-in" aria-hidden="true"><Icon name="top-hat" /></p>
       <p class="done-title">{m.practice_done_title()}</p>
       <p class="muted">{m.practice_done_subtitle()}</p>
-      <p class="muted small">{m.practice_session_stats({ correct: correctCount, total: results.length })}</p>
+      <div class="done-accuracy">
+        <div class="accuracy-bar">
+          <div class="accuracy-fill" style="width: {results.length > 0 ? (correctCount / results.length) * 100 : 0}%"></div>
+        </div>
+        <p class="muted small">{m.practice_session_stats({ correct: correctCount, total: results.length })}</p>
+      </div>
       <div class="row controls">
         <button class="btn--primary" onclick={() => router.navigate('home')}>{m.practice_back_home()}</button>
         <button class="btn--ghost" onclick={() => router.navigate('progress')}>{m.practice_see_progress()}</button>
       </div>
+    </div>
     </div>
   {/if}
 </section>

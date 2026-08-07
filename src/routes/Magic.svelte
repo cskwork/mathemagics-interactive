@@ -12,6 +12,7 @@
   import { isChapterComplete } from '../lib/lesson/skill-tree.js';
   import { buildSkillNodes } from '../lib/lesson/skill-tree.js';
   import MagicTrick from '../components/MagicTrick.svelte';
+  import { playSound } from '../lib/ui/sound.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import type { ProgressRecord } from '../lib/storage/types.js';
@@ -125,8 +126,26 @@
     min-height: calc(var(--tap) * 2.4);
     justify-content: center;
   }
+  .trick-card {
+    transition: border-color var(--motion-base) ease, transform var(--motion-fast) var(--ease-stage), box-shadow var(--motion-base) ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .trick-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, var(--spotlight-wash) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity var(--motion-base) ease;
+  }
   .trick-card:hover:not(.locked) {
     border-color: var(--spotlight);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card), 0 0 24px var(--spotlight-wash);
+  }
+  .trick-card:hover:not(.locked)::before {
+    opacity: 1;
   }
   .trick-card.locked {
     opacity: 0.55;
@@ -135,6 +154,8 @@
   .trick-mark {
     font-size: 1.8rem;
     color: var(--spotlight);
+    position: relative;
+    z-index: 1;
   }
   .trick-title {
     font-weight: 700;

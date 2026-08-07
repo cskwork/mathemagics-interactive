@@ -19,6 +19,8 @@
   import type { ProgressRecord, SrsCard } from '../lib/storage/types.js';
   import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
+  import { playSound } from '../lib/ui/sound.js';
+  import Celebration from '../lib/components/canvasui/Celebration.svelte';
 
   interface Props {
     app: AppState;
@@ -55,6 +57,7 @@
   });
 
   let pickedSkill = $state<string | undefined>(undefined);
+  let celebration: Celebration | undefined = $state(undefined);
   let playing = $state(false);
   let startMs = $state(0);
   let elapsed = $state(0);
@@ -101,6 +104,7 @@
   function submitDigit(): void {
     if (currentInput === String(currentAnswer)) {
       solvedCount += 1;
+      playSound('correct');
       if (solvedCount >= TARGET) {
         finishShow();
       } else {
@@ -122,6 +126,8 @@
   async function finishShow(): Promise<void> {
     playing = false;
     finished = true;
+    playSound('achievement');
+    setTimeout(() => celebration?.rain(50), 200);
     if (timer) {
       clearInterval(timer);
       timer = undefined;
@@ -350,6 +356,7 @@
     font-variant-numeric: tabular-nums;
     font-size: clamp(1.3rem, 6vw, 1.8rem);
     color: var(--spotlight);
+    text-shadow: 0 0 8px var(--spotlight-glow);
   }
   .prompt {
     font-family: var(--font-numeric);
@@ -404,6 +411,8 @@
     font-weight: 800;
     color: var(--applause);
     font-size: var(--text-lead);
+    animation: bounce-in var(--motion-slow) var(--ease-spring) both;
+    text-shadow: 0 0 12px var(--applause-wash);
   }
   .controls {
     justify-content: center;

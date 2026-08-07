@@ -185,8 +185,19 @@
     font-size: var(--text-lead);
     color: var(--spotlight);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .chapter-title::before {
+    content: '';
+    width: 3px;
+    height: 1.2em;
+    background: var(--spotlight);
+    border-radius: var(--radius-pill);
+    display: inline-block;
   }
   .chapter-count {
     font-size: var(--text-small);
@@ -196,6 +207,8 @@
     padding: 0.15rem 0.6rem;
     border-radius: var(--radius-pill);
     border: 1px solid var(--stage-line);
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
   }
   .chapter-nodes {
     display: flex;
@@ -217,7 +230,12 @@
     transition: border-color var(--motion-base) ease;
   }
   .lesson:not(.locked):hover {
-    border-color: var(--stage-edge);
+    border-color: var(--spotlight);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-card), 0 0 16px var(--spotlight-wash);
+  }
+  .lesson {
+    transition: border-color var(--motion-base) ease, transform var(--motion-fast) var(--ease-stage), box-shadow var(--motion-base) ease;
   }
   .lesson-status {
     display: flex;
@@ -234,6 +252,10 @@
   .lesson.completed .lesson-status {
     color: var(--applause);
     background: var(--applause-wash);
+    box-shadow: 0 0 12px var(--applause-wash);
+  }
+  .lesson.completed {
+    border-color: color-mix(in srgb, var(--applause) 20%, var(--stage-line));
   }
   .lesson.locked {
     opacity: 0.55;
@@ -259,6 +281,7 @@
   .star {
     color: var(--spotlight);
     font-size: 0.85rem;
+    text-shadow: 0 0 4px var(--spotlight-glow);
   }
   .star-empty {
     color: var(--stage-edge);

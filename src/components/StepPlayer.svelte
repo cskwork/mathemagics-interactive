@@ -15,6 +15,7 @@
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
   import ColumnGrid, { type CellRender } from './ColumnGrid.svelte';
+  import { playSound } from '../lib/ui/sound.js';
   import type { Grid, Step } from '../lib/engine/types.js';
 
   interface Props {
@@ -65,6 +66,7 @@
   function advance(): void {
     if (index < steps.length - 1) {
       index += 1;
+      playSound('tick');
     } else {
       playing = false;
       if (!completedFired) {
@@ -82,6 +84,7 @@
       playing = false;
       if (!completedFired) {
         completedFired = true;
+        playSound('complete');
         oncomplete?.();
       }
       return;
@@ -108,7 +111,7 @@
   }
   function next(): void {
     playing = false;
-    if (index < steps.length - 1) index += 1;
+    if (index < steps.length - 1) { index += 1; playSound('tick'); }
   }
   function prev(): void {
     playing = false;
@@ -172,6 +175,9 @@
     {narrationText || m.playground_narration()}
   </div>
 
+  <div class="progress-bar" role="progressbar" aria-valuenow={index + 1} aria-valuemin={1} aria-valuemax={total}>
+    <div class="progress-fill" style="width: {((index + 1) / total) * 100}%"></div>
+  </div>
   <div class="row controls" role="group" aria-label={m.player_play()}>
     <button onclick={restart} aria-label={m.player_restart()} disabled={index === 0 && !playing}><Icon name="restart" /></button>
     <button onclick={prev} aria-label={m.player_prev()} disabled={index === 0}><Icon name="prev" /></button>
@@ -219,5 +225,20 @@
     font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
     margin: 0;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--stage-line);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    opacity: 0.8;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--spotlight), var(--spotlight-bright));
+    border-radius: var(--radius-pill);
+    transition: width var(--motion-base) var(--ease-stage);
+    box-shadow: 0 0 8px var(--spotlight-glow);
   }
 </style>

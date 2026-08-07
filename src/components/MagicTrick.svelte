@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import { playSound } from '../lib/ui/sound.js';
   import Icon from './Icon.svelte';
   import { activeLocale } from '../lib/i18n/locale.svelte.js';
   import { resolveLocalized } from '../lib/content/localized.js';
@@ -23,12 +24,14 @@
   let revealedStep = $state(0);
 
   function next(): void {
+    playSound('tick');
     if (phase === 'demo') {
       if (revealedStep < demo.steps.length) {
         revealedStep += 1;
         return;
       }
       phase = 'secret';
+      playSound('achievement');
       return;
     }
     if (phase === 'secret') {
