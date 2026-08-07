@@ -276,12 +276,17 @@ input::placeholder {
 }
 @keyframes curtain-rise {
   0% {
-    transform: translateY(14px);
+    transform: translateY(20px) scale(0.98);
     opacity: 0;
+    filter: blur(4px);
+  }
+  60% {
+    filter: blur(0);
   }
   100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
+    filter: blur(0);
   }
 }
 @keyframes card-settle {

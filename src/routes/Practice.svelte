@@ -95,6 +95,10 @@
     const lesson = lessons.find((l) => l.file.skillId === skillId);
     return lesson ? resolveLocalized(lesson.file.title, activeLocale()) : skillId;
   }
+  function techniqueRule(skillId: string): string | undefined {
+    const lesson = lessons.find((l) => l.file.skillId === skillId);
+    return lesson ? resolveLocalized(lesson.file.rule, activeLocale()) : undefined;
+  }
 
   function onSolved(): void {
     const c = currentCard;
@@ -238,6 +242,9 @@
     <div class="card trick-banner" role="group" aria-label={m.practice_which_trick()}>
       <p class="kicker">{m.practice_which_trick()}</p>
       <p class="trick-name">{techniqueTitle(currentCard.skillId ?? '')}</p>
+      {#if techniqueRule(currentCard.skillId ?? '')}
+        <p class="trick-rule">{techniqueRule(currentCard.skillId ?? '')}</p>
+      {/if}
       <p class="muted small">{m.practice_problem_n({ n: index + 1, total: sessionTotal })}</p>
     </div>
 

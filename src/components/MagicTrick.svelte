@@ -162,7 +162,9 @@
   .step-val {
     font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
-    color: var(--house-bright);
+    color: var(--spotlight);
+    font-size: 1.15rem;
+    text-shadow: 0 0 6px var(--spotlight-glow);
   }
   .finale {
     font-family: var(--font-display);
@@ -171,11 +173,14 @@
     color: var(--spotlight);
     margin: 0;
     align-self: center;
+    text-shadow: 0 0 16px var(--spotlight-glow);
+    animation: bounce-in var(--motion-slow) var(--ease-spring) both;
   }
   .reveal {
     font-size: var(--text-lead);
     color: var(--house-bright);
     margin: 0;
+    animation: bounce-in var(--motion-slow) var(--ease-spring) both;
   }
   .principle {
     font-size: var(--text-body);
@@ -192,6 +197,8 @@
     font-size: 3rem;
     margin: 0;
     color: var(--spotlight);
+    animation: bounce-in var(--motion-slow) var(--ease-spring) both;
+    filter: drop-shadow(0 0 12px var(--spotlight-glow));
   }
   .controls {
     justify-content: center;
