@@ -25,6 +25,7 @@
   import Celebration from '../lib/components/canvasui/Celebration.svelte';
   import { playSound } from '../lib/ui/sound.js';
   import AnimatedCounter from '../components/AnimatedCounter.svelte';
+  import { pushToast } from '../lib/ui/toast.svelte.js';
 
   interface Props {
     app: AppState;
@@ -139,6 +140,11 @@
   async function finishSession(): Promise<void> {
     playSound('achievement');
     setTimeout(() => celebration?.rain(40), 200);
+    if (correctCount === results.length && results.length > 0) {
+      pushToast('Perfect session! All correct! 🎯', { icon: 'star', variant: 'achievement', duration: 4000 });
+    } else if (results.length > 0) {
+      pushToast(`${correctCount}/${results.length} correct — keep going!`, { icon: 'check', variant: 'success', duration: 3000 });
+    }
     const now = Date.now();
     // 1. 복습한 카드 persist.
     for (const r of results) await app.upsertCard(r.updated);

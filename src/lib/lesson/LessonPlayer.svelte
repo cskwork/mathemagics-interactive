@@ -51,6 +51,7 @@
   import ModSumCheck from '../../components/ModSumCheck.svelte';
   import MemorySlot from '../../components/MemorySlot.svelte';
   import Celebration from '../components/canvasui/Celebration.svelte';
+  import { pushToast } from '../ui/toast.svelte.js';
   import RuleCard from '../../components/RuleCard.svelte';
   import { playSound } from '../ui/sound.js';
 
@@ -282,6 +283,17 @@
     // Fire confetti celebration
     setTimeout(() => celebration?.rain(50), 100);
     setTimeout(() => celebration?.rain(30), 400);
+    // Show achievement toast
+    const stars = starsFor(lessonState, lesson.file.practice.passAccuracy);
+    if (stars === 3) {
+      pushToast(`⭐ ${resolveLocalized(lesson.file.title, activeLocale())} — Perfect!`, {
+        icon: 'star', variant: 'achievement', duration: 4000
+      });
+    } else {
+      pushToast(`${resolveLocalized(lesson.file.title, activeLocale())} ✓`, {
+        icon: 'check', variant: 'success', duration: 3000
+      });
+    }
     void (async (): Promise<void> => {
       await writeProgress({
         lessonStepReached: 'done',

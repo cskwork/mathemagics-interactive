@@ -24,6 +24,8 @@
   import Avatar from './components/Avatar.svelte';
   import { initTheme, toggleTheme, theme, setLangAttribute } from './lib/ui/theme.svelte.js';
   import { initSound, setSoundEnabled } from './lib/ui/sound.js';
+  import AmbientBackground from './lib/components/canvasui/AmbientBackground.svelte';
+  import ToastContainer from './lib/components/ToastContainer.svelte';
   import { activeLocale } from './lib/i18n/locale.svelte.js';
 
   const app = createAppState();
@@ -83,6 +85,7 @@
   });
 </script>
 
+<AmbientBackground />
 <main class="app">
   <a class="skip-link" href="#main-stage">{m.app_skip_to_content()}</a>
   <header class="proscenium">
@@ -153,6 +156,7 @@
       </div>
     {/key}
   </div>
+  <ToastContainer />
 </main>
 
 <style>
