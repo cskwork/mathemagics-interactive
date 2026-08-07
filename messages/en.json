@@ -296,5 +296,8 @@
   "home_tip_mod9": "Cast out nines: add all digits, repeat until single digit. If both sides match, your answer is probably right!",
   "home_tip_complement": "To subtract 1000 − 467: complement each digit from 9 except the last from 10 → 533.",
   "home_tip_estimate": "Round first, then adjust. 398 × 7 ≈ 400 × 7 = 2800. Then subtract 2 × 7 = 14. Answer: 2786.",
-  "home_tip_1089": "The magic 1089: pick any 3-digit number with different first and last digits. Reverse, subtract, reverse again, add. Always 1089!"
+  "home_tip_1089": "The magic 1089: pick any 3-digit number with different first and last digits. Reverse, subtract, reverse again, add. Always 1089!",
+  "home_tip_div": "Short division: divide left to right, carrying remainders forward. 7)168 → 2 r2, 2 r4 → 24.",
+  "home_tip_mul2x1": "Multiply 47 × 6: 40×6=240, then 7×6=42, total 282. Left to right, big chunks first.",
+  "home_tip_sub_ltr": "Subtract left to right: 856 − 324 → 800−300=500, 50−20=30, 6−4=2. Answer: 532."
 }

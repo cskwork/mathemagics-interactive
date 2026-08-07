@@ -54,7 +54,7 @@
     const tips = [
       m.home_tip_add(), m.home_tip_mul11(), m.home_tip_square(),
       m.home_tip_mod9(), m.home_tip_complement(), m.home_tip_estimate(),
-      m.home_tip_1089(),
+      m.home_tip_1089(), m.home_tip_div(), m.home_tip_mul2x1(), m.home_tip_sub_ltr(),
     ];
     const dayIdx = Math.floor(Date.now() / 86400000) % tips.length;
     return tips[dayIdx] ?? tips[0]!;
