@@ -21,6 +21,7 @@
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
   import { playSound } from '../lib/ui/sound.js';
   import AnimatedCounter from '../components/AnimatedCounter.svelte';
+  import { pushToast } from '../lib/ui/toast.svelte.js';
   import Celebration from '../lib/components/canvasui/Celebration.svelte';
 
   interface Props {
@@ -141,6 +142,9 @@
       if (prev === undefined || elapsed < prev) {
         bests[pickedSkill] = elapsed;
         await app.updateSettings({ stageBests: bests });
+        pushToast(prev === undefined ? 'New record set!' : `New best! ${(elapsed / 1000).toFixed(1)}s`, {
+          icon: 'star', variant: 'achievement', duration: 4000
+        });
       }
 
       // 진도 저장: 공연에서 푼 문제를 진도에 누적.
