@@ -6,7 +6,6 @@
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import type { ProgressRecord, SrsCard } from '../lib/storage/types.js';
   import { loadAllLessons } from '../lib/lesson/loader.js';
-  import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
 
   interface Props {
     app: AppState;

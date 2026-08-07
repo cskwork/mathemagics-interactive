@@ -106,6 +106,7 @@
     font-weight: 800;
     color: var(--spotlight);
     font-size: var(--text-body);
+    text-shadow: 0 0 6px var(--spotlight-glow);
   }
   .digits {
     font-size: var(--text-caption);

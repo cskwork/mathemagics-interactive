@@ -87,9 +87,10 @@
 
   function animate(): void {
     if (!ctx || !canvas) { rafId = undefined; return; }
+    const c = ctx;
     const w = canvas.width / window.devicePixelRatio;
     const h = canvas.height / window.devicePixelRatio;
-    ctx.clearRect(0, 0, w, h);
+    c.clearRect(0, 0, w, h);
 
     particles = particles.filter((p) => {
       p.life++;
@@ -101,29 +102,29 @@
       p.rotation += p.rotationSpeed;
 
       const alpha = 1 - p.life / p.maxLife;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation);
-      ctx.fillStyle = p.color;
+      c.save();
+      c.globalAlpha = alpha;
+      c.translate(p.x, p.y);
+      c.rotate(p.rotation);
+      c.fillStyle = p.color;
 
       if (p.shape === 'rect') {
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        c.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
       } else if (p.shape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-        ctx.fill();
+        c.beginPath();
+        c.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        c.fill();
       } else {
-        drawStar(ctx, 0, 0, p.size / 2);
+        drawStar(c, 0, 0, p.size / 2);
       }
-      ctx.restore();
+      c.restore();
       return true;
     });
 
     if (particles.length > 0) {
       rafId = requestAnimationFrame(animate);
     } else {
-      ctx.clearRect(0, 0, w, h);
+      c.clearRect(0, 0, w, h);
       rafId = undefined;
     }
   }

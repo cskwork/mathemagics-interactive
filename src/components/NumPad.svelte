@@ -68,11 +68,18 @@
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-inset), var(--shadow-cell);
   }
-  .num:hover {
+  .num:hover:not(:disabled) {
     background: var(--stage-rise);
+    border-color: var(--spotlight);
+    box-shadow: var(--shadow-inset), var(--shadow-cell), 0 0 8px var(--spotlight-wash);
   }
   .num:active {
-    transform: translateY(1px);
+    transform: translateY(2px) scale(0.95);
     box-shadow: var(--shadow-inset);
+    background: var(--spotlight-wash);
+    color: var(--spotlight);
+  }
+  .num:disabled {
+    opacity: 0.4;
   }
 </style>

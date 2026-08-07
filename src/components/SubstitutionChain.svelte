@@ -56,6 +56,7 @@
   .arrow {
     color: var(--spotlight);
     font-weight: 800;
+    text-shadow: 0 0 4px var(--spotlight-glow);
   }
   .seg {
     display: inline-flex;
@@ -73,6 +74,7 @@
   }
   .seg-val.to {
     color: var(--applause);
+    text-shadow: 0 0 8px var(--applause-wash);
   }
   .seg-label {
     font-size: var(--text-small);

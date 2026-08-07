@@ -103,10 +103,6 @@
     border-radius: var(--radius);
     border: 1px solid color-mix(in srgb, var(--applause) 30%, var(--stage-line));
   }
-  .br-answer strong {
-    color: var(--applause);
-    text-shadow: 0 0 6px var(--applause-wash);
-  }
   @keyframes digit-in {
     from {
       opacity: 0.3;
