@@ -53,6 +53,7 @@
   import Celebration from '../components/canvasui/Celebration.svelte';
   import { pushToast } from '../ui/toast.svelte.js';
   import RuleCard from '../../components/RuleCard.svelte';
+  import PlaceValueStrip from '../../components/PlaceValueStrip.svelte';
   import { playSound } from '../ui/sound.js';
 
   interface Props {
@@ -429,6 +430,11 @@
           <StepPlayer {grid} steps={baseSteps} autoplay oncomplete={() => dispatch({ t: 'next' })} />
         {/key}
       </div>
+      {#if currentProblem && (currentProblem.op === 'add' || currentProblem.op === 'sub') && currentProblem.method === 'ltr'}
+        <div class="pv-wrap">
+          <PlaceValueStrip value={(currentProblem.operands[0] ?? 0) + (currentProblem.operands[1] ?? 0)} showExpansion />
+        </div>
+      {/if}
       <div class="row controls">
         <button class="btn--ghost" onclick={() => dispatch({ t: 'skip-hook' })}>{m.lesson_hook_skip()}</button>
         <button class="btn--primary" onclick={() => dispatch({ t: 'next' })}>{m.lesson_continue()}</button>
@@ -581,6 +587,11 @@
   }
   .rule-wrap {
     margin: var(--space-2) 0;
+  }
+  .pv-wrap {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-2) 0;
   }
   .small {
     font-size: var(--text-small);
