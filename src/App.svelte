@@ -163,7 +163,11 @@
     flex-wrap: wrap;
     padding-bottom: var(--space-4);
     margin-bottom: var(--space-6);
-    border-bottom: 1px solid var(--stage-line);
+    border-bottom: 2px solid transparent;
+    background-image: linear-gradient(var(--stage-floor), var(--stage-floor)),
+      linear-gradient(90deg, transparent, var(--spotlight) 30%, var(--spotlight) 70%, transparent);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
   }
   .wordmark {
     display: inline-flex;
@@ -175,7 +179,10 @@
     font-weight: 800;
     letter-spacing: var(--tracking-display);
     font-size: 1rem;
-    transition: opacity var(--motion-base) ease;
+    transition: opacity var(--motion-base) ease, text-shadow var(--motion-base) ease;
+  }
+  .wordmark:hover {
+    text-shadow: 0 0 12px var(--spotlight-glow);
   }
   .wordmark:hover {
     opacity: 0.8;
@@ -184,6 +191,11 @@
     color: var(--spotlight);
     font-size: 0.65rem;
     transform: translateY(-1px);
+    filter: drop-shadow(0 0 4px var(--spotlight-glow));
+    transition: transform var(--motion-base) var(--ease-spring);
+  }
+  .wordmark:hover .wordmark-mark {
+    transform: translateY(-1px) rotate(15deg) scale(1.1);
   }
   .wordmark-text {
     white-space: nowrap;
