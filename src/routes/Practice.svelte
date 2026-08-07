@@ -24,6 +24,7 @@
   import DigitInput from '../components/DigitInput.svelte';
   import Celebration from '../lib/components/canvasui/Celebration.svelte';
   import { playSound } from '../lib/ui/sound.js';
+  import AnimatedCounter from '../components/AnimatedCounter.svelte';
 
   interface Props {
     app: AppState;
@@ -251,6 +252,11 @@
       <p class="done-title">{m.practice_done_title()}</p>
       <p class="muted">{m.practice_done_subtitle()}</p>
       <div class="done-accuracy">
+        <div class="accuracy-numbers">
+          <AnimatedCounter value={correctCount} />
+          <span class="accuracy-sep">/</span>
+          <span class="accuracy-total">{results.length}</span>
+        </div>
         <div class="accuracy-bar">
           <div class="accuracy-fill" style="width: {results.length > 0 ? (correctCount / results.length) * 100 : 0}%"></div>
         </div>

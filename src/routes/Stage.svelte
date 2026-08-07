@@ -20,6 +20,7 @@
   import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
   import { playSound } from '../lib/ui/sound.js';
+  import AnimatedCounter from '../components/AnimatedCounter.svelte';
   import Celebration from '../lib/components/canvasui/Celebration.svelte';
 
   interface Props {
@@ -272,7 +273,16 @@
         <p class="done-emoji" aria-hidden="true"><Icon name="masks" /></p>
         <p class="done-title">{m.stage_done_title()}</p>
         <p class="muted">{m.stage_done_subtitle()}</p>
-        <p class="muted small">{m.stage_problems_solved({ n: solvedCount })} · {m.stage_time()}: {fmt(elapsed)}</p>
+        <div class="stage-done-stats">
+          <div class="stage-stat">
+            <AnimatedCounter value={solvedCount} />
+            <span class="stage-stat-label">{m.stage_problems_solved({ n: '' }).replace(/\s*$/, '')}</span>
+          </div>
+          <div class="stage-stat">
+            <AnimatedCounter value={Math.round(elapsed / 1000)} suffix="s" />
+            <span class="stage-stat-label">{m.stage_time()}</span>
+          </div>
+        </div>
         {#if isNewRecord}
           <p class="record">{m.stage_new_record()}</p>
         {/if}
@@ -413,6 +423,30 @@
     font-size: var(--text-lead);
     animation: bounce-in var(--motion-slow) var(--ease-spring) both;
     text-shadow: 0 0 12px var(--applause-wash);
+  }
+  .stage-done-stats {
+    display: flex;
+    gap: var(--space-6);
+    justify-content: center;
+    margin: var(--space-3) 0;
+  }
+  .stage-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .stage-stat :global(.animated-counter) {
+    font-size: 2rem;
+    color: var(--spotlight);
+    text-shadow: 0 0 8px var(--spotlight-glow);
+  }
+  .stage-stat-label {
+    font-size: var(--text-caption);
+    color: var(--house-light);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
   }
   .controls {
     justify-content: center;
