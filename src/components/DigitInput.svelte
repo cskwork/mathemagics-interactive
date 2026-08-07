@@ -236,18 +236,21 @@
   /* spotlight-sweep 오버레이 — 정답 때 무대를 훑는 빛. 리마운트로 재생(위 {#key}). */
   .sweep-overlay {
     position: absolute;
-    inset: -0.5rem;
+    inset: -1rem;
     pointer-events: none;
     background-image: linear-gradient(
       100deg,
-      transparent 30%,
-      var(--spotlight-wash-strong) 50%,
-      transparent 70%
+      transparent 25%,
+      var(--spotlight-wash-strong) 45%,
+      color-mix(in srgb, var(--spotlight) 20%, white) 50%,
+      var(--spotlight-wash-strong) 55%,
+      transparent 75%
     );
-    background-size: 60% 100%;
+    background-size: 80% 100%;
     background-repeat: no-repeat;
     animation: spotlight-sweep var(--motion-slow) ease;
     z-index: 2;
+    border-radius: var(--radius-lg);
   }
 
   /* 자막바(caption) — 시각적으로 보이는 aria-live 영역(M7 산출물 7) */
@@ -260,6 +263,7 @@
     line-height: 1.45;
     color: var(--house-bright);
     font-size: var(--text-lead);
+    transition: background var(--motion-base) ease, border-color var(--motion-base) ease;
   }
   .done {
     text-align: center;

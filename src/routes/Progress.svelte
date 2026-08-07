@@ -16,7 +16,6 @@
   import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { proficiencyOf, techniqueStats } from '../lib/srs/integration.js';
   import type { ProficiencyLevel } from '../lib/srs/types.js';
-  import ProgressRing from '../components/ProgressRing.svelte';
 
   interface Props {
     app: AppState;
@@ -239,19 +238,25 @@
   }
   .level-pre-learning {
     color: var(--house-light);
+    background: var(--stage-lit);
   }
   .level-learning {
     color: var(--spotlight);
-    border-color: var(--spotlight);
+    border-color: color-mix(in srgb, var(--spotlight) 40%, var(--stage-line));
+    background: var(--spotlight-wash);
   }
   .level-gate-passed {
     color: var(--applause);
-    border-color: var(--applause);
+    border-color: color-mix(in srgb, var(--applause) 40%, var(--stage-line));
+    background: var(--applause-wash);
+    box-shadow: 0 0 8px var(--applause-wash);
   }
   .level-fluent {
     color: var(--spotlight-ink);
     background: var(--spotlight);
     border-color: var(--spotlight);
+    box-shadow: 0 0 12px var(--spotlight-glow);
+    animation: glow-pulse 2s ease-in-out infinite;
   }
   .tech-meta {
     display: flex;

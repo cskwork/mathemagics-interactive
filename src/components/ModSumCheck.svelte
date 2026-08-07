@@ -100,10 +100,14 @@
   .circ--ok {
     border-color: var(--applause);
     color: var(--applause);
+    background: var(--applause-wash);
+    box-shadow: 0 0 8px var(--applause-wash);
   }
   .circ--bad {
     border-color: var(--miss);
     color: var(--miss);
+    background: var(--miss-wash);
+    box-shadow: 0 0 8px var(--miss-wash);
   }
   .op,
   .eq {
@@ -117,11 +121,13 @@
   }
   .ms-cell {
     background: var(--stage-mid);
+    border: 1px solid var(--stage-line);
     border-radius: var(--radius);
     padding: var(--space-3);
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    box-shadow: var(--shadow-card);
   }
   .ms-title {
     font-size: var(--text-small);
@@ -143,9 +149,11 @@
   }
   .ms-verdict.ok {
     color: var(--applause);
+    text-shadow: 0 0 6px var(--applause-wash);
   }
   .ms-verdict.bad {
     color: var(--miss);
+    text-shadow: 0 0 6px var(--miss-wash);
   }
   .small {
     font-size: var(--text-small);

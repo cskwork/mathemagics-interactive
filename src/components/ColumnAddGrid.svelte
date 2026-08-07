@@ -130,7 +130,11 @@
   }
   .cell--highlight {
     background: var(--spotlight-wash-strong);
-    box-shadow: inset 0 0 0 2px var(--spotlight), var(--shadow-cell);
+    box-shadow: inset 0 0 0 2px var(--spotlight), var(--shadow-cell), 0 0 12px var(--spotlight-glow);
+  }
+  .cell--sum {
+    color: var(--spotlight);
+    text-shadow: 0 0 6px var(--spotlight-glow);
   }
   @media (prefers-reduced-motion: reduce) {
     .cell {

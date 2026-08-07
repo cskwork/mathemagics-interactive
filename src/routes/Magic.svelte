@@ -12,7 +12,6 @@
   import { isChapterComplete } from '../lib/lesson/skill-tree.js';
   import { buildSkillNodes } from '../lib/lesson/skill-tree.js';
   import MagicTrick from '../components/MagicTrick.svelte';
-  import { playSound } from '../lib/ui/sound.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import type { ProgressRecord } from '../lib/storage/types.js';
