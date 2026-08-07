@@ -60,5 +60,6 @@
     background: var(--spotlight);
     color: var(--spotlight-ink);
     font-weight: 800;
+    box-shadow: 0 0 8px var(--spotlight-glow);
   }
 </style>
