@@ -75,9 +75,15 @@
   {#if app.profiles().length === 0 && !creating}
     <!-- Warm empty state -->
     <div class="welcome">
-      <div class="welcome-icon" aria-hidden="true"><Icon name="sparkles" /></div>
+      <div class="welcome-sparkles" aria-hidden="true">
+        <span class="ws s1"><Icon name="sparkle" /></span>
+        <span class="ws s2"><Icon name="sparkles" /></span>
+        <span class="ws s3"><Icon name="sparkle" /></span>
+        <span class="ws s4"><Icon name="diamond" /></span>
+      </div>
+      <div class="welcome-icon bounce-in" aria-hidden="true"><Icon name="sparkles" /></div>
       <p class="welcome-title">{m.stage_cast_empty()}</p>
-      <button class="btn--primary welcome-btn" onclick={openForm}>
+      <button class="btn--primary welcome-btn glow-pulse" onclick={openForm}>
         <Icon name="users" />
         <span>{m.profiles_add()}</span>
       </button>
@@ -241,8 +247,13 @@
     box-shadow: var(--shadow-card);
     transition: border-color var(--motion-base) ease;
   }
+  .cast-row {
+    transition: border-color var(--motion-base) ease, transform var(--motion-fast) var(--ease-stage), box-shadow var(--motion-base) ease;
+  }
   .cast-row:hover {
-    border-color: var(--stage-edge);
+    border-color: var(--spotlight);
+    transform: translateX(3px);
+    box-shadow: var(--shadow-card), 0 0 16px var(--spotlight-wash);
   }
   .cast-pick {
     display: flex;
@@ -265,6 +276,13 @@
   .cast-avatar {
     font-size: 1.6rem;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--spotlight-wash);
   }
   .cast-name {
     font-weight: 700;

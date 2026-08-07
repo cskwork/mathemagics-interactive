@@ -105,6 +105,9 @@
   /* Gradients */
   --gradient-card: linear-gradient(180deg, var(--stage-mid) 0%, color-mix(in srgb, var(--stage-mid) 90%, var(--stage-floor) 10%) 100%);
   --gradient-spotlight: linear-gradient(135deg, var(--spotlight-wash-strong) 0%, transparent 60%);
+  --gradient-hero: linear-gradient(135deg, var(--spotlight-wash-strong) 0%, var(--stage-mid) 40%, var(--stage-mid) 100%);
+  --gradient-success: linear-gradient(135deg, var(--applause-wash) 0%, transparent 60%);
+  --gradient-shimmer: linear-gradient(90deg, transparent 0%, var(--spotlight-wash-strong) 50%, transparent 100%);
 
   color-scheme: light;
   font-family: var(--font-body);
@@ -144,6 +147,10 @@
   /* Text — bright on dark */
   --house-bright: #f5f3fa;
   --house-light: #b4b8d6;
+
+  --gradient-hero: linear-gradient(135deg, var(--spotlight-wash-strong) 0%, var(--stage-mid) 40%, var(--stage-mid) 100%);
+  --gradient-success: linear-gradient(135deg, var(--applause-wash) 0%, transparent 60%);
+  --gradient-shimmer: linear-gradient(90deg, transparent 0%, var(--spotlight-wash-strong) 50%, transparent 100%);
 
   /* Shadows — deeper on dark */
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 4px 16px rgba(0, 0, 0, 0.30),

@@ -109,6 +109,7 @@
   }
   :global(.xmult-svg .digit--ans) {
     fill: var(--spotlight);
+    filter: drop-shadow(0 0 4px var(--spotlight-glow));
   }
   :global(.xmult-svg .sign) {
     font-size: 1.3rem;
@@ -130,6 +131,7 @@
     opacity: 1;
     stroke-width: 3;
     stroke: var(--spotlight);
+    filter: drop-shadow(0 0 6px var(--spotlight-glow));
   }
   @media (prefers-reduced-motion: reduce) {
     :global(.xmult-svg .diag) {

@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import { playSound } from '../lib/ui/sound.js';
   import { findWrongByModSum, makeRound, type CatchRound } from '../lib/engine/catch-wrong.js';
 
   const INIT_SEED = 5;
@@ -29,9 +30,12 @@
     if (solved) return;
     picked = i;
     if (i === round.wrongIndex) {
+      playSound('correct');
       solved = true;
       sweepKey += 1;
       oncaught?.();
+    } else {
+      playSound('wrong');
     }
   }
   function nextRound(): void {
@@ -120,10 +124,12 @@
     padding: var(--space-4);
     cursor: pointer;
     text-align: center;
-    transition: border-color var(--motion-base) ease, transform var(--motion-base) ease;
+    transition: border-color var(--motion-base) ease, transform var(--motion-fast) var(--ease-spring), box-shadow var(--motion-base) ease;
   }
-  .item:hover {
+  .item:hover:not(:disabled) {
     border-color: var(--spotlight);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: var(--shadow-card), 0 0 16px var(--spotlight-wash);
   }
   .expr {
     font-size: var(--text-body);
@@ -134,6 +140,7 @@
     font-variant-numeric: tabular-nums;
     font-size: 1.6rem;
     color: var(--house-bright);
+    font-weight: 700;
   }
   .item--wrong-pick {
     border-color: var(--miss);
@@ -142,9 +149,12 @@
   .item--caught {
     border-color: var(--applause);
     background: var(--applause-wash);
+    box-shadow: 0 0 20px var(--applause-wash), inset 0 0 0 2px var(--applause);
+    animation: card-settle var(--motion-slow) var(--ease-spring);
   }
   .item--caught .claimed {
     color: var(--applause);
+    text-shadow: 0 0 8px var(--applause-wash);
   }
   .verdict {
     position: relative;

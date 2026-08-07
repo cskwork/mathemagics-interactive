@@ -81,6 +81,7 @@
     font-weight: 800;
     fill: var(--applause);
     animation: digit-in var(--motion-base) var(--ease-stage);
+    filter: drop-shadow(0 0 4px var(--applause-wash));
   }
   .br-bracket-path {
     stroke: var(--house-bright);
@@ -92,11 +93,19 @@
     fill: var(--house-light);
   }
   .br-answer {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
     color: var(--house-bright);
     margin: 0;
+    padding: var(--space-2) var(--space-4);
+    background: var(--applause-wash);
+    border-radius: var(--radius);
+    border: 1px solid color-mix(in srgb, var(--applause) 30%, var(--stage-line));
+  }
+  .br-answer strong {
+    color: var(--applause);
+    text-shadow: 0 0 6px var(--applause-wash);
   }
   @keyframes digit-in {
     from {

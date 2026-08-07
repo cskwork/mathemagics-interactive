@@ -16,6 +16,7 @@
   import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { proficiencyOf, techniqueStats } from '../lib/srs/integration.js';
   import type { ProficiencyLevel } from '../lib/srs/types.js';
+  import ProgressRing from '../components/ProgressRing.svelte';
 
   interface Props {
     app: AppState;
@@ -96,9 +97,10 @@
   {:else}
     {@const st = streak}
     {#if st.count > 0}
-      <article class="card streak-card" aria-label={m.progress_streak_label()}>
+      <article class="card streak-card glow-pulse" aria-label={m.progress_streak_label()}>
         <span class="streak-mark" aria-hidden="true"><Icon name="flame" /></span>
         <span class="streak-text">{m.progress_streak_days({ n: st.count })}</span>
+        <span class="streak-sub">{m.home_streak_label()}</span>
       </article>
     {/if}
 
@@ -175,13 +177,26 @@
   .streak-card {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    background: var(--applause-wash);
-    border: 1px solid color-mix(in srgb, var(--applause) 40%, var(--stage-line));
+    gap: var(--space-3);
+    background: var(--gradient-spotlight);
+    border: 1px solid color-mix(in srgb, var(--spotlight) 25%, var(--stage-line));
   }
   .streak-mark {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     color: var(--spotlight);
+    animation: flicker 1.5s ease-in-out infinite;
+  }
+  @keyframes flicker {
+    0%, 100% { transform: scale(1) rotate(-2deg); }
+    50% { transform: scale(1.1) rotate(2deg); }
+  }
+  .streak-sub {
+    margin-left: auto;
+    font-size: var(--text-caption);
+    color: var(--house-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
   .streak-text {
     font-family: var(--font-display);

@@ -12,6 +12,7 @@
   import type { WordEntry } from '../lib/memory/types.js';
   import { DEFAULT_SRS_CONFIG } from '../lib/srs/config.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
+  import { playSound } from '../lib/ui/sound.js';
 
   interface Props {
     app: AppState;
@@ -102,9 +103,11 @@
       // 숫자→단어: 입력한 단어의 encode 가 current.digits 와 같으면 정답.
       const ok = system.encode(guess.trim()) === current.digits && guess.trim().length > 0;
       result = ok ? 'correct' : 'wrong';
+      playSound(ok ? 'correct' : 'wrong');
     } else {
       // 단어→숫자: 입력이 digits 와 같으면 정답.
       result = guess.trim() === current.digits ? 'correct' : 'wrong';
+      playSound(result === 'correct' ? 'correct' : 'wrong');
     }
   }
 
@@ -226,10 +229,23 @@
   .feedback.ok {
     color: var(--applause);
     margin: 0;
+    font-size: var(--text-lead);
+    font-weight: 800;
+    padding: var(--space-2) var(--space-3);
+    background: var(--applause-wash);
+    border-radius: var(--radius);
+    border: 1px solid color-mix(in srgb, var(--applause) 30%, var(--stage-line));
+    animation: bounce-in var(--motion-base) var(--ease-spring) both;
   }
   .feedback.wrong {
     color: var(--miss);
     margin: 0;
+    font-size: var(--text-body);
+    font-weight: 600;
+    padding: var(--space-2) var(--space-3);
+    background: var(--miss-wash);
+    border-radius: var(--radius);
+    border: 1px solid color-mix(in srgb, var(--miss) 30%, var(--stage-line));
   }
   .table-grid {
     display: grid;

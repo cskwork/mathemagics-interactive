@@ -1,9 +1,3 @@
-<!--
-  Hallmark · P3 H4 E4 S3 R4 V3 — X-다이어그램: 제곱의 ±d 분기 도식 (docs/briefs/M4.md 산출물 2).
-  book-content-map §2-3/§3-5/§4-1. A²=(A+d)(A−d)+d² 의 위/아래 분기를 SVG 로 그린다.
-  **재귀 중첩**: 3자리 제곱에서 d² 가 다시 2자리 제곱이면 내부에 축소 다이어그램이 들어간다.
-  색/폰트는 전부 M7 토큰. reduced-motion 시 전환 즉시.
--->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
   import { squareDiagram } from '../lib/engine/derive-mul.js';
@@ -11,14 +5,12 @@
 
   interface Props {
     base: number;
-    /** 진행 단계(0..N). 미지정 시 전체 표시. */
     step?: number;
   }
   const { base, step = 99 }: Props = $props();
 
   const diag = $derived(squareDiagram(base));
 
-  /** 렌더용 평탄 노드 — depth(중첩 깊이) + 단계별 공개 플래그. */
   interface RenderNode {
     diag: SquareDiagram;
     depth: number;
@@ -29,7 +21,6 @@
     showAnswer: boolean;
   }
 
-  /** 다이어그램(및 재귀 내부)을 렌더용 평탄 노드 목록으로. */
   function flatten(root: SquareDiagram, st: number, depth: number): RenderNode[] {
     const out: RenderNode[] = [
       {
@@ -57,33 +48,48 @@
       {#if node.depth > 0}
         <span class="nest-bracket">{m.xdiagram_nested()}</span>
       {/if}
-      <svg class="x-svg" viewBox="0 0 320 150" aria-hidden="true">
-        <text x="160" y="22" class="x-base">{node.diag.base}²</text>
+      <svg class="x-svg" viewBox="0 0 320 170" aria-hidden="true">
+        <!-- Glow filter -->
+        <defs>
+          <filter id="xglow-{node.depth}" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- Base value badge -->
+        <rect x="125" y="6" width="70" height="28" rx="8" class="base-badge" filter="url(#xglow-{node.depth})"/>
+        <text x="160" y="25" class="x-base">{node.diag.base}²</text>
+
         {#if node.showHigh}
-          <line x1="160" y1="30" x2="70" y2="70" class="branch-line" />
-          <text x="40" y="78" class="branch-val">{node.diag.high}</text>
-          <text x="55" y="52" class="branch-label">+{node.diag.d}</text>
+          <path d="M 160 38 Q 110 55 70 75" class="branch-line branch-line-anim" style="animation-delay: 0.1s"/>
+          <rect x="25" y="60" width="56" height="28" rx="8" class="branch-badge-high" filter="url(#xglow-{node.depth})"/>
+          <text x="53" y="79" class="branch-val">{node.diag.high}</text>
+          <text x="100" y="58" class="branch-label">+{node.diag.d}</text>
         {/if}
         {#if node.showLow}
-          <line x1="160" y1="30" x2="250" y2="70" class="branch-line" />
-          <text x="270" y="78" class="branch-val">{node.diag.low}</text>
-          <text x="245" y="52" class="branch-label">−{node.diag.d}</text>
+          <path d="M 160 38 Q 210 55 250 75" class="branch-line branch-line-anim" style="animation-delay: 0.2s"/>
+          <rect x="239" y="60" width="56" height="28" rx="8" class="branch-badge-low" filter="url(#xglow-{node.depth})"/>
+          <text x="267" y="79" class="branch-val">{node.diag.low}</text>
+          <text x="220" y="58" class="branch-label">−{node.diag.d}</text>
         {/if}
         {#if node.showProduct}
-          <line x1="70" y1="85" x2="160" y2="120" class="merge-line" />
-          <line x1="250" y1="85" x2="160" y2="120" class="merge-line" />
-          <text x="120" y="110" class="product-val">{node.diag.high}×{node.diag.low}</text>
-          <text x="160" y="140" class="result-val">= {node.diag.product}</text>
+          <path d="M 70 92 Q 115 110 150 122" class="merge-line merge-line-anim" style="animation-delay: 0.1s"/>
+          <path d="M 267 92 Q 210 110 170 122" class="merge-line merge-line-anim" style="animation-delay: 0.2s"/>
+          <rect x="100" y="105" width="120" height="28" rx="8" class="product-badge" filter="url(#xglow-{node.depth})"/>
+          <text x="160" y="124" class="product-val">{node.diag.high}×{node.diag.low} = {node.diag.product}</text>
+        {/if}
+        {#if node.showDSquared}
+          <text x="160" y="155" class="dsq-val">+ {node.diag.d}² = {node.diag.dSquared}</text>
         {/if}
       </svg>
-      {#if node.showDSquared}
-        <p class="dsq">
-          + {node.diag.d}² = {node.diag.dSquared}
-          {#if node.diag.nested}<span class="muted small"> ({m.xdiagram_reuse()})</span>{/if}
-        </p>
-      {/if}
       {#if node.showAnswer}
-        <p class="x-answer">{node.diag.product} + {node.diag.dSquared} = <strong>{node.diag.answer}</strong></p>
+        <p class="x-answer bounce-in">
+          {node.diag.product} + {node.diag.dSquared} = <strong>{node.diag.answer}</strong>
+        </p>
       {/if}
     </div>
   {/each}
@@ -114,7 +120,7 @@
   }
   .x-svg {
     width: 100%;
-    max-width: 18rem;
+    max-width: 20rem;
     height: auto;
   }
   .x-svg text {
@@ -122,43 +128,69 @@
     font-family: var(--font-numeric);
     font-variant-numeric: tabular-nums;
   }
+  .base-badge {
+    fill: var(--spotlight-wash-strong);
+    stroke: var(--spotlight);
+    stroke-width: 1.5;
+  }
   .x-base {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
     fill: var(--spotlight);
     text-anchor: middle;
   }
+  .branch-badge-high {
+    fill: var(--applause-wash);
+    stroke: var(--applause);
+    stroke-width: 1.5;
+  }
+  .branch-badge-low {
+    fill: var(--spotlight-wash);
+    stroke: var(--spotlight);
+    stroke-width: 1.5;
+  }
   .branch-val {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
+    fill: var(--house-bright);
     text-anchor: middle;
   }
   .branch-label {
-    font-size: 10px;
+    font-size: 11px;
     fill: var(--spotlight);
     text-anchor: middle;
+    font-weight: 700;
   }
-  .branch-line,
-  .merge-line {
-    stroke: var(--stage-line);
-    stroke-width: 1.5;
+  .branch-line, .merge-line {
+    stroke: var(--stage-edge);
+    stroke-width: 2;
     fill: none;
+    stroke-linecap: round;
+  }
+  .branch-line-anim, .merge-line-anim {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: draw-line 0.6s var(--ease-stage) forwards;
+  }
+  @keyframes draw-line {
+    to { stroke-dashoffset: 0; }
+  }
+  .product-badge {
+    fill: color-mix(in srgb, var(--applause) 12%, var(--stage-mid));
+    stroke: var(--applause);
+    stroke-width: 1.5;
   }
   .product-val {
-    font-size: 11px;
-    fill: var(--house-light);
-    text-anchor: middle;
-  }
-  .result-val {
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 700;
     fill: var(--applause);
     text-anchor: middle;
   }
-  .dsq {
-    font-size: var(--text-small);
-    color: var(--house-bright);
-    margin: 0;
+  .dsq-val {
+    font-size: 13px;
+    fill: var(--house-bright);
+    text-anchor: middle;
+    font-weight: 600;
   }
   .x-answer {
     font-size: 1.05rem;
@@ -167,16 +199,11 @@
   }
   .x-answer strong {
     color: var(--spotlight);
-  }
-  .muted {
-    color: var(--house-light);
-  }
-  .small {
-    font-size: var(--text-small);
+    font-size: 1.25rem;
+    text-shadow: 0 0 8px var(--spotlight-glow);
   }
   @media (prefers-reduced-motion: reduce) {
-    .xdiag-node {
-      transition: none;
-    }
+    .xdiag-node { transition: none; }
+    .branch-line-anim, .merge-line-anim { animation: none; stroke-dashoffset: 0; }
   }
 </style>

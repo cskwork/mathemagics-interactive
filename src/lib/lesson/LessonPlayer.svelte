@@ -50,6 +50,9 @@
   import SquareRootDiagram from '../../components/SquareRootDiagram.svelte';
   import ModSumCheck from '../../components/ModSumCheck.svelte';
   import MemorySlot from '../../components/MemorySlot.svelte';
+  import Celebration from '../components/canvasui/Celebration.svelte';
+  import RuleCard from '../../components/RuleCard.svelte';
+  import { playSound } from '../ui/sound.js';
 
   interface Props {
     skillId: string;
@@ -73,6 +76,7 @@
 
   let lessonState: LessonState = $state(createLessonState(Date.now()));
   let savedDone = $state(false);
+  let celebration: Celebration | undefined = $state(undefined);
   let savedPractice = $state(false);
 
   function dispatch(e: LessonEvent): void {
@@ -274,6 +278,10 @@
   $effect(() => {
     if (!lesson || lessonState.phase !== 'done' || savedDone || !profileId) return;
     savedDone = true;
+    playSound('achievement');
+    // Fire confetti celebration
+    setTimeout(() => celebration?.rain(50), 100);
+    setTimeout(() => celebration?.rain(30), 400);
     void (async (): Promise<void> => {
       await writeProgress({
         lessonStepReached: 'done',
@@ -383,9 +391,20 @@
       <p class="phase-tag" aria-live="polite">{phaseLabel()}</p>
       <h2>{resolveLocalized(lesson.file.title, activeLocale())}</h2>
       <p class="muted subtitle">{resolveLocalized(lesson.file.subtitle, activeLocale())}</p>
+      {#if lessonState.phase !== 'done'}
+        <div class="rule-wrap">
+          <RuleCard rule={resolveLocalized(lesson.file.rule, activeLocale())} />
+        </div>
+      {/if}
       {#if lessonState.phase !== 'done' && phaseProblemTotal > 0}
         <p class="muted small">{m.lesson_problem_n({ n: lessonState.index + 1, total: phaseProblemTotal })}</p>
       {/if}
+      <div class="phase-dots" aria-hidden="true">
+        <span class="phase-dot {lessonState.phase === 'hook' ? 'active' : ['example','fading','practice','done'].includes(lessonState.phase) ? 'done' : ''}"></span>
+        <span class="phase-dot {lessonState.phase === 'example' ? 'active' : ['fading','practice','done'].includes(lessonState.phase) ? 'done' : ''}"></span>
+        <span class="phase-dot {lessonState.phase === 'fading' ? 'active' : ['practice','done'].includes(lessonState.phase) ? 'done' : ''}"></span>
+        <span class="phase-dot {lessonState.phase === 'practice' ? 'active' : lessonState.phase === 'done' ? 'done' : ''}"></span>
+      </div>
     </header>
 
     {#if lessonState.phase === 'hook' && grid && baseSteps && lesson.hookProblems[0]}
@@ -486,18 +505,28 @@
       {/if}
     {:else if lessonState.phase === 'done'}
       <Ripple options={{ amplitude: 0.5, speed: 0.7, refraction: 70, shine: 0.7, trigger: 'click', interval: 4 }}>
-        <div class="card done" role="group" aria-label={m.lesson_done_title()}>
+        <div class="done-wrap">
+          <Celebration bind:this={celebration} />
+          <div class="card done" role="group" aria-label={m.lesson_done_title()}>
           <p class="done-emoji" aria-hidden="true"><Icon name="top-hat" /></p>
           <p class="done-title">{m.lesson_done_title()}</p>
           <p class="muted">{m.lesson_done_subtitle()}</p>
+          <div class="done-stars" aria-label={m.lessons_stars({ n: finalStars })}>
+            {#each Array(3) as _, i}
+              <span class="done-star" class:filled={i < finalStars} style="animation-delay: {i * 0.15}s">
+                {#if i < finalStars}★{:else}☆{/if}
+              </span>
+            {/each}
+          </div>
           <p class="muted small">
-            {m.lessons_stars({ n: finalStars })} · {m.lessons_accuracy({ pct: finalAcc })}
+            {m.lessons_accuracy({ pct: finalAcc })}
           </p>
           <div class="row controls">
             <button class="btn--primary" onclick={goLessons}>{m.lessons_back_to_list()}</button>
             <button class="btn--ghost" onclick={() => router.navigate('home')}>{m.lesson_back_home()}</button>
           </div>
         </div>
+      </div>
       </Ripple>
     {/if}
   </section>
@@ -509,6 +538,25 @@
     flex-direction: column;
     gap: var(--space-1);
   }
+  .phase-dots {
+    display: flex;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+  }
+  .phase-dot {
+    width: 28px;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--stage-line);
+    transition: background var(--motion-base) ease;
+  }
+  .phase-dot.active {
+    background: var(--spotlight);
+    box-shadow: 0 0 8px var(--spotlight-glow);
+  }
+  .phase-dot.done {
+    background: var(--applause);
+  }
   .phase-tag {
     font-size: var(--text-small);
     text-transform: uppercase;
@@ -518,6 +566,9 @@
   }
   .subtitle {
     font-size: var(--text-lead);
+  }
+  .rule-wrap {
+    margin: var(--space-2) 0;
   }
   .small {
     font-size: var(--text-small);
@@ -585,9 +636,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform var(--motion-fast) var(--ease-spring), border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
   }
   .strategy-card:hover {
     border-color: var(--spotlight);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: var(--shadow-card), 0 0 20px var(--spotlight-wash);
+  }
+  .strategy-card:active {
+    transform: translateY(0) scale(0.98);
   }
 
   .reveal-label {
@@ -611,9 +668,37 @@
     color: var(--spotlight);
   }
 
+  .done-wrap {
+    position: relative;
+    overflow: visible;
+  }
   .done {
     align-items: center;
     text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .done-stars {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    margin: var(--space-2) 0;
+  }
+  .done-star {
+    font-size: 2.5rem;
+    color: var(--stage-edge);
+    opacity: 0.4;
+    animation: star-pop var(--motion-slow) var(--ease-spring) both;
+  }
+  .done-star.filled {
+    color: var(--spotlight);
+    opacity: 1;
+    text-shadow: 0 0 12px var(--spotlight-glow);
+  }
+  @keyframes star-pop {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0); }
   }
   .done-emoji {
     font-size: 3rem;

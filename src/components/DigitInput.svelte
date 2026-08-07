@@ -20,6 +20,7 @@
   import { resolveLocalized } from '../lib/content/localized.js';
   import ColumnGrid, { type CellRender } from './ColumnGrid.svelte';
   import NumPad from './NumPad.svelte';
+  import { playSound } from '../lib/ui/sound.js';
   import type { Grid, Step, WriteStep } from '../lib/engine/types.js';
 
   interface Props {
@@ -91,6 +92,7 @@
   $effect(() => {
     if (completed && !completedFired) {
       completedFired = true;
+      playSound('complete');
       oncomplete?.();
     }
   });
@@ -145,6 +147,7 @@
     clearFeedback();
     if (d === step.value) {
       // 정답
+      playSound('correct');
       feedback = { cell: step.cell, state: 'correct', value: d };
       sweepKey += 1; // spotlight-sweep 재생
       if (activeIdx === completedCount) {
@@ -154,6 +157,7 @@
       fbTimer = setTimeout(clearFeedback, 320);
     } else {
       // 오답 — 빨강+흔들림, 그대로
+      playSound('wrong');
       feedback = { cell: step.cell, state: 'wrong', value: d };
       fbTimer = setTimeout(clearFeedback, 480);
     }

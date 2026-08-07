@@ -1,15 +1,12 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-
   "app_title": "Mathemagics",
   "app_skip_to_content": "Skip to content",
   "app_stage_label": "Main stage",
   "app_tagline": "Calculation tricks you do in your head",
-
   "nav_profiles": "Profiles",
   "nav_home": "Home",
   "nav_settings": "Settings",
-
   "profiles_heading": "Who is practising?",
   "profiles_empty": "No profiles yet. Shall we make one?",
   "profiles_add": "New profile",
@@ -22,11 +19,9 @@
   "profiles_delete": "Delete",
   "profiles_delete_confirm": "Delete {name} and all of their progress?",
   "profiles_select": "Choose",
-
   "home_greeting": "Hi, {name}!",
   "home_placeholder": "Lessons arrive in a later milestone.",
   "home_switch_profile": "Switch profile",
-
   "settings_heading": "Settings",
   "settings_language": "Language",
   "settings_language_hint": "Language is saved per profile.",
@@ -39,13 +34,11 @@
   "math_match": "match",
   "math_sum": "sum",
   "settings_back": "Back",
-
   "storage_mode_label": "Saved in",
   "storage_mode_local": "This device (browser)",
   "storage_mode_server": "Self-hosted server",
   "storage_persist_granted": "Your storage is protected.",
   "storage_persist_denied": "The browser may clear this data. Add to home screen to keep it safer.",
-
   "export_section": "Backup & transfer",
   "export_button": "Export progress (JSON)",
   "export_hint": "Saves every profile's progress to a file.",
@@ -65,7 +58,6 @@
   "import_invalid": "This isn't a valid mathemagics file.",
   "import_done": "Imported.",
   "import_error": "Import failed.",
-
   "memory_heading": "Memory practice",
   "memory_hint": "Turn numbers into words, and words back into numbers.",
   "memory_digits_prompt": "Turn this number into a word",
@@ -77,13 +69,10 @@
   "memory_answer": "Answer: {answer}",
   "memory_back": "Back",
   "memory_table_title": "Number ↔ consonant table",
-
   "locale_name_ko": "한국어",
   "locale_name_en": "English",
-
   "loading": "Loading…",
   "not_found": "No such screen.",
-
   "playground_title": "Playground (dev)",
   "playground_op": "Operation",
   "playground_op_add": "Addition (+)",
@@ -104,7 +93,6 @@
   "playground_completed": "Solved!",
   "playground_correct": "Correct!",
   "playground_wrong": "Try again?",
-
   "player_play": "Play",
   "player_pause": "Pause",
   "player_prev": "Previous step",
@@ -112,7 +100,6 @@
   "player_restart": "Restart",
   "player_speed": "Speed",
   "player_step": "Step {n} of {total}",
-
   "place_units": "units place",
   "place_tens": "tens place",
   "place_hundreds": "hundreds place",
@@ -123,26 +110,21 @@
   "aria_carry": "{place} carry {digit}",
   "aria_sign_add": "plus",
   "aria_sign_sub": "minus",
-
   "numpad_label": "Number pad",
   "numpad_backspace": "Backspace",
   "numpad_clear": "Clear all",
-
   "stage_cast_heading": "Today's performer",
   "stage_cast_hint": "Choose who takes the stage.",
   "stage_cast_empty": "Add the first performer.",
   "stage_chip_label": "Current performer",
-
   "home_today_show": "Today's show",
   "home_today_show_hint": "Get ready to take the stage.",
   "home_start": "Start the show",
   "home_coming_soon": "Lessons open in a future update.",
   "home_repertoire": "My repertoire",
   "home_repertoire_hint": "Techniques you'll learn appear here.",
-
   "playground_booth": "Lighting booth",
   "playground_stage": "Stage",
-
   "dialog_close": "Close",
   "dialog_confirm": "Confirm",
   "dialog_cancel": "Cancel",
@@ -153,9 +135,7 @@
   "dialog_parent_gate_prompt": "An adult needs to confirm this. Please solve the sum below.",
   "dialog_parent_gate_answer_label": "Answer",
   "dialog_parent_gate_wrong": "That's not right. Try again?",
-
   "caption_label": "Caption",
-
   "nav_lessons": "Lessons",
   "lessons_heading": "Lessons",
   "lessons_chapter": "Chapter {n}",
@@ -168,7 +148,6 @@
   "lessons_accuracy": "Accuracy {pct}%",
   "lessons_stars": "{n} stars",
   "lessons_no_lessons": "No lessons yet.",
-
   "lesson_phase_hook": "Watch the trick",
   "lesson_phase_example": "Watch examples",
   "lesson_phase_fading": "Fill in bit by bit",
@@ -194,17 +173,14 @@
   "lesson_missing": "Lesson not found.",
   "lesson_rule_label": "Key idea",
   "lesson_back_home": "Home",
-
   "nav_practice": "Today's practice",
   "nav_progress": "My progress",
   "nav_report": "Guardian report",
-
   "home_practice_cta": "Today's practice",
   "home_practice_hint": "Cards are due for review. Takes 5–10 minutes.",
   "home_practice_empty": "No cards to review right now. Learn a new trick in Lessons!",
   "home_progress_cta": "See my progress",
   "home_report_cta": "Guardian report",
-
   "practice_heading": "Today's practice",
   "practice_intro": "Mixed cards to solve. Decide for yourself which trick to use.",
   "practice_empty": "No cards to review right now. Come back a little later!",
@@ -218,7 +194,6 @@
   "practice_session_stats": "Correct {correct} / {total}",
   "practice_back_home": "Home",
   "practice_see_progress": "See progress",
-
   "progress_heading": "My progress",
   "progress_per_technique": "Per-technique proficiency",
   "proficiency_pre_learning": "Not started",
@@ -233,7 +208,6 @@
   "progress_streak_days": "{n} days in a row",
   "progress_no_techniques": "No techniques learned yet. Start in Lessons!",
   "progress_time_locked": "Speed mode opens once accuracy is high enough.",
-
   "report_heading": "Guardian report",
   "report_this_week": "Strategies learned this week",
   "report_no_learned": "No new techniques learned this week yet.",
@@ -241,7 +215,6 @@
   "report_conversation_starter_hint": "Don't push for the answer — ask how they worked it out.",
   "report_privacy_note": "All records stay on this device only. No comparisons, no rankings.",
   "report_back": "Back",
-
   "xdiagram_label": "{base} squared — the ±d split diagram",
   "xdiagram_nested": "inner square (reused)",
   "xdiagram_reuse": "squaring trick again",
@@ -251,7 +224,6 @@
   "roller_final": "final answer {n}",
   "division_label": "division bracket",
   "division_answer": "quotient {quotient}, remainder {remainder}/{divisor}",
-
   "tree_heading": "Skill tree",
   "tree_chapter": "Chapter {n}",
   "tree_locked": "Locked",
@@ -260,11 +232,9 @@
   "tree_magic_locked": "Coming soon",
   "tree_track_main": "Mental math main",
   "tree_track_note": "Track {n}",
-
   "nav_stage": "Stage mode",
   "nav_magic": "Math magic",
   "nav_ch6": "Paper (vertical)",
-
   "xmult_label": "{a} × {b} criss-cross multiplication",
   "sqrt_label": "√{n} pencil-and-paper square root",
   "modsum_label": "Mod-sum checking",
@@ -273,10 +243,8 @@
   "modsum_pass": "matches",
   "modsum_fail": "wrong",
   "modsum_answer": "answer",
-
   "tree_magic_open": "See the magic",
   "tree_completed_ch6": "Chapter 6 done!",
-
   "catch_heading": "Catch the wrong answer",
   "catch_intro": "Use the mod-sum to spot the wrong calculation. Checking feels like magic.",
   "catch_which_wrong": "Which one is wrong?",
@@ -285,7 +253,6 @@
   "catch_reveal": "Reveal answer",
   "catch_next_round": "Next round",
   "catch_done": "You caught every wrong answer!",
-
   "stage_heading": "Stage mode",
   "stage_intro": "Solve like a performance. The only comparison is your past self.",
   "stage_pick_skill": "Pick a trick to perform. Only gate-passed tricks take the stage.",
@@ -302,7 +269,6 @@
   "stage_done_subtitle": "A beautiful stage.",
   "stage_problems_solved": "{n} problems solved",
   "stage_again": "One more",
-
   "magic_heading": "Math magic",
   "magic_locked": "Unlocks when you learn the earlier trick.",
   "magic_demo": "Trick demo",
@@ -312,5 +278,23 @@
   "magic_mission_hint": "Show today's trick to your family once.",
   "magic_reveal_principle": "Principle",
   "magic_done": "You learned the trick!",
-  "magic_pick_any": "Pick a trick to watch."
+  "magic_pick_any": "Pick a trick to watch.",
+  "home_streak_label": "Day streak",
+  "home_lessons_done": "Tricks learned",
+  "home_keep_going": "Keep practicing!",
+  "home_cards_due": "{n} cards ready",
+  "home_no_cards": "All caught up!",
+  "home_quick_practice": "Quick practice",
+  "home_learn_new": "Learn a new trick",
+  "home_welcome_back": "Welcome back,",
+  "home_ready_stage": "Ready for the stage?",
+  "home_browse_tricks": "Browse tricks",
+  "home_tip_title": "Magic Tip",
+  "home_tip_add": "Add left-to-right: tens first, then ones. Your mouth says the answer as you go!",
+  "home_tip_mul11": "To multiply by 11: write the first digit, sum both digits in the middle, write the last digit.",
+  "home_tip_square": "To square a number near 50: 50² = 2500, then adjust. 48² = 2500 − 2×100 + 4 = 2304.",
+  "home_tip_mod9": "Cast out nines: add all digits, repeat until single digit. If both sides match, your answer is probably right!",
+  "home_tip_complement": "To subtract 1000 − 467: complement each digit from 9 except the last from 10 → 533.",
+  "home_tip_estimate": "Round first, then adjust. 398 × 7 ≈ 400 × 7 = 2800. Then subtract 2 × 7 = 14. Answer: 2786.",
+  "home_tip_1089": "The magic 1089: pick any 3-digit number with different first and last digits. Reverse, subtract, reverse again, add. Always 1089!"
 }

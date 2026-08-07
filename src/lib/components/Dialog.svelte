@@ -226,8 +226,8 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-4);
-    background: color-mix(in srgb, var(--stage-floor) 78%, transparent);
-    backdrop-filter: blur(2px);
+    background: color-mix(in srgb, var(--stage-floor) 80%, transparent);
+    backdrop-filter: blur(4px);
     /* 모달 진입 — 가벼운 fade. reduced-motion 은 전역 블록이 즉시 전환. */
     animation: curtain-rise var(--motion-base) var(--ease-stage) both;
   }
@@ -236,14 +236,19 @@
     width: min(100%, 26rem);
     max-height: 90dvh;
     overflow: auto;
-    background: var(--stage-mid);
+    background: var(--gradient-card);
     border: 1px solid var(--stage-line);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-stage);
+    box-shadow: var(--shadow-stage), 0 0 40px var(--spotlight-wash);
     padding: var(--space-5) var(--space-5) var(--space-4);
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    animation: dialog-in var(--motion-slow) var(--ease-spring) both;
+  }
+  @keyframes dialog-in {
+    from { opacity: 0; transform: scale(0.92) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
   }
   .panel.danger {
     border-color: color-mix(in srgb, var(--miss) 55%, transparent);

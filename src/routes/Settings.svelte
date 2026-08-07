@@ -6,6 +6,7 @@
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import type { ExportBundle, ImportMode } from '../lib/storage/types.js';
+  import { playSound } from '../lib/ui/sound.js';
 
   interface Props {
     app: AppState;
@@ -101,7 +102,7 @@
             role="switch"
             aria-checked={settings.soundOn}
             aria-label={m.settings_sound()}
-            onclick={() => app.updateSettings({ soundOn: !settings.soundOn })}
+            onclick={() => { const next = !settings.soundOn; app.updateSettings({ soundOn: next }); if (next) playSound('click'); }}
           >
             <span class="toggle-thumb"></span>
           </button>
@@ -258,7 +259,7 @@
   }
   .toggle[aria-checked='true'] {
     background: var(--spotlight);
-    box-shadow: none;
+    box-shadow: 0 0 12px var(--spotlight-glow);
   }
   .toggle-thumb {
     position: absolute;

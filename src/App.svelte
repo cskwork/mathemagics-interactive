@@ -23,6 +23,7 @@
   import Icon from './components/Icon.svelte';
   import Avatar from './components/Avatar.svelte';
   import { initTheme, toggleTheme, theme, setLangAttribute } from './lib/ui/theme.svelte.js';
+  import { initSound, setSoundEnabled } from './lib/ui/sound.js';
   import { activeLocale } from './lib/i18n/locale.svelte.js';
 
   const app = createAppState();
@@ -35,10 +36,18 @@
 
   // Initialize theme as early as possible
   initTheme();
+  // Initialize sound system (resumes on first user interaction)
+  initSound();
 
   // Sync <html lang> with active locale for screen readers
   $effect(() => {
     setLangAttribute(activeLocale());
+  });
+
+  // Sync sound preference with profile settings
+  $effect(() => {
+    const s = app.settings();
+    setSoundEnabled(s?.soundOn ?? true);
   });
 
   $effect(() => {

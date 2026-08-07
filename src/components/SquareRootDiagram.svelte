@@ -62,6 +62,7 @@
   .sqrt-root {
     color: var(--spotlight);
     margin-right: var(--space-1);
+    text-shadow: 0 0 8px var(--spotlight-glow);
   }
   .sqrt-radical {
     color: var(--house-bright);
@@ -97,6 +98,7 @@
   .step--active {
     color: var(--spotlight);
     font-weight: 700;
+    text-shadow: 0 0 6px var(--spotlight-glow);
   }
   .step-note {
     font-variant-numeric: tabular-nums;
