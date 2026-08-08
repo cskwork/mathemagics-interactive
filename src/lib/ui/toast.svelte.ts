@@ -17,13 +17,15 @@ export function getToasts(): ToastEntry[] {
   return toasts;
 }
 
+const MAX_TOASTS = 3;
+
 export function pushToast(message: string, opts?: {
   icon?: import('../../components/Icon.svelte').IconName;
   variant?: 'default' | 'success' | 'achievement';
   duration?: number;
 }): void {
   const id = nextId++;
-  toasts = [...toasts, { id, message, ...opts }];
+  toasts = [...toasts, { id, message, ...opts }].slice(-MAX_TOASTS);
 }
 
 export function dismissToast(id: number): void {

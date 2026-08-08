@@ -273,6 +273,8 @@
     </div>
   {:else if finished}
     <Ripple options={{ amplitude: 0.6, speed: 0.8, refraction: 80, shine: 0.8, trigger: 'click', interval: 3 }}>
+      <div class="done-wrap">
+        <Celebration bind:this={celebration} />
       <div class="card stage-deck done" role="group" aria-label={m.stage_done_title()}>
         <p class="done-emoji" aria-hidden="true"><Icon name="masks" /></p>
         <p class="done-title">{m.stage_done_title()}</p>
@@ -294,6 +296,7 @@
           <button class="btn--primary" onclick={() => { finished = false; }}>{m.stage_again()}</button>
           <button class="btn--ghost" onclick={goHome}>{m.lesson_back_home()}</button>
         </div>
+      </div>
       </div>
     </Ripple>
   {/if}
@@ -419,6 +422,10 @@
     font-weight: 800;
     font-size: var(--text-title);
     margin: 0;
+  }
+  .done-wrap {
+    position: relative;
+    overflow: visible;
   }
   .record {
     font-family: var(--font-display);
