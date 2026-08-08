@@ -44,7 +44,7 @@
   });
 </script>
 
-<span class="animated-counter">{prefix}{display}{suffix}</span>
+<span class="animated-counter" aria-hidden="true">{prefix}{display}{suffix}</span>
 
 <style>
   .animated-counter {

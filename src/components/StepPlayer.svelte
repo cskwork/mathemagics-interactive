@@ -176,7 +176,7 @@
   </div>
 
   <div class="progress-bar" role="progressbar" aria-valuenow={index + 1} aria-valuemin={1} aria-valuemax={total}>
-    <div class="progress-fill" style="width: {((index + 1) / total) * 100}%"></div>
+    <div class="progress-fill" style="width: {total > 0 ? ((index + 1) / total) * 100 : 0}%"></div>
   </div>
   <div class="row controls" role="group" aria-label={m.player_play()}>
     <button onclick={restart} aria-label={m.player_restart()} disabled={index === 0 && !playing}><Icon name="restart" /></button>

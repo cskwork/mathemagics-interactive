@@ -63,6 +63,8 @@ a {
 
 /* ── 레이아웃 도우미 ────────────────────────────────────────────── */
 .app {
+  position: relative;
+  z-index: 1;
   max-width: var(--app-max);
   margin: 0 auto;
   padding: var(--space-5) var(--space-4) var(--space-7);

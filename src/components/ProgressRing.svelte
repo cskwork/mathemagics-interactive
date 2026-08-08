@@ -20,10 +20,11 @@
   const clampedValue = $derived(Math.max(0, Math.min(1, value)));
   const offset = $derived(circumference * (1 - clampedValue));
   const displayLabel = $derived(label ?? `${Math.round(clampedValue * 100)}%`);
+  const ariaLabel = $derived(sublabel ? `${displayLabel}: ${sublabel}` : displayLabel);
 </script>
 
-<div class="ring-wrap" style="width: {size}px; height: {size}px;">
-  <svg width={size} height={size} viewBox="0 0 {size} {size}">
+<div class="ring-wrap" role="img" aria-label={ariaLabel} style="width: {size}px; height: {size}px;">
+  <svg aria-hidden="true" width={size} height={size} viewBox="0 0 {size} {size}">
     <circle
       cx={size / 2}
       cy={size / 2}
