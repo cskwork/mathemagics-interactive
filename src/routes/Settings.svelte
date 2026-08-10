@@ -17,9 +17,11 @@
   const settings = $derived(app.settings());
 
   let exportState = $state<'idle' | 'loading' | 'done' | 'error'>('idle');
+  let fileInput: HTMLInputElement | undefined = $state(undefined);
 
   async function doExport(): Promise<void> {
     exportState = 'loading';
+    importState = 'idle';
     try {
       const bundle = await app.exportData();
       const json = JSON.stringify(bundle);
@@ -41,6 +43,7 @@
   let importError = $state<string | null>(null);
   let importMode = $state<ImportMode>('merge');
   let importBusy = $state(false);
+  let importState = $state<'idle' | 'done'>('idle');
 
   async function onFile(e: Event): Promise<void> {
     const input = e.currentTarget as HTMLInputElement;
@@ -48,6 +51,8 @@
     input.value = '';
     if (!file) return;
     importError = null;
+    importState = 'idle';
+    exportState = 'idle';
     try {
       const text = await file.text();
       const bundle = migrate(JSON.parse(text));
@@ -64,14 +69,18 @@
   async function applyImport(): Promise<void> {
     if (!preview) return;
     importBusy = true;
+    importError = null;
     try {
+      // Let the blocking state paint before a potentially heavy IndexedDB/server import begins.
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
       await app.importData(preview, importMode);
-      importDialogOpen = false;
       preview = null;
-      exportState = 'done';
-    } catch {
+      importState = 'done';
+    } catch (error) {
       importError = m.import_error();
-      importDialogOpen = false;
+      throw error;
     } finally {
       importBusy = false;
     }
@@ -157,13 +166,15 @@
         >
           {m.export_button()}
         </button>
-        <label class="btn--secondary file-label">
+        <button class="btn--secondary file-label" type="button" onclick={() => fileInput?.click()}>
           {m.import_button()}
-          <input type="file" accept="application/json,.json" onchange={onFile} hidden />
-        </label>
+        </button>
+        <input bind:this={fileInput} type="file" accept="application/json,.json" onchange={onFile} hidden />
       </div>
-      {#if exportState === 'done'}<p class="muted success-text">{m.export_done()}</p>{/if}
-      {#if importError}<p class="error-text">{importError}</p>{/if}
+      {#if exportState === 'done'}<p class="muted success-text" role="status">{m.export_done()}</p>{/if}
+      {#if exportState === 'error'}<p class="error-text" role="alert">{m.export_error()}</p>{/if}
+      {#if importState === 'done'}<p class="muted success-text" role="status">{m.import_done()}</p>{/if}
+      {#if importError}<p class="error-text" role="alert">{importError}</p>{/if}
     </div>
   </div>
 
@@ -182,6 +193,7 @@
   cancelLabel={m.import_cancel()}
   danger={importMode === 'replace'}
   onconfirm={applyImport}
+  confirmError={m.import_error()}
 >
 </Dialog>
 
@@ -245,28 +257,34 @@
   /* ── Toggle switch ── */
   .toggle {
     position: relative;
-    width: 3rem;
-    height: 1.75rem;
-    border-radius: var(--radius-pill);
+    width: 3.5rem;
+    height: var(--tap);
     border: none;
-    background: var(--stage-floor);
-    box-shadow: inset 0 0 0 1px var(--stage-line);
+    background: transparent;
     cursor: pointer;
     padding: 0;
-    min-height: auto;
-    min-width: auto;
-    transition: background var(--motion-base) ease;
+    min-height: var(--tap);
+    min-width: 3.5rem;
   }
-  .toggle[aria-checked='true'] {
+  .toggle::before {
+    content: '';
+    position: absolute;
+    inset: 10px 4px;
+    border-radius: var(--radius-pill);
+    background: var(--stage-floor);
+    box-shadow: inset 0 0 0 1px var(--stage-line);
+    transition: background var(--motion-base) ease, box-shadow var(--motion-base) ease;
+  }
+  .toggle[aria-checked='true']::before {
     background: var(--spotlight);
     box-shadow: 0 0 12px var(--spotlight-glow);
   }
   .toggle-thumb {
     position: absolute;
-    top: 2px;
-    left: 2px;
-    width: calc(1.75rem - 4px);
-    height: calc(1.75rem - 4px);
+    top: 12px;
+    left: 6px;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 50%;
     background: var(--house-bright);
     transition: transform var(--motion-base) var(--ease-stage);
@@ -307,6 +325,7 @@
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    min-height: var(--tap);
   }
   .success-text {
     color: var(--applause);
@@ -333,5 +352,7 @@
     justify-content: center;
     background: color-mix(in srgb, var(--stage-floor) 70%, transparent);
     color: var(--house-bright);
+    z-index: 100;
+    cursor: wait;
   }
 </style>

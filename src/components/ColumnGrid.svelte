@@ -162,11 +162,6 @@
     background: var(--spotlight-wash-strong);
     color: var(--house-bright);
     box-shadow: inset 0 0 0 2px var(--spotlight), var(--shadow-cell), 0 0 12px var(--spotlight-glow);
-    animation: highlight-pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes highlight-pulse {
-    0%, 100% { box-shadow: inset 0 0 0 2px var(--spotlight), var(--shadow-cell), 0 0 8px var(--spotlight-glow); }
-    50% { box-shadow: inset 0 0 0 2px var(--spotlight), var(--shadow-cell), 0 0 16px var(--spotlight-glow); }
   }
 
   .cell--correct {
@@ -187,11 +182,6 @@
   .cell--active {
     box-shadow: inset 0 0 0 3px var(--spotlight), var(--shadow-cell), 0 0 16px var(--spotlight-glow);
     background: var(--spotlight-wash);
-    animation: active-pulse 1.2s ease-in-out infinite;
-  }
-  @keyframes active-pulse {
-    0%, 100% { box-shadow: inset 0 0 0 3px var(--spotlight), var(--shadow-cell), 0 0 8px var(--spotlight-glow); }
-    50% { box-shadow: inset 0 0 0 3px var(--spotlight), var(--shadow-cell), 0 0 20px var(--spotlight-glow); }
   }
 
   /* 받아내림 취소선: 손으로 긋는 사선 느낌(리서치 §1.3) */

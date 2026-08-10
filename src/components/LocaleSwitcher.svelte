@@ -32,21 +32,21 @@
   .segmented {
     display: inline-flex;
     gap: 0;
-    padding: 2px;
+    padding: var(--space-3xs);
     background: var(--stage-floor);
     border: 1px solid var(--stage-line);
     border-radius: var(--radius-pill);
   }
   .seg {
-    min-height: calc(var(--tap) * 0.72);
-    min-width: auto;
+    min-height: var(--tap);
+    min-width: var(--tap);
     padding: 0 var(--space-3);
     border: 0;
     border-radius: var(--radius-pill);
     background: transparent;
-    color: var(--house-light);
+    color: var(--house-bright);
     font-size: var(--text-small);
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition:
       background-color var(--motion-base) ease,
@@ -57,9 +57,8 @@
     background: transparent;
   }
   .seg.active {
-    background: var(--spotlight);
-    color: var(--spotlight-ink);
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
     font-weight: 800;
-    box-shadow: 0 0 8px var(--spotlight-glow);
   }
 </style>

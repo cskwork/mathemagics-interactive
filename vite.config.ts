@@ -35,8 +35,8 @@ export default defineConfig({
         scope: BASE,
         start_url: BASE,
         display: 'standalone',
-        background_color: '#1a0b22',
-        theme_color: '#1a0b22',
+        background_color: '#f5f1ea',
+        theme_color: '#f5f1ea',
         // PNG 192/512 는 Android 설치 프롬프트의 요구사항. PWA 설치는 UX 편의가 아니라
         // Safari ITP 7일 축출에 대한 주 방어선이므로(PLAN.md §10-4) 아이콘을 제대로 채운다.
         icons: [

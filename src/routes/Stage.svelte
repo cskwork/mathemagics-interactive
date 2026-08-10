@@ -5,6 +5,7 @@
   count-up(카운트다운 아님) + beat-your-own-time(teaching-trends §4.4 절충안).
 -->
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { m } from '../lib/paraglide/messages.js';
   import Icon from '../components/Icon.svelte';
   import Ripple from '../lib/components/canvasui/Ripple.svelte';
@@ -13,7 +14,12 @@
   import { loadAllLessons } from '../lib/lesson/loader.js';
   import { proficiencyOf } from '../lib/srs/integration.js';
   import { generateProblem } from '../lib/engine/generate.js';
-  import { computeAnswer } from '../lib/engine/derive.js';
+  import {
+    isStageReadyLesson,
+    stageProgressDelta,
+    stageQuestion,
+    type StageQuestion
+  } from '../lib/stage/session.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import type { ProgressRecord, SrsCard } from '../lib/storage/types.js';
@@ -21,7 +27,6 @@
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
   import { playSound } from '../lib/ui/sound.js';
   import AnimatedCounter from '../components/AnimatedCounter.svelte';
-  import { pushToast } from '../lib/ui/toast.svelte.js';
   import Celebration from '../lib/components/canvasui/Celebration.svelte';
 
   interface Props {
@@ -34,12 +39,24 @@
 
   let progress = $state<ProgressRecord[]>([]);
   let cards = $state<SrsCard[]>([]);
-  let loaded = $state(false);
+  let loadState = $state<'loading' | 'ready' | 'error'>('loading');
+  let loadRequest = 0;
 
   async function refresh(): Promise<void> {
-    progress = await app.loadAllProgress();
-    cards = await app.loadAllCards();
-    loaded = true;
+    const request = ++loadRequest;
+    loadState = 'loading';
+    try {
+      const [nextProgress, nextCards] = await Promise.all([
+        app.loadAllProgress(),
+        app.loadAllCards()
+      ]);
+      if (request !== loadRequest) return;
+      progress = nextProgress;
+      cards = nextCards;
+      loadState = 'ready';
+    } catch {
+      if (request === loadRequest) loadState = 'error';
+    }
   }
   $effect(() => {
     void app.activeProfile();
@@ -48,9 +65,10 @@
 
   /** 게이트 통과(공연 가능) 기법 목록. */
   const eligible = $derived.by(() => {
-    if (!loaded) return [];
+    if (loadState !== 'ready') return [];
     return lessons
       .filter((l) => {
+        if (!isStageReadyLesson(l)) return false;
         const rec = progress.find((r) => r.skillId === l.file.skillId);
         const prof = proficiencyOf(l.file.skillId, cards, rec, DEFAULT_SRS_CONFIG);
         return prof.level === 'gate-passed' || prof.level === 'fluent';
@@ -64,20 +82,26 @@
   let startMs = $state(0);
   let elapsed = $state(0);
   let solvedCount = $state(0);
-  let currentProblem = $state<{ a: number; b: number; sign: string } | undefined>(undefined);
+  let currentProblem = $state<StageQuestion | undefined>(undefined);
   let currentAnswer = $state(0);
   let currentInput = $state('');
+  let wrongAttempts = $state(0);
+  let showWrongFeedback = $state(false);
   let currentSeed = $state(1);
   let finished = $state(false);
+  let saving = $state(false);
+  let saveError = $state(false);
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const TARGET = 5; // 한 판에 풀 문제 수(beat-your-own-time: 고정 N, 시간 측정).
 
   function startShow(): void {
     if (!pickedSkill) return;
+    if (timer) clearInterval(timer);
     playing = true;
     finished = false;
     solvedCount = 0;
+    wrongAttempts = 0;
     currentSeed = Math.floor(Math.random() * 0xffffffff) >>> 0;
     nextProblem();
     startMs = Date.now();
@@ -96,12 +120,16 @@
         ? { op: ps.op, method: ps.method, digits: ps.digits, carry: ps.carry, operandCount: ps.operandCount }
         : { op: ps.op, method: ps.method, digits: ps.digits, carry: ps.carry };
     const p = generateProblem(currentSeed, opts);
-    const a = p.operands[0] ?? 0;
-    const b = p.operands[1] ?? 0;
-    const sign = p.method === 'square' ? '²' : p.op === 'add' ? '+' : p.op === 'sub' ? '−' : p.op === 'mul' ? '×' : p.op === 'div' ? '÷' : '≈';
-    currentProblem = { a, b, sign };
-    currentAnswer = computeAnswer(p);
+    const question = stageQuestion(p);
+    if (!question) {
+      currentProblem = undefined;
+      playing = false;
+      return;
+    }
+    currentProblem = question;
+    currentAnswer = question.answer;
     currentInput = '';
+    showWrongFeedback = false;
   }
   function submitDigit(): void {
     if (currentInput === String(currentAnswer)) {
@@ -112,7 +140,12 @@
       } else {
         nextProblem();
       }
+      return;
     }
+    wrongAttempts += 1;
+    showWrongFeedback = true;
+    playSound('wrong');
+    currentInput = '';
   }
   function typeKey(k: string): void {
     if (!playing) return;
@@ -120,14 +153,35 @@
       currentInput = currentInput.slice(0, -1);
       return;
     }
+    if (currentInput.length === 0) showWrongFeedback = false;
     currentInput += k;
     if (currentInput.length >= String(currentAnswer).length) {
       submitDigit();
     }
   }
+  function handleKeydown(event: KeyboardEvent): void {
+    if (!playing || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (/^\d$/.test(event.key)) {
+      event.preventDefault();
+      typeKey(event.key);
+      return;
+    }
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      event.preventDefault();
+      typeKey('⌫');
+    }
+  }
   async function finishShow(): Promise<void> {
+    const sessionSkill = pickedSkill;
+    const sessionProfileId = app.activeProfileId();
+    const sessionSolved = solvedCount;
+    const sessionWrong = wrongAttempts;
+    const sessionSettings = app.settings();
+
     playing = false;
-    finished = true;
+    saving = true;
+    finished = false;
+    saveError = false;
     playSound('achievement');
     setTimeout(() => celebration?.rain(50), 200);
     if (timer) {
@@ -136,50 +190,57 @@
     }
     elapsed = Date.now() - startMs;
     // 자기 최고 기록 갱신(더 짧은 시간 = 더 좋음). 리더보드 없음.
-    if (pickedSkill) {
-      const bests = { ...(app.settings()?.stageBests ?? {}) };
-      const prev = bests[pickedSkill];
-      if (prev === undefined || elapsed < prev) {
-        bests[pickedSkill] = elapsed;
-        await app.updateSettings({ stageBests: bests });
-        pushToast(prev === undefined ? 'New record set!' : `New best! ${(elapsed / 1000).toFixed(1)}s`, {
-          icon: 'star', variant: 'achievement', duration: 4000
-        });
-      }
+    try {
+      if (sessionSkill && sessionProfileId) {
+        const bests = { ...(sessionSettings?.stageBests ?? {}) };
+        const prev = bests[sessionSkill];
+        if (prev === undefined || elapsed < prev) {
+          bests[sessionSkill] = elapsed;
+          await app.updateSettingsForProfile(sessionProfileId, { stageBests: bests });
+        }
 
-      // 진도 저장: 공연에서 푼 문제를 진도에 누적.
-      const prog = await app.loadProgress(pickedSkill);
-      const base = prog ?? {
-        profileId: app.activeProfileId() ?? '',
-        skillId: pickedSkill,
-        attempts: 0,
-        correct: 0,
-        lastPlayedAt: Date.now(),
-        stars: 0 as const
-      };
-      await app.saveProgress({
-        ...base,
-        practiceAttempts: (base.practiceAttempts ?? 0) + solvedCount,
-        practiceCorrect: (base.practiceCorrect ?? 0) + solvedCount,
-        lastPlayedAt: Date.now()
-      });
-
-      // 스트릭 갱신.
-      const settings = app.settings();
-      if (settings) {
-        const prevStreak = {
-          streakCount: settings.streakCount ?? 0,
-          lastStreakDayMs: settings.lastStreakDayMs ?? 0,
-          freezesAvailable: settings.freezesAvailable ?? DEFAULT_SRS_CONFIG.streakDefaultFreezes
+        // 진도 저장: 공연에서 푼 문제를 진도에 누적.
+        const prog = await app.loadProgressForProfile(sessionProfileId, sessionSkill);
+        const base = prog ?? {
+          profileId: sessionProfileId,
+          skillId: sessionSkill,
+          attempts: 0,
+          correct: 0,
+          lastPlayedAt: Date.now(),
+          stars: 0 as const
         };
-        const streakBase = prevStreak.streakCount === 0 ? initialStreak(DEFAULT_SRS_CONFIG) : prevStreak;
-        const upd = updateStreak(streakBase, Date.now(), solvedCount, DEFAULT_SRS_CONFIG);
-        await app.updateSettings({
-          streakCount: upd.state.streakCount,
-          lastStreakDayMs: upd.state.lastStreakDayMs,
-          freezesAvailable: upd.state.freezesAvailable
+        const delta = stageProgressDelta(sessionSolved, sessionWrong);
+        await app.saveProgress({
+          ...base,
+          profileId: sessionProfileId,
+          practiceAttempts: (base.practiceAttempts ?? 0) + delta.practiceAttempts,
+          practiceCorrect: (base.practiceCorrect ?? 0) + delta.practiceCorrect,
+          lastPlayedAt: Date.now()
         });
+
+        // 스트릭 갱신.
+        if (sessionSettings) {
+          const prevStreak = {
+            streakCount: sessionSettings.streakCount ?? 0,
+            lastStreakDayMs: sessionSettings.lastStreakDayMs ?? 0,
+            freezesAvailable:
+              sessionSettings.freezesAvailable ?? DEFAULT_SRS_CONFIG.streakDefaultFreezes
+          };
+          const streakBase =
+            prevStreak.streakCount === 0 ? initialStreak(DEFAULT_SRS_CONFIG) : prevStreak;
+          const upd = updateStreak(streakBase, Date.now(), sessionSolved, DEFAULT_SRS_CONFIG);
+          await app.updateSettingsForProfile(sessionProfileId, {
+            streakCount: upd.state.streakCount,
+            lastStreakDayMs: upd.state.lastStreakDayMs,
+            freezesAvailable: upd.state.freezesAvailable
+          });
+        }
       }
+    } catch {
+      saveError = true;
+    } finally {
+      saving = false;
+      finished = true;
     }
   }
   function stopEarly(): void {
@@ -206,7 +267,13 @@
     if (timer) clearInterval(timer);
     router.navigate('home');
   }
+
+  onDestroy(() => {
+    if (timer) clearInterval(timer);
+  });
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <section class="stack stage-route">
   <header class="stage-head">
@@ -215,7 +282,20 @@
     <p class="muted">{m.stage_intro()}</p>
   </header>
 
-  {#if !playing && !finished}
+  {#if loadState === 'loading'}
+    <div class="card" role="status">
+      <p class="muted">{m.loading()}</p>
+    </div>
+  {:else if loadState === 'error'}
+    <div class="card stack" role="alert">
+      <p>{m.app_load_error()}</p>
+      <div><button class="btn--primary" onclick={refresh}>{m.app_retry()}</button></div>
+    </div>
+  {:else if saving}
+    <div class="card save-state" role="status">
+      <p>{m.stage_saving()}</p>
+    </div>
+  {:else if !playing && !finished}
     {#if eligible.length === 0}
       <div class="card" role="group">
         <p class="muted">{m.stage_none_unlocked()}</p>
@@ -258,10 +338,24 @@
           <strong class="counter-val">{fmt(elapsed)}</strong>
         </div>
       </div>
-      <p class="prompt" aria-live="polite">{currentProblem ? `${currentProblem.a}${currentProblem.sign}${currentProblem.sign === '²' ? '' : currentProblem.b} = ?` : ''}</p>
-      <div class="input-line">
-        <span class="input-val">{currentInput}</span>
+      <p class="prompt" aria-live="polite">
+        {currentProblem
+          ? `${currentProblem.expression} ${currentProblem.answerKind === 'quotient' ? `→ ${m.stage_quotient_prompt()}` : '= ?'}`
+          : ''}
+      </p>
+      <div
+        class="input-line"
+        role="textbox"
+        aria-readonly="true"
+        aria-label={m.stage_answer_input()}
+      >
+        <span class="input-val">{currentInput || '\u00a0'}</span>
       </div>
+      {#if showWrongFeedback}
+        {#key wrongAttempts}
+          <p class="answer-feedback" role="alert">{m.stage_answer_wrong()}</p>
+        {/key}
+      {/if}
       <div class="numpad-mini" role="group" aria-label={m.numpad_label()}>
         {#each ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0'] as k (k)}
           <button class="np-key" onclick={() => typeKey(k)} aria-label={k === '⌫' ? m.numpad_backspace() : k}>{#if k === '⌫'}<Icon name="backspace" />{:else}{k}{/if}</button>
@@ -291,6 +385,9 @@
         </div>
         {#if isNewRecord}
           <p class="record">{m.stage_new_record()}</p>
+        {/if}
+        {#if saveError}
+          <p class="save-error" role="alert">{m.stage_save_error()}</p>
         {/if}
         <div class="row controls">
           <button class="btn--primary" onclick={() => { finished = false; }}>{m.stage_again()}</button>
@@ -395,6 +492,23 @@
     font-variant-numeric: tabular-nums;
     font-size: 1.8rem;
     color: var(--house-bright);
+  }
+  .answer-feedback {
+    margin: calc(var(--space-2) * -1) 0 0;
+    color: var(--miss);
+    font-weight: 700;
+    text-align: center;
+  }
+  .save-state {
+    min-height: 12rem;
+    display: grid;
+    place-items: center;
+    color: var(--color-muted);
+  }
+  .save-error {
+    color: var(--color-error);
+    font-weight: 700;
+    text-align: center;
   }
   .numpad-mini {
     display: grid;

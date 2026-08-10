@@ -52,11 +52,6 @@
   .rule-icon {
     font-size: 1.5rem;
     color: var(--spotlight);
-    animation: icon-float 3s ease-in-out infinite;
-  }
-  @keyframes icon-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
   }
   .rule-title {
     font-size: var(--text-caption);
@@ -70,8 +65,5 @@
     font-weight: 600;
     color: var(--house-bright);
     line-height: 1.4;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .rule-icon { animation: none; }
   }
 </style>

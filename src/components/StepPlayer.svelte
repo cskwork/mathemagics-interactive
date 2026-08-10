@@ -175,7 +175,15 @@
     {narrationText || m.playground_narration()}
   </div>
 
-  <div class="progress-bar" role="progressbar" aria-valuenow={index + 1} aria-valuemin={1} aria-valuemax={total}>
+  <div
+    class="progress-bar"
+    role="progressbar"
+    aria-label={m.player_progress()}
+    aria-valuenow={index + 1}
+    aria-valuemin={1}
+    aria-valuemax={total}
+    aria-valuetext={m.player_step({ n: index + 1, total })}
+  >
     <div class="progress-fill" style="width: {total > 0 ? ((index + 1) / total) * 100 : 0}%"></div>
   </div>
   <div class="row controls" role="group" aria-label={m.player_play()}>

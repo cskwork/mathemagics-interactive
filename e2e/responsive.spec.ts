@@ -39,10 +39,10 @@ for (const width of WIDTHS) {
 
     test('home — 가로 스크롤 없음 + 헤더 칩 + 스크린샷', async ({ page }) => {
       await createProfile(page);
-      // "오늘의 공연" 은 <p.kicker> 이라 heading 이 아님 → 홈 도달은 인사 h2 로 확인.
-      await expect(page.getByRole('heading', { name: /안녕/ })).toBeVisible();
-      // 헤더에 활성 공연자 칩이 보인다.
-      await expect(page.locator('.chip').filter({ hasText: '테스트' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /테스트/ })).toBeVisible();
+      // 모바일에서는 이름이 본문 heading에, 핵심 학습 경로는 하단 learning deck에 남는다.
+      await expect(page.locator('.learning-deck')).toBeVisible();
+      await expect(page.locator('.deck-link[aria-current="page"]')).toContainText('홈');
       await expect.poll(() => horizontalOverflow(page), { message: `home @${width} 가로스크롤` }).toBeLessThanOrEqual(0);
       await expectInteractiveFitsViewport(page, width);
       await page.screenshot({ path: `e2e/artifacts/screenshots/home-${width}.png`, fullPage: true });

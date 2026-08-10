@@ -63,8 +63,7 @@
     flex-shrink: 0;
   }
   .ring-progress {
-    transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-    filter: drop-shadow(0 0 6px var(--spotlight-glow));
+    transition: stroke-dashoffset var(--dur-long) var(--ease-out);
   }
   .ring-label {
     position: absolute;
@@ -89,5 +88,9 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ring-progress { transition: none; }
   }
 </style>
