@@ -49,14 +49,20 @@ describe('psychic-math demo — always lands on 6', () => {
 
 describe('magic-1089 demo — always lands on 1089', () => {
   const t1089 = findMagicTrick('magic-1089')!;
-  for (const seed of [1, 5, 13, 77]) {
+  for (const seed of [1, 5, 7, 13, 77]) {
     it(`seed ${seed} → 1089`, () => {
       const d = t1089.demo(seed);
-      // 마지막 스텝의 값 문자열에 1089 포함.
       const last = String(d.steps[d.steps.length - 1]!.value);
-      expect(last).toContain('1089');
+      expect(last).toMatch(/= 1089$/);
     });
   }
+
+  it('preserves the three-digit subtraction result across generated demos', () => {
+    for (let seed = 0; seed < 1_000; seed++) {
+      const d = t1089.demo(seed);
+      expect(String(d.steps[2]!.value), `seed ${seed}`).toMatch(/= 1089$/);
+    }
+  });
 });
 
 describe('leapfrog demo — sum equals 7th line × 11', () => {
@@ -80,5 +86,20 @@ describe('missing-digit demo — principle ties to mod-sum (ch4/ch6)', () => {
     expect(d.steps.length).toBe(3);
     expect(d.finale.ko).toMatch(/빠진 숫자/);
     expect(md.principle.ko).toContain('9의 배수');
+  });
+
+  it('only hides an unambiguous digit and labels the actual spoken count', () => {
+    for (let seed = 0; seed < 1_000; seed++) {
+      const d = md.demo(seed);
+      const product = Number(String(d.steps[0]!.value).match(/= (\d+)$/)?.[1]);
+      const shown = String(d.steps[1]!.value);
+      const hiddenIndex = shown.indexOf('_');
+      const hidden = Number(String(product)[hiddenIndex]);
+      const reported = Number(d.finale.ko.match(/(\d+)/)?.[1]);
+
+      expect([0, 9], `seed ${seed}`).not.toContain(hidden);
+      expect(reported, `seed ${seed}`).toBe(hidden);
+      expect(d.steps[1]!.label.ko).toContain(`${shown.length - 1}자리`);
+    }
   });
 });

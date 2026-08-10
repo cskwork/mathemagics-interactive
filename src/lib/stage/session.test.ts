@@ -14,10 +14,11 @@ describe('Stage question model', () => {
 
   it('renders and answers every current lesson practice shape', () => {
     const lessons = loadAllLessons();
+    const numericLessons = lessons.filter((lesson) => lesson.file.skillId !== 'divisibility');
 
     expect(lessons.length).toBeGreaterThan(0);
-    expect(lessons.filter(isStageReadyLesson)).toHaveLength(lessons.length);
-    for (const lesson of lessons) {
+    expect(lessons.filter(isStageReadyLesson)).toHaveLength(numericLessons.length);
+    for (const lesson of numericLessons) {
       for (const problem of lesson.practiceProblems) {
         const question = stageQuestion(problem);
         expect(question, lesson.file.skillId).toBeDefined();
@@ -25,6 +26,9 @@ describe('Stage question model', () => {
         expect(Number.isSafeInteger(question?.answer), lesson.file.skillId).toBe(true);
       }
     }
+    const divisibility = lessons.find((lesson) => lesson.file.skillId === 'divisibility');
+    expect(divisibility).toBeDefined();
+    if (divisibility) expect(isStageReadyLesson(divisibility)).toBe(false);
   });
 
   it('keeps multi-addend, square-root, quotient, and estimate prompts truthful', () => {
@@ -63,5 +67,6 @@ describe('Stage question model', () => {
     expect(stageQuestion({ op: 'add', operands: [1.5, 2], method: 'ltr', level: 1 })).toBeUndefined();
     expect(stageQuestion({ op: 'add', operands: [1, 2, 3], method: 'ltr', level: 1 })).toBeUndefined();
     expect(stageQuestion({ op: 'mul', operands: [12, 13], method: 'square', level: 1 })).toBeUndefined();
+    expect(stageQuestion({ op: 'div', operands: [123, 3], method: 'divisibility', level: 1 })).toBeUndefined();
   });
 });

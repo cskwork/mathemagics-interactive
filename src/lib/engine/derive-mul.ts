@@ -189,8 +189,8 @@ function subtractionMethodSteps(a: number, b: number, grid: Grid): Step[] {
     steps.push({ t: 'running', total: p.runningTotal, delta: p.product });
   }
   const answer = a * b;
-  steps.push({ t: 'highlight', narration: L(`답 ${answer}. 앞자리부터 써요.`) });
   steps.push(...writeAnswerLTR(answer, grid));
+  steps.push({ t: 'highlight', narration: L(`답은 ${answer}이에요.`, `The answer is ${answer}.`) });
   return steps;
 }
 
@@ -221,20 +221,41 @@ function elevenRuleSteps(a: number, b: number, grid: Grid): Step[] {
   const sum = d1 + d2;
   steps.push({ t: 'highlight', narration: L(`${d1} + ${d2} = ${sum}`) });
   if (sum >= 10) {
-    steps.push({ t: 'highlight', narration: L(`합이 ${sum}(이)라 10이 넘어요. 앞자리에 1을 올려요.`) });
+    steps.push({
+      t: 'highlight',
+      narration: L(
+        `합이 ${sum}이라 10 이상이에요. 앞자리에 1을 올려요.`,
+        `The sum is ${sum}, which is 10 or more. Carry 1 to the front.`
+      )
+    });
   }
-  steps.push({ t: 'highlight', narration: L(`답 ${answer}. 앞자리부터 써요.`) });
   steps.push(...writeAnswerLTR(answer, grid));
+  steps.push({ t: 'highlight', narration: L(`답은 ${answer}이에요.`, `The answer is ${answer}.`) });
   return steps;
 }
 
 /** 제곱(±d): X-다이어그램 분기(branch) 스텝 + d² + 답. */
 function squareSteps(base: number, grid: Grid): Step[] {
   const diag = squareDiagram(base);
+  const target = nearestRoundingBase(base);
+  const roundingNarration = target === base
+    ? L(
+        `${base}²: ${base}은(는) 이미 가까운 배수예요.`,
+        `${base}²: ${base} is already the nearby multiple.`
+      )
+    : target > base
+      ? L(
+          `${base}²: 가까운 ${target}까지 ${diag.d}만큼 올리고, 반대쪽은 같은 만큼 내려요.`,
+          `${base}²: move up ${diag.d} to the nearby ${target}, and move the other side down by ${diag.d}.`
+        )
+      : L(
+          `${base}²: 가까운 ${target}까지 ${diag.d}만큼 내리고, 반대쪽은 같은 만큼 올려요.`,
+          `${base}²: move down ${diag.d} to the nearby ${target}, and move the other side up by ${diag.d}.`
+        );
   const steps: Step[] = [
     {
       t: 'highlight',
-      narration: L(`${base}² 을(를) 가까운 ${diag.high}까지 ${diag.d}만큼 올리고 같은 만큼 내려요.`)
+      narration: roundingNarration
     },
     // ±d 분기(branch 스텝) — XDiagram 컴포넌트가 소비.
     { t: 'branch', from: base, to: diag.high, label: `+${diag.d}`, narration: L(`올린 수: ${diag.high}`) },
@@ -246,10 +267,13 @@ function squareSteps(base: number, grid: Grid): Step[] {
         ? L(`${diag.d}² = ${diag.dSquared} (이 안에서 다시 제곱 기법!)`)
         : L(`${diag.d}² = ${diag.dSquared}`)
     },
-    { t: 'highlight', narration: L(`${diag.product} + ${diag.dSquared} = ${diag.answer}`) },
-    { t: 'running', total: diag.answer }
+    { t: 'highlight', narration: L(`${diag.product} + ${diag.dSquared} = ?`) }
   ];
   steps.push(...writeAnswerLTR(diag.answer, grid));
+  steps.push(
+    { t: 'highlight', narration: L(`${diag.product} + ${diag.dSquared} = ${diag.answer}`) },
+    { t: 'running', total: diag.answer }
+  );
   return steps;
 }
 

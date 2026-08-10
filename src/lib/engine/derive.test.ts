@@ -68,6 +68,22 @@ describe('deriveGrid', () => {
     expect(g.rows.find((r) => r.id === 'op1')?.cells['c2']).toBe('0');
     expect(g.rows.find((r) => r.id === 'op2')?.cells['c2']).toBe('0');
   });
+
+  it('exposes the quotient and remainder rows targeted by division steps', () => {
+    const p: Problem = { op: 'div', operands: [179, 7], method: 'div-1', level: 1 };
+    const grid = deriveGrid(p);
+    expect(grid.rows.map((row) => row.id)).toEqual(['op1', 'op2', 'quotient', 'remainder']);
+    const cells = deriveSteps(p).flatMap((step) => (step.t === 'write' ? [step.cell] : []));
+    expect(cells.every((cell) => grid.rows.some((row) => cell.startsWith(`${row.id}.`)))).toBe(true);
+  });
+
+  it('has enough columns for an estimation answer wider than its operands', () => {
+    const p: Problem = { op: 'est', operands: [855, 888], method: 'est-band', level: 1, estOf: 'mul' };
+    const grid = deriveGrid(p);
+    const cells = deriveSteps(p).flatMap((step) => (step.t === 'write' ? [step.cell] : []));
+    expect(grid.digitCols).toBe(6);
+    expect(cells.every((cell) => grid.cols.includes(cell.split('.')[1] ?? ''))).toBe(true);
+  });
 });
 
 describe('deriveSteps — final answer matches a+b / a-b (all combinations)', () => {
@@ -127,6 +143,16 @@ describe('deriveSteps — direction & carry/borrow encoding', () => {
     expect(answerFromSteps(p)).toBe('865');
   });
 
+  it('ltr add narrates the full digit sum before writing and carrying', () => {
+    const p: Problem = { op: 'add', operands: [78, 29], method: 'ltr', level: 1 };
+    const narrations = deriveSteps(p).flatMap((step) =>
+      step.narration?.ko === undefined ? [] : [step.narration.ko]
+    );
+
+    expect(narrations).toContain('일의 자리: 8 + 9 = 17. 7을 쓰고 1 올림.');
+    expect(narrations).not.toContain('일의 자리: 8 + 9 = 7');
+  });
+
   it('rtl sub emits strike steps for borrows', () => {
     // 732 − 458 = 274. units(2<8) borrow strike op1.c3, tens(3→2<5) borrow strike op1.c2.
     const p: Problem = { op: 'sub', operands: [732, 458], method: 'rtl', level: 1 };
@@ -151,6 +177,16 @@ describe('deriveSteps — direction & carry/borrow encoding', () => {
     expect(writes.map((w) => (w as { cell: string }).cell)).toEqual(['answer.c2', 'answer.c3']);
     expect(steps.some((s) => s.t === 'strike')).toBe(false);
     expect(answerFromSteps(p)).toBe('61');
+  });
+
+  it('ltr sub narrates round-up subtraction with the exact compensation', () => {
+    const p: Problem = { op: 'sub', operands: [60, 17], method: 'ltr', level: 1 };
+    const narrations = deriveSteps(p).flatMap((step) =>
+      step.narration?.ko === undefined ? [] : [step.narration.ko]
+    );
+
+    expect(narrations).toContain('먼저 10을 빼고, 더 뺈 3을 되돌려줘요: 50 − 10 + 3 = 43');
+    expect(narrations.some((text) => text.includes('50 − 7') && text.includes('→43'))).toBe(false);
   });
 });
 
@@ -255,6 +291,55 @@ describe('generateProblem — determinism & constraints', () => {
     expect(list1.length).toBe(5);
     const keys = new Set(list1.map((p) => `${p.operands[0]}_${p.operands[1]}`));
     expect(keys.size).toBe(5);
+  });
+
+  it('uses digits for the division dividend and honors the remainder flag', () => {
+    for (const carry of [true, false]) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const p = generateProblem(seed, { op: 'div', method: 'div-1', digits: 3, carry });
+        const [dividend, divisor] = p.operands as readonly [number, number];
+        expect(String(dividend)).toHaveLength(3);
+        expect(dividend % divisor === 0).toBe(!carry);
+      }
+    }
+  });
+
+  it('generates a meaningful two-digit factorized operand for mul-factor', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const p = generateProblem(seed, { op: 'mul', method: 'mul-factor', digits: 2, carry: true });
+      const factorized = p.operands[1] ?? 0;
+      expect(factorized).toBeGreaterThanOrEqual(10);
+      expect(factorized).toBeLessThanOrEqual(99);
+      expect(
+        Array.from({ length: 8 }, (_, i) => i + 2).some(
+          (factor) => factorized % factor === 0 && factorized / factor >= 2 && factorized / factor <= 9
+        )
+      ).toBe(true);
+    }
+  });
+
+  it('generates mul-3x3 operands around one shared nearby hundred base', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const p = generateProblem(seed, { op: 'mul', method: 'mul-3x3', digits: 3, carry: true });
+      const [a, b] = p.operands as readonly [number, number];
+      const base = Math.round(a / 100) * 100;
+      expect(Math.round(b / 100) * 100).toBe(base);
+      expect(Math.abs(a - base)).toBeLessThanOrEqual(49);
+      expect(Math.abs(b - base)).toBeLessThanOrEqual(49);
+    }
+  });
+
+  it('keeps generated estimation subtraction non-negative (seed 35 regression)', () => {
+    const problems = generateProblems(
+      35,
+      { op: 'est', method: 'est-digit', digits: 3, carry: true, estOf: 'sub' },
+      3
+    );
+    for (const p of problems) {
+      expect(p.operands[0]).toBeGreaterThanOrEqual(p.operands[1] ?? 0);
+      const writes = deriveSteps(p).filter((step) => step.t === 'write');
+      expect(writes.every((step) => /^[0-9]$/.test(step.value))).toBe(true);
+    }
   });
 });
 

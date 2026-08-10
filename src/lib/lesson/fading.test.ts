@@ -78,3 +78,14 @@ describe('fadingKForProblem', () => {
     expect(fadingKForProblem(5, 1)).toBe(1);
   });
 });
+
+describe('choice-step fading', () => {
+  it('counts a semantic yes/no choice as one expected input', () => {
+    const steps = [
+      { t: 'highlight' as const, narration: { ko: '규칙' } },
+      { t: 'choice' as const, value: true, expect: true as const, narration: { ko: '나누어 떨어질까요?' } }
+    ];
+    expect(expectCount(steps)).toBe(1);
+    expect(withExpectOnLastK(steps, 1)).toEqual(steps);
+  });
+});

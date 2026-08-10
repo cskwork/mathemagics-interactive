@@ -32,7 +32,14 @@ function placeLabel(place: number): string {
 export function cellAriaLabel(rowId: RowId, place: number, value: string, op: Op): string {
   if (place < 0) {
     // 부호 열(op2.c1)
-    if (rowId === 'op2') return op === 'sub' ? m.aria_sign_sub() : m.aria_sign_add();
+    if (rowId === 'op2') {
+      if (op === 'sub') return m.aria_sign_sub();
+      if (op === 'mul') return m.aria_sign_mul();
+      if (op === 'div') return m.aria_sign_div();
+      if (op === 'est') return m.aria_sign_est();
+      if (op === 'sqrt') return m.aria_sign_sqrt();
+      return m.aria_sign_add();
+    }
     return '';
   }
   const placeName = placeLabel(place);
@@ -40,6 +47,16 @@ export function cellAriaLabel(rowId: RowId, place: number, value: string, op: Op
     return value
       ? m.aria_answer_filled({ place: placeName, digit: value })
       : m.aria_answer_empty({ place: placeName });
+  }
+  if (rowId === 'quotient') {
+    return value
+      ? m.aria_quotient_filled({ place: placeName, digit: value })
+      : m.aria_quotient_empty({ place: placeName });
+  }
+  if (rowId === 'remainder') {
+    return value
+      ? m.aria_remainder_filled({ place: placeName, digit: value })
+      : m.aria_remainder_empty({ place: placeName });
   }
   if (rowId === 'carry') {
     return value ? m.aria_carry({ place: placeName, digit: value }) : placeName;

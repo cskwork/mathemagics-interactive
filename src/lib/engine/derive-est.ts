@@ -43,15 +43,29 @@ function roundToTwoSig(n: number): number {
   return sign * Math.round(abs / factor) * factor;
 }
 
+function directedTwoSig(n: number): { down: number; nearest: number; up: number } {
+  if (n === 0) return { down: 0, nearest: 0, up: 0 };
+  const factor = 10 ** (Math.floor(Math.log10(Math.abs(n))) - 1);
+  return {
+    down: Math.floor(n / factor) * factor,
+    nearest: roundToTwoSig(n),
+    up: Math.ceil(n / factor) * factor
+  };
+}
+
 /**
  * 어림셈 반올림 밴드 생성. 순수 함수. SubstitutionChain/EsterangeInput 컴포넌트가 소비.
- * estimate = 두 수를 반올림해 계산한 추정치. 밴드 [low, high] = 정확값의 ±10%(또는 최소 폭).
+ * est-digit estimate = 두 수를 반올림해 계산한 추정치.
+ * est-band estimate = 첫 수는 올리고 둘째 수는 내린 중앙 추정치.
+ * [low, high] 는 정확값을 사용하지 않고 피연산자를 각각 내림/올림해 만든다.
  */
 export function estimationBand(problem: Problem): EstimationBand {
   const [a, b] = pairOf(problem);
-  const aR = roundToTwoSig(a);
-  const bR = roundToTwoSig(b);
+  const aRounded = directedTwoSig(a);
+  const bRounded = directedTwoSig(b);
   const op = estOf(problem);
+  const aR = problem.method === 'est-band' ? aRounded.up : aRounded.nearest;
+  const bR = problem.method === 'est-band' ? bRounded.down : bRounded.nearest;
   let estimate: number;
   switch (op) {
     case 'add':
@@ -68,14 +82,34 @@ export function estimationBand(problem: Problem): EstimationBand {
       break;
   }
   const exact = exactOf(problem);
-  const tolerance = Math.max(Math.abs(exact) * 0.1, 1);
+  let low: number;
+  let high: number;
+  switch (op) {
+    case 'add':
+      low = aRounded.down + bRounded.down;
+      high = aRounded.up + bRounded.up;
+      break;
+    case 'sub':
+      low = aRounded.down - bRounded.up;
+      high = aRounded.up - bRounded.down;
+      break;
+    case 'mul':
+      low = aRounded.down * bRounded.down;
+      high = aRounded.up * bRounded.up;
+      break;
+    case 'div':
+      low = bRounded.up === 0 ? 0 : Math.floor(aRounded.down / bRounded.up);
+      high = bRounded.down === 0 ? 0 : Math.ceil(aRounded.up / bRounded.down);
+      break;
+  }
   const sign = op === 'add' ? '+' : op === 'sub' ? '−' : op === 'mul' ? '×' : '÷';
   const roundingNote = L(`${aR} ${sign} ${bR}`, `${aR} ${sign} ${bR}`);
   return {
     estimate,
-    low: Math.round(exact - tolerance),
-    high: Math.round(exact + tolerance),
+    low,
+    high,
     exact,
+    roundedOperands: { a: aRounded, b: bRounded },
     roundingNote
   };
 }
@@ -88,12 +122,12 @@ export function deriveEstSteps(problem: Problem): Step[] {
   const steps: Step[] = [
     {
       t: 'highlight',
-      narration: L(`어림으로 빠르게 구해요. 큰 수일수록 오차가 작아요.`)
+      narration: L('둘째 유효숫자 자리에서 수를 바꿔 빠르게 계산해요.', 'Change each number at the second significant-digit place and calculate quickly.')
     }
   ];
   const [a, b] = pairOf(problem);
-  const aR = roundToTwoSig(a);
-  const bR = roundToTwoSig(b);
+  const aR = problem.method === 'est-band' ? band.roundedOperands.a.up : band.roundedOperands.a.nearest;
+  const bR = problem.method === 'est-band' ? band.roundedOperands.b.down : band.roundedOperands.b.nearest;
   // 치환 체인: 원래 수 → 반올림 수. branch 스텝(SubstitutionChain 이 소비).
   if (aR !== a) {
     steps.push({ t: 'branch', from: a, to: aR, label: '≈', narration: L(`${a}를 ${aR}(으)로 어림`) });
@@ -103,15 +137,16 @@ export function deriveEstSteps(problem: Problem): Step[] {
   }
   steps.push({
     t: 'highlight',
-    narration: L(`${band.roundingNote.ko} = ${band.estimate}`)
+    narration: L(`${band.roundingNote.ko} = ?`, `${band.roundingNote.en ?? band.roundingNote.ko} = ?`)
   });
+  // 어림 답을 입력한 뒤에만 대표값·범위·정확값을 공개한다.
+  steps.push(...writeAnswerLTR(band.estimate, grid));
   steps.push({
     t: 'highlight',
     narration: L(
-      `어림 답: ${band.estimate}. 진짜 답은 ${band.low}~${band.high} 사이예요. (정확히 ${band.exact})`
+      `어림 답: ${band.estimate}. 피연산자를 각각 내림·올림한 뒤 같은 연산을 적용해 구한 범위는 ${band.low}~${band.high}예요. 정확값 ${band.exact}은 풀이 후 확인해요.`,
+      `Estimate: ${band.estimate}. Directed operand rounding gives the range ${band.low}–${band.high}. Check the exact value ${band.exact} only after estimating.`
     )
   });
-  // 어림 답을 좌→우로 write(연습 입력용 대표값 = estimate).
-  steps.push(...writeAnswerLTR(band.estimate, grid));
   return steps;
 }

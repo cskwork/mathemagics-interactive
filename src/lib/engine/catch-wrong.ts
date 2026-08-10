@@ -95,7 +95,7 @@ export function makeRound(seed: number, n: number, op: 'add' | 'mul' = 'mul'): C
 
 /**
  * 모드섬(9+11)으로 틀린 항목 인덱스를 찾는다. **불일치하는 첫 항목**을 반환(없으면 undefined).
- * 현실에선 정답이 1/9 로 우연히 불일치할 수 있으나, makeRound 가 보장한 판에선
+ * 현실에선 오답과 정답의 차이가 9의 배수면 우연히 일치할 수 있으나, makeRound 가 보장한 판에선
  * 오직 wrongIndex 만 불일치한다.
  */
 export function findWrongByModSum(round: CatchRound): number | undefined {

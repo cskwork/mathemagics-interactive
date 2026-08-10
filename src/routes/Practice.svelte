@@ -1,7 +1,7 @@
 <!--
   Hallmark · P4 H4 E4 S4 R4 V4 — 오늘의 연습 (docs/briefs/M3.md 산출물 4).
   due 카드 기반 혼합 세트(interleaving): 서로 다른 기법이 번갈아 나온다.
-  - DigitInput 으로 풀이(자동채점). 정답 → good, "답 보기" → again(lapse).
+  - 숫자는 DigitInput, 배수 판정은 ChoiceInput 으로 풀이(자동채점). 정답 → good, "답 보기" → again(lapse).
   - 세션은 백로그 캡(maxBacklog) 분량 — 5–10분, 자연스러운 종료 화면. 무한 이어하기 금지.
   - 종료 시: 카드 reschedule, streak 갱신, 적응 난이도 밴드 조정, 게이트 통과 표시.
   모든 색/폰트는 M7 토큰(var(--*)), 컴포넌트는 DigitInput 재사용. 손실 압박·비교 없음.
@@ -22,6 +22,7 @@
   import { loadAllLessons } from '../lib/lesson/loader.js';
   import { initialStreak, updateStreak } from '../lib/srs/streak.js';
   import DigitInput from '../components/DigitInput.svelte';
+  import ChoiceInput from '../components/ChoiceInput.svelte';
   import Celebration from '../lib/components/canvasui/Celebration.svelte';
   import { playSound } from '../lib/ui/sound.js';
   import AnimatedCounter from '../components/AnimatedCounter.svelte';
@@ -96,7 +97,13 @@
     try {
       return generateProblem(
         seed >>> 0,
-        { op: c.op, method: c.method, digits: c.digits, carry: c.carry ?? true }
+        {
+          op: c.op,
+          method: c.method,
+          digits: c.digits,
+          carry: c.carry ?? true,
+          ...(c.estOf !== undefined ? { estOf: c.estOf } : {})
+        }
       );
     } catch {
       return undefined;
@@ -105,6 +112,9 @@
 
   const grid = $derived(currentProblem ? deriveGrid(currentProblem) : undefined);
   const steps = $derived(currentProblem ? deriveSteps(currentProblem) : undefined);
+  const expectsChoice = $derived(
+    steps?.some((step) => step.t === 'choice' && step.expect === true) ?? false
+  );
 
   function techniqueTitle(skillId: string): string {
     const lesson = lessons.find((l) => l.file.skillId === skillId);
@@ -287,7 +297,11 @@
 
     <div class="stage-deck">
       {#key `${currentCard.factId}-${index}`}
-        <DigitInput {grid} {steps} oncomplete={onSolved} />
+        {#if expectsChoice}
+          <ChoiceInput {steps} oncomplete={onSolved} />
+        {:else}
+          <DigitInput {grid} {steps} oncomplete={onSolved} />
+        {/if}
       {/key}
     </div>
 

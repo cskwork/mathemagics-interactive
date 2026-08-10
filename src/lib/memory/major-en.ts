@@ -14,20 +14,27 @@
 import type { DigitConsonant, MemorySystem } from './types.js';
 
 const EN_TABLE: readonly DigitConsonant[] = [
-  { digit: 0, consonants: ['s', 'z', 'c'], mnemonic: { ko: '0 = s/z (zero 의 z)', en: '0 = s/z (z of zero)' } },
+  { digit: 0, consonants: ['s', 'z', 'soft c'], mnemonic: { ko: '0 = s/z (zero 의 z)', en: '0 = s/z (z of zero)' } },
   { digit: 1, consonants: ['t', 'd'], mnemonic: { ko: '1 = t/d (세로획 1)', en: '1 = t/d (one downstroke)' } },
   { digit: 2, consonants: ['n'], mnemonic: { ko: '2 = n (세로획 2)', en: '2 = n (two downstrokes)' } },
   { digit: 3, consonants: ['m'], mnemonic: { ko: '3 = m (세로획 3)', en: '3 = m (three downstrokes)' } },
   { digit: 4, consonants: ['r'], mnemonic: { ko: '4 = r (fouR)', en: '4 = r (fouR)' } },
   { digit: 5, consonants: ['l'], mnemonic: { ko: '5 = L (다섯 손가락)', en: '5 = l (five fingers)' } },
-  { digit: 6, consonants: ['j', 'g', 'ch', 'sh'], mnemonic: { ko: '6 = j/ch/sh', en: '6 = j/ch/sh' } },
-  { digit: 7, consonants: ['k', 'q', 'ng'], mnemonic: { ko: '7 = k/hard-g', en: '7 = k/hard-g' } },
+  { digit: 6, consonants: ['j', 'soft g', 'ch', 'sh'], mnemonic: { ko: '6 = j/ch/sh', en: '6 = j/ch/sh' } },
+  { digit: 7, consonants: ['k', 'hard c', 'hard g', 'q', 'ng'], mnemonic: { ko: '7 = k/hard-g', en: '7 = k/hard-g' } },
   { digit: 8, consonants: ['f', 'v', 'ph'], mnemonic: { ko: '8 = f/v', en: '8 = f/v' } },
   { digit: 9, consonants: ['p', 'b'], mnemonic: { ko: '9 = p/b (9 의 거울)', en: '9 = p/b (mirror of 9)' } }
 ];
 
 /** 모음 및 값 없는 글자. */
 const FREE = new Set(['a', 'e', 'i', 'o', 'u', 'h', 'w', 'y']);
+
+/** 철자 규칙만으로 복원할 수 없는, 연습 사전에 쓰는 흔한 발음. */
+const PHONETIC_OVERRIDES: Readonly<Record<string, string>> = {
+  girl: '745',
+  ocean: '62',
+  pizza: '910'
+};
 
 /** soft g(e/i/y 앞)는 6, 그 외 hard g 는 7. */
 function isSoftG(word: string, i: number): boolean {
@@ -47,82 +54,100 @@ function isSoftC(word: string, i: number): boolean {
  */
 export function encodeMajor(word: string): string {
   const w = word.toLowerCase();
+  const override = PHONETIC_OVERRIDES[w];
+  if (override !== undefined) return override;
   let out = '';
   let i = 0;
-  const push = (d: number): void => {
-    // 같은 자음이 연속되면 1회만 센다(tt→1). 직전 숫자와 다를 때만.
-    const c = String(d);
-    if (out[out.length - 1] !== c) out += c;
+  let previousSound: string | undefined;
+  const push = (d: number, sound: string): void => {
+    // 같은 자음 소리가 바로 반복될 때만 한 번 센다(tt→1).
+    // 모음으로 떨어진 d…t처럼 숫자 코드만 같은 별도 소리는 각각 센다.
+    if (previousSound !== sound) out += String(d);
+    previousSound = sound;
   };
   while (i < w.length) {
     const pair = w.slice(i, i + 2);
     const tri = w.slice(i, i + 3);
-    // 3자 digraph: 'sch'→6
-    if (tri === 'sch') {
-      push(6);
+    // 흔한 묵음 시작 자음(kn/gn/pn/wr)은 소리로 세지 않는다.
+    if (i === 0 && (pair === 'kn' || pair === 'gn' || pair === 'pn' || pair === 'wr')) {
+      i += 1;
+      continue;
+    }
+    // -ght의 gh는 묵음(light/night/knight).
+    if (pair === 'gh' && w[i + 2] === 't') {
+      i += 2;
+      continue;
+    }
+    // 3자 음가: tch는 하나의 /ch/ 소리.
+    if (tri === 'tch') {
+      push(6, 'ch');
       i += 3;
       continue;
     }
     // 2자 digraph
-    if (pair === 'ch' || pair === 'sh' || pair === 'tch') {
-      push(6);
-      i += pair === 'tch' ? 3 : 2;
+    if (pair === 'ch' || pair === 'sh') {
+      push(6, pair);
+      i += 2;
       continue;
     }
     if (pair === 'ph') {
-      push(8);
+      push(8, 'f');
       i += 2;
       continue;
     }
     if (pair === 'ng') {
-      push(7);
+      push(7, 'ng');
       i += 2;
       continue;
     }
     if (pair === 'qu') {
-      push(7); // q
+      push(7, 'k');
       i += 2;
       continue;
     }
     if (pair === 'th') {
-      push(1); // th → t(1)
+      push(1, 'th');
       i += 2;
       continue;
     }
     if (pair === 'ck') {
-      push(7);
+      push(7, 'k');
       i += 2;
       continue;
     }
     const ch = w[i] ?? '';
     if (FREE.has(ch)) {
+      previousSound = undefined;
       i += 1;
       continue;
     }
     if (ch === 'x') {
-      push(7); // k
-      push(0); // s
+      push(7, 'k');
+      push(0, 's');
       i += 1;
       continue;
     }
     if (ch === 'g') {
-      push(isSoftG(w, i) ? 6 : 7);
+      const soft = isSoftG(w, i);
+      push(soft ? 6 : 7, soft ? 'j' : 'g');
       i += 1;
       continue;
     }
     if (ch === 'c') {
       if (pair === 'ck') {
-        push(7);
+        push(7, 'k');
         i += 2;
         continue;
       }
-      push(isSoftC(w, i) ? 0 : 7);
+      const soft = isSoftC(w, i);
+      push(soft ? 0 : 7, soft ? 's' : 'k');
       i += 1;
       continue;
     }
     // 단일 자음 → 표 직접 조회
     const digit = digitForLetter(ch);
-    if (digit !== undefined) push(digit);
+    if (digit !== undefined) push(digit, ch);
+    else previousSound = undefined;
     i += 1;
   }
   return out;

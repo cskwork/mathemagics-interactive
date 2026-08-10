@@ -17,6 +17,7 @@ const SQUARE_METHODS = new Set<Problem['method']>(['square', 'square-4digit', 's
  */
 export function stageQuestion(problem: Problem): StageQuestion | undefined {
   if (
+    problem.method === 'divisibility' ||
     problem.operands.length === 0 ||
     problem.operands.some((operand) => !Number.isSafeInteger(operand) || operand < 0)
   ) {

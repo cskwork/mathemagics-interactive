@@ -19,16 +19,15 @@ import type {
   CellId,
   ColId,
   Grid,
-  GridRow,
   Problem,
   Step
 } from './types.js';
 import { deriveMulSteps } from './derive-mul.js';
 import { deriveDivSteps } from './derive-div.js';
-import { deriveEstSteps } from './derive-est.js';
+import { deriveEstSteps, estimationBand } from './derive-est.js';
 import { derivePaperSteps } from './derive-paper.js';
 import { deriveAdvSteps } from './derive-adv.js';
-import { pairOf } from './derive-internals.js';
+import { deriveGrid as deriveGridInternal, pairOf } from './derive-internals.js';
 
 /** 로케일 키 객체 생성 헬퍼(ko 필수, en 선택 → 누락 시 content/localized.ts 가 ko 폴백). */
 const L = (ko: string, en?: string): LocalizedText => (en === undefined ? { ko } : { ko, en });
@@ -105,42 +104,8 @@ function placeName(place: number): LocalizedText {
  * SubstitutionChain) 를 쓰므로 여기서는 선형 표시용 최소 그리드만 만든다(부호 + 답 한 줄).
  */
 export function deriveGrid(problem: Problem): Grid {
-  const [a, b] = pairOf(problem);
-  const answer = computeAnswer(problem);
-  const digitCols = Math.max(String(a).length, String(b).length, String(answer).length);
-
-  // c1(부호) + c2..c(digitCols+1)
-  const cols: ColId[] = ['c1'];
-  for (let i = 0; i < digitCols; i++) cols.push(`c${i + 2}`);
-
-  const placeValueOf: Record<ColId, number> = {};
-  cols.forEach((c, idx) => {
-    placeValueOf[c] = idx === 0 ? -1 : digitCols - idx;
-  });
-
-  /** 숫자 n 의 각 자리를 op 행의 cells 로(오른쪽 정렬). */
-  const numberCells = (n: number): Partial<Record<ColId, string>> => {
-    const cells: Partial<Record<ColId, string>> = {};
-    digitsOf(n).forEach((d, place) => {
-      const col = cols[digitCols - place];
-      if (col) cells[col] = String(d);
-    });
-    return cells;
-  };
-
-  const op2Cells: Partial<Record<ColId, string>> = {
-    c1: opSign(problem.op),
-    ...numberCells(b)
-  };
-
-  const rows: GridRow[] = [
-    { id: 'carry', cells: {} },
-    { id: 'op1', cells: numberCells(a) },
-    { id: 'op2', cells: op2Cells, underline: true },
-    { id: 'answer', cells: {}, input: true }
-  ];
-
-  return { cols, rows, digitCols, placeValueOf };
+  const answer = problem.op === 'est' ? estimationBand(problem).estimate : computeAnswer(problem);
+  return deriveGridInternal(problem, answer);
 }
 
 /** 그리드에서 자릿값 place(0=일의 자리) 에 해당하는 열 id. */
@@ -294,21 +259,28 @@ function deriveAddLTR(a: number, b: number, grid: Grid): Step[] {
     const col = colAtPlace(grid, place);
     const da = aD[place] ?? 0;
     const db = bD[place] ?? 0;
-    const naive = (da + db) % 10;
-    const final = (da + db + (carryIn[place] ?? 0)) % 10;
+    const incomingCarry = carryIn[place] ?? 0;
+    const total = da + db + incomingCarry;
+    const final = total % 10;
+    const outgoingCarry = Math.floor(total / 10);
     const pn = placeName(place);
-    const revised = (carryIn[place] ?? 0) > 0;
+    const equation = incomingCarry > 0
+      ? `${da} + ${db} + 올림 ${incomingCarry} = ${total}`
+      : `${da} + ${db} = ${total}`;
+    const equationEn = incomingCarry > 0
+      ? `${da} + ${db} + carry ${incomingCarry} = ${total}`
+      : `${da} + ${db} = ${total}`;
     steps.push({
       t: 'write',
       cell: `answer.${col}` as CellId,
       value: String(final),
       expect: true,
-      narration: revised
+      narration: outgoingCarry > 0
         ? L(
-            `${pn.ko} ${naive}에서 올림 ${carryIn[place]}을(를) 받아 ${final}`,
-            `${pn.en}: ${naive} + carry ${carryIn[place]} = ${final}`
+            `${pn.ko}: ${equation}. ${final}을 쓰고 ${outgoingCarry} 올림.`,
+            `${pn.en}: ${equationEn}. Write ${final} and carry ${outgoingCarry}.`
           )
-        : L(`${pn.ko}: ${da} + ${db} = ${final}`)
+        : L(`${pn.ko}: ${equation}`, `${pn.en}: ${equationEn}`)
     });
   }
   return steps;
@@ -334,20 +306,23 @@ function deriveSubLTR(a: number, b: number, grid: Grid): Step[] {
     const db = bD[place] ?? 0;
     if (db === 0) continue;
     const chunk = db * 10 ** place;
-    const next = running - chunk;
     // 이 단위에서 빌림이 필요한가? running 의 이 자리 값 < db 인지.
     const runningDigit = Math.floor(running / 10 ** place) % 10;
     const needsBorrow = runningDigit < db;
-    const pn = placeName(place);
+    let next: number;
     if (needsBorrow) {
+      const roundedChunk = 10 ** (place + 1);
+      const compensation = roundedChunk - chunk;
+      next = running - roundedChunk + compensation;
       steps.push({
         t: 'highlight',
         narration: L(
-          `${running} − ${chunk}: ${pn.ko}가 부족해 올려 빼고 되돌려줍니다 → ${next}`,
-          `${running} − ${chunk}: round up and add back → ${next}`
+          `먼저 ${roundedChunk}을 빼고, 더 뺈 ${compensation}을 되돌려줘요: ${running} − ${roundedChunk} + ${compensation} = ${next}`,
+          `Subtract ${roundedChunk} first, then add back the extra ${compensation}: ${running} − ${roundedChunk} + ${compensation} = ${next}`
         )
       });
     } else {
+      next = running - chunk;
       steps.push({
         t: 'highlight',
         narration: L(`${running} − ${chunk} = ${next}`, `${running} − ${chunk} = ${next}`)

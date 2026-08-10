@@ -50,6 +50,7 @@ describe('square4Layout — A² = (A+d)(A−d) + d² matches A*A', () => {
   it('carry.willCarry correct vs (lowPart + d² ≥ 1e6)', () => {
     for (const base of [1234, 4267, 5500, 9999]) {
       const lay = square4Layout(base);
+      expect(lay.carry.threshold).toBe(1_000_000);
       expect(lay.carry.willCarry).toBe(lay.carry.lowPart + lay.carry.addition >= 1_000_000);
     }
   });
@@ -163,6 +164,30 @@ describe('deriveAdvSteps — answer cells match independent computation', () => 
 // ── memory 스텝 + 자리올림 선예측 등장 ──────────────────────────────────────────
 
 describe('deriveAdvSteps — memory steps + carry pre-prediction present', () => {
+  it('square-4digit names the actual round anchor and states the exact no-carry bound', () => {
+    const p: Problem = { op: 'mul', operands: [5546, 5546], method: 'square-4digit', level: 1 };
+    const narrations = deriveAdvSteps(p)
+      .filter((s) => s.t === 'highlight')
+      .flatMap((s) => (s.narration ? [s.narration.ko] : []));
+
+    expect(narrations[0]).toContain('6000');
+    expect(narrations).toContainEqual(expect.stringContaining('758,116 < 1,000,000'));
+    expect(narrations).not.toContainEqual(expect.stringContaining('758,116 < 750,000'));
+  });
+
+  it('square-4digit applies a carry before telling the learner to speak the leading part', () => {
+    const p: Problem = { op: 'mul', operands: [7562, 7562], method: 'square-4digit', level: 1 };
+    const narrations = deriveAdvSteps(p)
+      .filter((s) => s.t === 'highlight' || s.t === 'memory')
+      .map((s) => s.narration?.ko ?? '');
+    const carryIndex = narrations.findIndex((text) => text.includes('≥ 1,000,000'));
+    const speakIndex = narrations.findIndex((text) => text.includes('57 million') && text.includes('먼저 말해요'));
+
+    expect(carryIndex).toBeGreaterThanOrEqual(0);
+    expect(speakIndex).toBeGreaterThan(carryIndex);
+    expect(narrations).not.toContainEqual(expect.stringContaining('56 million을(를) 먼저 말'));
+  });
+
   it('square-4digit emits memory store/recall steps', () => {
     const p: Problem = { op: 'mul', operands: [4267, 4267], method: 'square-4digit', level: 1 };
     const mem = deriveAdvSteps(p).filter((s) => s.t === 'memory');
