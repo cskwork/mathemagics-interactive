@@ -21,6 +21,8 @@ export interface GenerateOptions {
   estOf?: 'add' | 'sub' | 'mul' | 'div';
   /** M5 paper-column-add: 더할 피연산자 수(기본 3). */
   operandCount?: number;
+  /** divisibility 세트 전개에서 2–11 규칙을 균등하게 배정하는 내부 override. */
+  divisor?: number;
 }
 
 /** mulberry32 — 시드 → 결정적 32비트 PRNG. [0,1) 실수를 돌려준다. */
@@ -47,6 +49,10 @@ function numberWithDigits(rng: () => number, digits: number): number {
   let n = hi;
   for (let i = 1; i < digits; i++) n = n * 10 + randInt(rng, 0, 9);
   return n;
+}
+
+function positiveRangeForDigits(digits: number): readonly [number, number] {
+  return digits <= 1 ? [1, 9] : [10 ** (digits - 1), 10 ** digits - 1];
 }
 
 /** 두 수의 같은 자리 합 중 올림이 발생하는 자리가 하나라도 있으면 true. */
@@ -90,7 +96,7 @@ function hasSubBorrow(a: number, b: number): boolean {
  * @throws 조건을 만족하는 문제를 찾지 못한 경우.
  */
 export function generateProblem(seed: number, opts: GenerateOptions): Problem {
-  const { op, digits, carry, method, level = 1, estOf, operandCount = 3 } = opts;
+  const { op, digits, carry, method, level = 1, estOf, operandCount = 3, divisor: requestedDivisor } = opts;
   const rng = mulberry32(seed);
   const MAX_TRIES = 2000;
 
@@ -154,8 +160,10 @@ export function generateProblem(seed: number, opts: GenerateOptions): Problem {
         return { op, operands: [a, b], method, level };
       }
       if (method === 'mul-3x3') {
-        const a = numberWithDigits(rng, 3);
-        const b = numberWithDigits(rng, 3);
+        // 근접수법이 실제로 유용하도록 같은 100의 배수에서 ±49 안에 두 수를 둔다.
+        const base = randInt(rng, 2, 9) * 100;
+        const a = base + randInt(rng, -49, 49);
+        const b = base + randInt(rng, -49, 49);
         return { op, operands: [a, b], method, level };
       }
       if (method === 'mul-5x5') {
@@ -185,16 +193,48 @@ export function generateProblem(seed: number, opts: GenerateOptions): Problem {
       if (method === 'mul-factor') {
         const f1 = randInt(rng, 2, 9);
         const f2 = randInt(rng, 2, 9);
+        if (f1 * f2 < 10) continue;
         return { op, operands: [numberWithDigits(rng, 2), f1 * f2], method, level };
       }
       return { op, operands: [a, b], method, level };
     }
 
     if (op === 'div') {
+      const [minDividend, maxDividend] = positiveRangeForDigits(digits);
+
+      if (method === 'div-simplify') {
+        const factor = randInt(rng, 2, 9);
+        const reducedDivisor = randInt(rng, 2, 9);
+        const divisor = factor * reducedDivisor;
+        const minQuotient = Math.ceil(minDividend / divisor);
+        const maxQuotient = Math.floor(maxDividend / divisor);
+        if (minQuotient > maxQuotient) continue;
+        const quotient = randInt(rng, minQuotient, maxQuotient);
+        return { op, operands: [divisor * quotient, divisor], method, level };
+      }
+
+      if (method === 'divisibility') {
+        const divisor = requestedDivisor ?? randInt(rng, 2, 11);
+        if (divisor < 2 || divisor > 11 || !Number.isInteger(divisor)) {
+          throw new Error(`generateProblem: divisibility divisor must be an integer from 2 to 11, got ${divisor}`);
+        }
+        const shouldDivide = rng() < 0.5;
+        if (shouldDivide) {
+          const minQuotient = Math.ceil(minDividend / divisor);
+          const maxQuotient = Math.floor(maxDividend / divisor);
+          if (minQuotient > maxQuotient) continue;
+          const quotient = randInt(rng, minQuotient, maxQuotient);
+          return { op, operands: [divisor * quotient, divisor], method, level };
+        }
+        const dividend = randInt(rng, minDividend, maxDividend);
+        if (dividend % divisor === 0) continue;
+        return { op, operands: [dividend, divisor], method, level };
+      }
+
       const divisor = randInt(rng, 2, 9);
-      const quotient = numberWithDigits(rng, digits);
-      const remainder = carry ? randInt(rng, 1, divisor - 1) : 0; // carry = 나머지 유무
-      const dividend = divisor * quotient + remainder;
+      const dividend = randInt(rng, minDividend, maxDividend);
+      const hasRemainder = dividend % divisor !== 0;
+      if (hasRemainder !== carry) continue; // carry = 나머지 유무
       return { op, operands: [dividend, divisor], method, level };
     }
 
@@ -202,7 +242,14 @@ export function generateProblem(seed: number, opts: GenerateOptions): Problem {
     {
       const a = numberWithDigits(rng, digits);
       const b = numberWithDigits(rng, digits);
-      return { op: 'est', operands: [a, b], method, level, estOf: estOf ?? 'add' };
+      if (method === 'est-band') {
+        const aFactor = 10 ** (Math.floor(Math.log10(Math.abs(a))) - 1);
+        const bFactor = 10 ** (Math.floor(Math.log10(Math.abs(b))) - 1);
+        // 중앙 추정이 실제로 첫 수를 올리고 둘째 수를 내리는 연습이 되게 한다.
+        if (a % aFactor === 0 || b % bFactor === 0) continue;
+      }
+      const operands = estOf === 'sub' && a < b ? [b, a] : [a, b];
+      return { op: 'est', operands, method, level, estOf: estOf ?? 'add' };
     }
   }
   throw new Error(
@@ -220,7 +267,11 @@ export function generateProblems(seed: number, opts: GenerateOptions, count: num
     guard++;
     // 각 문제마다 파생 시드(연속 소비) — 순서대로 결정적.
     const subSeed = Math.floor(rng() * 0xffffffff);
-    const p = generateProblem(subSeed, opts);
+    const problemOptions =
+      opts.method === 'divisibility'
+        ? { ...opts, divisor: 2 + ((seed + out.length) % 10) }
+        : opts;
+    const p = generateProblem(subSeed, problemOptions);
     const key = `${p.operands[0]}_${p.operands[1]}`;
     if (seen.has(key)) continue;
     seen.add(key);

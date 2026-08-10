@@ -6,7 +6,7 @@
   "prerequisites": ["ltr-addition"],
   "title": { "ko": "자릿수 어림셈", "en": "Digit estimation" },
   "subtitle": { "ko": "반올림해서 빠르게 근삿값 구하기", "en": "Round to get a close answer fast" },
-  "rule": { "ko": "둘째 유효숫자에서 반올림해 계산합니다. 큰 수일수록 상대오차가 작아요.", "en": "Round to two significant figures, then calculate. Bigger numbers have smaller relative error." },
+  "rule": { "ko": "각 수를 둘째 유효숫자 자리에서 반올림한 뒤 계산하고, 필요하면 내림값과 올림값으로 오차 범위를 확인합니다.", "en": "Round each number at the second significant-digit place, calculate, and when needed use directed lower and upper roundings to check the possible range." },
   "hook": { "problemSet": { "op": "est", "method": "est-digit", "digits": 4, "carry": true, "count": 1, "seed": 15, "estOf": "add" }, "intro": { "ko": "정확하지 않아도 빠르게 어림할 수 있어요.", "en": "You can estimate fast without being exact." }, "outro": { "ko": "반올림하면 훨씬 빨라요.", "en": "Rounding makes it much faster." }, "autoPlayMs": 8000 },
   "example": { "problemSet": { "op": "est", "method": "est-digit", "digits": 4, "carry": true, "count": 2, "seed": 25, "estOf": "add" }, "intro": { "ko": "반올림한 뒤 더해요.", "en": "Round then add." } },
   "fading": { "problemSet": { "op": "est", "method": "est-digit", "digits": 3, "carry": true, "count": 3, "seed": 35, "estOf": "sub" }, "intro": { "ko": "마지막 자리부터 채워 보세요.", "en": "Fill in the last digits yourself." } },

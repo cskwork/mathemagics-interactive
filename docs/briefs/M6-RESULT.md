@@ -122,7 +122,7 @@ PWA v1.3.0  mode generateSW  precache 12 entries (435.81 KiB)
 
 **M6 신규 기억 엔진(28개):** `src/lib/memory/engine.test.ts` —
 - **ko encode**: 나비→26 · 사과→71 · 호랑이→8400 · 곰→15 · 개→1 · 안녕→0220 · 자동차→930(ㅊ 건너뜀) · 닭→341(겹받침 분해) · 비한글 무시 · 결정성 · 수학→781.
-- **en Major**: dog→17 · moon→32 · cat→71 · cheese→60 · phone→82 · show→6 · knight→7271 · kitten→712(중복자음 1회) · city→01(soft c) · gym→63(soft g).
+- **en Major**: dog→17 · moon→32 · cat→71 · cheese→60 · phone→82 · show→6 · knight→21(묵음 k/gh) · kitten→712(중복 자음 1회) · city→01(soft c) · gym→63(soft g).
 - **공통 엔진**: encodeWordToDigits 위임 · verifyWord 왕복 · systemForLocale · findWordsForDigits · **사전 전 항목 encode↔저장값 일치(ko/en)** · 사전 non-empty.
 
 **M6 신규 8장 엔진(21개):** `src/lib/engine/derive-adv.test.ts` —
@@ -262,7 +262,7 @@ feat(m6): memory system (ko consonant + en Major) + Ch8 advanced multiplication 
 | 1 | **대화형 preview 미검증** | 중 | §4.5. 오케스트레이터가 브라우저에서 기억술 연습·8장 레슨(XDiagram+MemorySlot)·가져오기 미리보기/merge 직접 확인. 엔진·왕복은 단위/실구동 테스트로 보장 |
 | 2 | **Docker 빌드 미검증** | 중 | §4.5. Dockerfile 은 표준 구조. daemon 있으면 `docker build -f server/Dockerfile` 로 확인 |
 | 3 | **한글 매핑 음성 비일관성** | 낮음 | 종성 ㅇ(소리 /ŋ/)과 초성 ㅇ(무음)을 같은 0으로 읽음. 글자 규칙의 단순함을 위해 수용(docs/memory-system-ko.md §7 솔직 명시) |
-| 4 | **en 인코더가 knight→7271** | 낮음 | gh 를 digraph 무음 처리 안 함(실용 인코더). 사전은 미리 계산한 digits 를 쓰므로 검색에 영향 없음. 완전 영어 음소 분석은 별도 |
+| 4 | **en 인코더는 규칙+사전 오버라이드 방식** | 낮음 | knight→21처럼 흔한 묵음·digraph는 처리하고 불규칙 발음은 연습 사전에서 검증한 digits로 고정. 일반 목적 음소 분석기는 아님 |
 | 5 | **8장 레슨 연습이 답 전체 타이핑** | 낮음 | M4/M5 인계 계속. 거대 답(최대 10자리)은 DigitInput 으로 처리되나 단계별 채우기는 별도 |
 | 6 | **스크린리더 실측 미수행** | 중 | M0 인계 #10 계속 |
 

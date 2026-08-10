@@ -13,8 +13,10 @@
    * DOM 소스 순서는 위→아래/좌→우(시각 순서 = 읽기 순서). 단계별 낭독은 별도 aria-live 영역.
    */
   import { m } from '../lib/paraglide/messages.js';
+  import { activeLocale } from '../lib/i18n/locale.svelte.js';
+  import { resolveLocalized } from '../lib/content/localized.js';
   import { cellAriaLabel } from '../lib/engine/aria.js';
-  import type { CellState, ColId, Grid, RowId } from '../lib/engine/types.js';
+  import type { CellState, ColId, Grid, Op, RowId } from '../lib/engine/types.js';
 
   export interface CellRender {
     value?: string;
@@ -32,9 +34,15 @@
   }
   const { grid, cells, activeCell }: Props = $props();
 
-  const op = $derived(
-    grid.rows.find((r) => r.id === 'op2')?.cells['c1'] === '−' ? 'sub' : 'add'
-  );
+  const op = $derived.by<Op>(() => {
+    const sign = grid.rows.find((row) => row.id === 'op2')?.cells['c1'];
+    if (sign === '−') return 'sub';
+    if (sign === '×') return 'mul';
+    if (sign === '÷') return 'div';
+    if (sign === '≈') return 'est';
+    if (sign === '√') return 'sqrt';
+    return 'add';
+  });
 
   function rowStaticCells(rowId: RowId): Partial<Record<ColId, string>> {
     return grid.rows.find((r) => r.id === rowId)?.cells ?? {};
@@ -71,13 +79,17 @@
   class="colgrid"
   role="grid"
   aria-label={m.playground_problem()}
-  style={`grid-template-columns: repeat(${grid.cols.length}, var(--cell-size));`}
+  style={`grid-template-columns: minmax(var(--cell-size), max-content) repeat(${Math.max(0, grid.cols.length - 1)}, var(--cell-size));`}
 >
   {#each grid.rows as row (row.id)}
     <!-- role="row" + display:contents — ARIA grid 구조(grid>row>gridcell)를 갖추되
          레이아웃은 기존과 동일하게 셀이 .colgrid 의 CSS grid 에 직접 참여한다.
          없으면 gridcell 이 row 부모를 가져 aria-required-parent/children 위반(M7 검증 실측). -->
-    <div class="gridrow" role="row">
+    <div
+      class="gridrow"
+      role="row"
+      aria-label={row.label ? resolveLocalized(row.label, activeLocale()) : undefined}
+    >
       {#each grid.cols as col (col)}
         {@const place = grid.placeValueOf[col] ?? -1}
         <div
@@ -88,7 +100,11 @@
           data-place={place}
           aria-label={label(row.id, col)}
         >
-          <span class="cell-value">{displayValue(row.id, col)}</span>
+          {#if col === grid.cols[0] && row.label}
+            <span class="row-label">{resolveLocalized(row.label, activeLocale())}</span>
+          {:else}
+            <span class="cell-value">{displayValue(row.id, col)}</span>
+          {/if}
         </div>
       {/each}
     </div>
@@ -143,6 +159,19 @@
 
   .cell--answer {
     color: var(--spotlight);
+  }
+
+  .cell--quotient,
+  .cell--remainder {
+    color: var(--spotlight);
+  }
+
+  .row-label {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--house-muted);
+    white-space: nowrap;
   }
 
   /* op2 행 아래 밑줄 */

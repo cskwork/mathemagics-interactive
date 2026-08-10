@@ -72,8 +72,8 @@ describe('English Major System — encode (word→digits, phonetic)', () => {
   it('show → 6 (sh=6)', () => {
     expect(encodeMajor('show')).toBe('6');
   });
-  it('knight → 7271 (k=7,n=2,hard-g=7,t=1; 실용 인코더는 gh 무음 처리 안 함)', () => {
-    expect(encodeMajor('knight')).toBe('7271');
+  it('knight → 21 (silent k/gh; n=2, t=1)', () => {
+    expect(encodeMajor('knight')).toBe('21');
   });
   it('double consonant counted once — tt → 1', () => {
     expect(encodeMajor('kitten')).toBe('712');
@@ -83,6 +83,23 @@ describe('English Major System — encode (word→digits, phonetic)', () => {
   });
   it('soft g (before e/i/y) → 6 — gym → 63', () => {
     expect(encodeMajor('gym')).toBe('63');
+  });
+  it('counts same-code sounds when a vowel separates them — date → 11', () => {
+    expect(encodeMajor('date')).toBe('11');
+    expect(encodeMajor('five')).toBe('88');
+    expect(encodeMajor('cake')).toBe('77');
+  });
+  it('treats tch as one /ch/ sound — match → 36', () => {
+    expect(encodeMajor('match')).toBe('36');
+  });
+  it('ignores common silent initial k — knee → 2, knife → 28', () => {
+    expect(encodeMajor('knee')).toBe('2');
+    expect(encodeMajor('knife')).toBe('28');
+  });
+  it('uses explicit pronunciations where spelling rules are ambiguous', () => {
+    expect(encodeMajor('girl')).toBe('745');
+    expect(encodeMajor('ocean')).toBe('62');
+    expect(encodeMajor('pizza')).toBe('910');
   });
 });
 

@@ -52,6 +52,8 @@ const METHODS: readonly Method[] = [
   'mul-11',
   'square',
   'div-1',
+  'div-simplify',
+  'divisibility',
   'est-digit',
   'est-band',
   'paper-column-add',

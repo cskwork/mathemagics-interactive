@@ -5,10 +5,10 @@
   "order": 5,
   "prerequisites": ["square-2digit", "mul-2x2-add"],
   "title": { "ko": "세 자리 제곱 (재귀 ±d)", "en": "Squaring three-digit numbers (recursive ±d)" },
-  "subtitle": { "ko": "100 단위로 올리고, d² 안에 작은 제곱이 중첩", "en": "Round to hundreds; d² nests a smaller square inside" },
+  "subtitle": { "ko": "가까운 100의 배수에 맞추고, d² 안에 작은 제곱을 중첩", "en": "Move to the nearest hundred; d² nests a smaller square inside" },
   "rule": { "ko": "두 자리 제곱과 같은 ±d 기법을 100 단위로 씁니다. d² 가 다시 제곱이면 안에 작은 제곱이 들어가요.", "en": "Same ±d trick as two-digit, but to the nearest hundred. d² may nest a smaller square inside." },
   "hook": { "problemSet": { "op": "mul", "method": "square", "digits": 3, "carry": true, "count": 1, "seed": 65 }, "intro": { "ko": "세 자리 제곱은 안에 작은 제곱이 숨어 있어요.", "en": "A three-digit square hides a smaller square inside." }, "outro": { "ko": "X-다이어그램이 안쪽으로 또 나와요!", "en": "The X-diagram nests inside itself!" }, "autoPlayMs": 11000 },
-  "example": { "problemSet": { "op": "mul", "method": "square", "digits": 3, "carry": true, "count": 2, "seed": 76 }, "intro": { "ko": "100 단위로 올리고 내려요.", "en": "Round up and down to hundreds." } },
+  "example": { "problemSet": { "op": "mul", "method": "square", "digits": 3, "carry": true, "count": 2, "seed": 76 }, "intro": { "ko": "한쪽을 가까운 100의 배수에 맞추고 반대쪽은 거꾸로 움직여요.", "en": "Move one side to the nearest hundred and the other side the opposite way." } },
   "fading": { "problemSet": { "op": "mul", "method": "square", "digits": 3, "carry": true, "count": 3, "seed": 87 }, "intro": { "ko": "마지막 자리부터 채워 보세요.", "en": "Fill in the last digits yourself." } },
   "practice": { "problemSet": { "op": "mul", "method": "square", "digits": 3, "carry": true, "count": 3, "seed": 98 }, "intro": { "ko": "혼자 풀어 보세요.", "en": "Solve on your own." }, "hints": { "point": { "ko": "가까운 100의 배수를 찾아요.", "en": "Find the nearest hundred." }, "teach": { "ko": "올린 수와 내린 수를 곱하고 d²를 더해요. d² 안의 작은 제곱도! 첫 칸을 보여줄게요.", "en": "Multiply up and down, add d squared (with its inner square!). I'll show the first cell." }, "bottomOut": { "ko": "답을 공개할게요.", "en": "Here's the answer." } }, "passAccuracy": 0.9 },
   "strategyCards": { "thisTechnique": { "ko": "±d 재귀 기법으로 풀었어요", "en": "I used the recursive ±d trick" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }

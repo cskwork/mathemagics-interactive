@@ -29,6 +29,8 @@ export type Op = 'add' | 'sub' | 'mul' | 'div' | 'est' | 'sqrt';
  * - mul-add/mul-sub/mul-factor/mul-11: 2×2 곱셈 4가지 방법(book-content-map §3).
  * - square: 2/3자리 제곱(±d 기법, X-다이어그램).
  * - div-1: 1자리 나눗셈(좌→우, 나머지).
+ * - div-simplify: 피제수와 제수를 같은 인수로 줄인 동치 나눗셈.
+ * - divisibility: 2–11 배수 판정(긴나눗셈 없이 yes/no 결정).
  * - est-digit/est-band: 어림셈(자릿수 어림 / 반올림 밴드).
  *
  * M5 지필 트랙(6장 — **유일한 우→좌·쓰기 계열**, book-content-map §4-2):
@@ -38,7 +40,7 @@ export type Op = 'add' | 'sub' | 'mul' | 'div' | 'est' | 'sqrt';
  * - mod-sum-check: 모드섬 검산(9 버리기·11 버리기 — 4장 배수판정과 연결).
  *
  * M6 고급 곱셈(8장 — book-content-map §8). 3장(2×2·제곱) + 5장(어림) + 7장(음성 코드) 을 선행.
- * - square-4digit: 4자리 제곱(1000 단위 ±d + 자리올림 선예측 750,000).
+ * - square-4digit: 4자리 제곱(1000 단위 ±d + 하위 합 1,000,000 기준 자리올림 선예측).
  * - mul-3x2: 3×2 곱셈(분해·반올림·인수분해 선택).
  * - square-5digit: 5자리 제곱(3항 분해 a²·2ab·b², 가운데 항 먼저).
  * - mul-3x3: 3×3 곱셈(근접수법 (z+a)(z+b)).
@@ -54,6 +56,8 @@ export type Method =
   | 'mul-11'
   | 'square'
   | 'div-1'
+  | 'div-simplify'
+  | 'divisibility'
   | 'est-digit'
   | 'est-band'
   | 'paper-column-add'
@@ -89,13 +93,15 @@ export interface Problem {
 // ── 그리드(후보 B 의 레이아웃 부분) ──────────────────────────────────────────
 
 /** 그리드 행 식별자. 위에서 아래 순: carry(받아올림) · op1(위 피연산자) · op2(아래 피연산자+부호) · answer(답). */
-export type RowId = 'carry' | 'op1' | 'op2' | 'answer';
+export type RowId = 'carry' | 'op1' | 'op2' | 'answer' | 'quotient' | 'remainder';
 
 /** 열 식별자. `c1` = 부호 열(좌단), `c2..cN` = 자릿값 열(좌→우). */
 export type ColId = string;
 
 export interface GridRow {
   readonly id: RowId;
+  /** 기법별 입력 행의 의미(예: 몫/나머지). 일반 세로셈 행은 생략한다. */
+  readonly label?: LocalizedText;
   /** colId -> 표시할 글자(숫자 한 자리, 또는 op2 의 `'+'`/`'−'`). 빈 칸은 키를 생략한다. */
   readonly cells: Partial<Record<ColId, string>>;
   /** 이 행 아래에 밑줄을 긋는다(op2 행). */
@@ -140,6 +146,16 @@ export interface WriteStep {
   readonly value: string;
   readonly expect?: true;
   readonly narration?: LocalizedText;
+}
+
+/** yes/no 판정 입력. 숫자 쓰기와 의미를 섞지 않고 ChoiceInput 이 소비한다. */
+export interface ChoiceStep {
+  readonly t: 'choice';
+  readonly value: boolean;
+  readonly expect?: true;
+  readonly narration?: LocalizedText;
+  /** 정답을 고른 뒤 공개할 규칙 근거. 질문에서 정답을 누설하지 않는다. */
+  readonly explanation?: LocalizedText;
 }
 
 /** carry: 받아올림 숫자를 carry 행의 해당 열에 표시(rtl 덧셈). */
@@ -220,6 +236,7 @@ export type Step =
   | CarryStep
   | StrikeStep
   | RevealStep
+  | ChoiceStep
   | RunningStep
   | BranchStep
   | MemoryStep;
@@ -292,6 +309,18 @@ export interface DivisionLayout {
   readonly remainder: number;
   /** 몫의 각 자리를 좌→우 확정 순서로. 빈 몫 자리는 포함하지 않는다(선행 0 생략). */
   readonly digits: readonly DivisionDigit[];
+  /** div-simplify: 양쪽을 factor 로 나눈 동치 나눗셈. */
+  readonly simplification?: {
+    readonly factor: number;
+    readonly dividend: number;
+    readonly divisor: number;
+  };
+  /** divisibility: 규칙 적용 결과와 사용자에게 보여 줄 근거. */
+  readonly divisibility?: {
+    readonly divides: boolean;
+    readonly rule: LocalizedText;
+    readonly evidence: LocalizedText;
+  };
 }
 
 /**
@@ -306,6 +335,11 @@ export interface EstimationBand {
   readonly high: number;
   /** 실제 정확값(참고용). */
   readonly exact: number;
+  /** 각 피연산자의 둘째 유효숫자 자리 내림/반올림/올림 값. */
+  readonly roundedOperands: {
+    readonly a: { readonly down: number; readonly nearest: number; readonly up: number };
+    readonly b: { readonly down: number; readonly nearest: number; readonly up: number };
+  };
   /** 어림에 사용한 반올림 표현(예: "23.9백만 + 7.4백만"). */
   readonly roundingNote: LocalizedText;
 }
@@ -418,8 +452,7 @@ export interface ModSumResult {
 /**
  * 자리올림 선예측(book-content-map §8-2). 5장 어림셈이 정밀 계산의 부품이 되는 지점.
  * 큰 자리부터 발화하기 위해 "다음 합이 다음 자리로 올림될까?"를 미리 판정한다.
- * 4자리 제곱 기준 임계값 750,000: d² ≤ 250,000 이므로 남은 하위 6자리 합이 750,000 미만이면
- * 백만 자리가 확정된다.
+ * 4자리 제곱은 하위 부분합과 d²의 합이 1,000,000에 도달하는지를 정확히 비교한다.
  */
 export interface CarryPrediction {
   /** 예측 대상의 하위 부분합(product % 1_000_000). */
@@ -428,7 +461,7 @@ export interface CarryPrediction {
   readonly addition: number;
   /** 올림 발생 여부(lowPart + addition >= 1_000_000). */
   readonly willCarry: boolean;
-  /** 임계값(book-content-map §8-2 의 750,000). */
+  /** 다음 자리로 올라가는 정확한 임계값(4자리 제곱은 1,000,000). */
   readonly threshold: number;
 }
 

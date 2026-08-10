@@ -5,7 +5,7 @@
  * + 자리올림 선예측(5장 어림) 후 앞자리부터 발화**.
  *
  * 다섯 기법(PLAN §3.2 — [3]+[5]+[7] 선행):
- * - square-4digit(§8-2): A²=(A+d)(A−d)+d², d=1000단위. d²≤250,000 → 750,000 임계 자리올림 선예측.
+ * - square-4digit(§8-2): A²=(A+d)(A−d)+d², d=1000단위. 하위 합의 1,000,000 도달 여부로 자리올림 선예측.
  * - mul-3x2(§8-3~8-5): 2자리 수를 (십+일)로 쪼개 3×1 두 번 + 덧셈(덧셈법 기본; 분해/인수법은 method 선택).
  * - square-5digit(§8-6): (a·1000+b)²=a²·10⁶+2ab·10³+b² 3항. 가운데 항 먼저 → 메모리 슬롯.
  * - mul-3x3(§8-8): 근접수법 (z+a)(z+b)=z(z+a+b)+ab.
@@ -58,7 +58,7 @@ export function square4Layout(base: number): Square4Layout {
     product,
     dSquared,
     answer,
-    carry: { lowPart, addition: dSquared, willCarry, threshold: 750_000 }
+    carry: { lowPart, addition: dSquared, willCarry, threshold: MILLION }
   };
 }
 
@@ -132,14 +132,15 @@ function digits3(n: number): string {
 
 /** carry prediction 이 "올림 확정"인지 아닌지 narration. */
 function carryNarration(carry: CarryPrediction, place: string): LocalizedText {
+  const lowerSum = carry.lowPart + carry.addition;
   return carry.willCarry
-    ? L(
-        `하위 합이 ${carry.lowPart.toLocaleString()} + ${carry.addition.toLocaleString()} ≥ 1,000,000 → ${place} 자리에 올림. ${place} 자리를 먼저 말해요.`,
-        `Lower part ${carry.lowPart.toLocaleString()} + ${carry.addition.toLocaleString()} ≥ 1,000,000 → carry into the ${place} place. Say ${place} first.`
+      ? L(
+        `하위 합이 ${carry.lowPart.toLocaleString()} + ${carry.addition.toLocaleString()} ≥ 1,000,000 → ${place} 자리에 올림.`,
+        `Lower part ${carry.lowPart.toLocaleString()} + ${carry.addition.toLocaleString()} ≥ 1,000,000 → carry into the ${place} place.`
       )
     : L(
-        `하위 합이 ${carry.lowPart.toLocaleString()} + ${carry.addition.toLocaleString()} < ${carry.threshold.toLocaleString()}(기준) → ${place} 자리 확정. 먼저 말해요.`,
-        `Lower sum stays under threshold → ${place} place is fixed. Say it first.`
+        `하위 합이 ${carry.lowPart.toLocaleString()} + ${carry.addition.toLocaleString()} = ${lowerSum.toLocaleString()} < ${carry.threshold.toLocaleString()} → ${place} 자리로 올림 없음.`,
+        `Lower part ${carry.lowPart.toLocaleString()} + ${carry.addition.toLocaleString()} = ${lowerSum.toLocaleString()} < ${carry.threshold.toLocaleString()} → no carry into the ${place} place.`
       );
 }
 
@@ -175,9 +176,16 @@ export function deriveAdvSteps(problem: Problem): Step[] {
 /** 4자리 제곱: 1000 단위 ±d + 자리올림 선예측 + 중간값 메모리 슬롯. */
 function square4Steps(base: number, grid: import('./types.js').Grid): Step[] {
   const lay = square4Layout(base);
+  const anchor = lay.high % THOUSAND === 0 ? lay.high : lay.low;
+  const counterpart = anchor === lay.high ? lay.low : lay.high;
   const diag = squareDiagram(lay.d); // d² 안의 작은 제곱(재귀, M4 재사용)
   const steps: Step[] = [
-    { t: 'highlight', narration: L(`${base}² 을(를) 가까운 ${lay.high}까지 ${lay.d}만큼 올리고 내려요.`) },
+    {
+      t: 'highlight',
+      narration: L(
+        `${base}²: 한쪽을 가까운 천의 배수 ${anchor}까지 ${lay.d}만큼 옮기고, 반대쪽은 같은 만큼 옮겨 ${counterpart}(으)로 만들어요.`
+      )
+    },
     { t: 'branch', from: base, to: lay.high, label: `+${lay.d}` },
     { t: 'branch', from: base, to: lay.low, label: `−${lay.d}` },
     { t: 'highlight', narration: L(`${lay.high} × ${lay.low} = ${lay.product.toLocaleString()}`) }
@@ -191,7 +199,7 @@ function square4Steps(base: number, grid: import('./types.js').Grid): Step[] {
     slot: 'high',
     value: mid3,
     digits: digits3(mid3),
-    narration: L(`앞자리 ${highPart} million을(를) 먼저 말하고, ${mid3}은(는) 단어 카드에 저장해요.`)
+    narration: L(`곱의 앞부분 ${highPart} million과 하위 ${mid3}을(를) 임시로 저장해요. d²의 올림을 확인한 뒤 말해요.`)
   });
   steps.push({
     t: 'highlight',
@@ -205,6 +213,10 @@ function square4Steps(base: number, grid: import('./types.js').Grid): Step[] {
   }
   // 자리올림 선예측(5장 어림이 부품).
   steps.push({ t: 'highlight', narration: carryNarration(lay.carry, 'million') });
+  steps.push({
+    t: 'highlight',
+    narration: L(`올림 반영 뒤 앞부분은 ${Math.floor(lay.answer / MILLION)} million. 이제 앞부분을 먼저 말해요.`)
+  });
   steps.push({ t: 'memory', action: 'recall', slot: 'high', value: mid3, digits: digits3(mid3) });
   steps.push({
     t: 'highlight',

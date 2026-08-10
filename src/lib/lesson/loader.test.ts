@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveLocalized } from '../content/localized.js';
-import { buildLesson, isLessonFile, loadLessonFromRaw } from './loader.js';
+import { buildLesson, findLesson, isLessonFile, loadLessonFromRaw } from './loader.js';
 import type { LessonFile } from './types.js';
 
 /**
@@ -162,5 +162,51 @@ describe('locale fallback — missing en falls back to ko', () => {
   it('a ko-only lesson file still builds and resolves', () => {
     const lesson = buildLesson(validFile());
     expect(resolveLocalized(lesson.file.subtitle, 'en')).toBe('부제');
+  });
+});
+
+describe('chapter 4–5 technique wiring', () => {
+  it('loads simplification and divisibility as their explicit methods', () => {
+    const simplify = findLesson('div-simplify');
+    const divisibility = findLesson('divisibility');
+    expect(simplify).toBeDefined();
+    expect(divisibility).toBeDefined();
+    expect([
+      ...simplify!.hookProblems,
+      ...simplify!.exampleProblems,
+      ...simplify!.fadingProblems,
+      ...simplify!.practiceProblems
+    ].every((problem) => problem.method === 'div-simplify')).toBe(true);
+    expect([
+      ...divisibility!.hookProblems,
+      ...divisibility!.exampleProblems,
+      ...divisibility!.fadingProblems,
+      ...divisibility!.practiceProblems
+    ].every((problem) => problem.method === 'divisibility')).toBe(true);
+    const decisions = [
+      ...divisibility!.hookProblems,
+      ...divisibility!.exampleProblems,
+      ...divisibility!.fadingProblems,
+      ...divisibility!.practiceProblems
+    ];
+    expect(new Set(decisions.map((problem) => problem.operands[1]))).toEqual(
+      new Set([2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    );
+    expect(new Set(decisions.map((problem) => (problem.operands[0] ?? 0) % (problem.operands[1] ?? 1) === 0))).toEqual(
+      new Set([true, false])
+    );
+    expect(
+      new Set(
+        divisibility!.fadingProblems.map(
+          (problem) => (problem.operands[0] ?? 0) % (problem.operands[1] ?? 1) === 0
+        )
+      )
+    ).toEqual(new Set([true, false]));
+  });
+
+  it('does not teach the false claim that larger numbers inherently have smaller relative error', () => {
+    const estimation = findLesson('est-digit');
+    expect(estimation?.file.rule.ko).not.toContain('큰 수일수록');
+    expect(estimation?.file.rule.en).not.toContain('Bigger numbers');
   });
 });

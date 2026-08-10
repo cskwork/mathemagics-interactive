@@ -121,6 +121,18 @@ export function deriveGrid(problem: Problem, answerOverride?: number): Grid {
     { id: 'answer', cells: {}, input: true }
   ];
 
+  if (problem.op === 'div' && problem.method !== 'divisibility') {
+    const quotientRows: GridRow[] = [
+      { id: 'op1', cells: numberCells(a) },
+      { id: 'op2', cells: op2Cells, underline: true },
+      { id: 'quotient', cells: {}, input: true, label: { ko: '몫', en: 'Quotient' } }
+    ];
+    if (a % b !== 0 && problem.method === 'div-1') {
+      quotientRows.push({ id: 'remainder', cells: {}, input: true, label: { ko: '나머지', en: 'Remainder' } });
+    }
+    return { cols, rows: quotientRows, digitCols, placeValueOf };
+  }
+
   return { cols, rows, digitCols, placeValueOf };
 }
 

@@ -37,6 +37,7 @@
   const BASE_MS: Record<Step['t'], number> = {
     highlight: 950,
     write: 750,
+    choice: 750,
     carry: 650,
     strike: 650,
     reveal: 750,

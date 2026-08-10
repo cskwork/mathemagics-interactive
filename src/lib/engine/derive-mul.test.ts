@@ -25,6 +25,15 @@ function answerFromSteps(problem: Problem): string {
   return out;
 }
 
+function narrationBeforeFirstInput(problem: Problem): string {
+  const steps = deriveMulSteps(problem);
+  const firstExpected = steps.findIndex((step) => step.t === 'write' && step.expect === true);
+  return steps
+    .slice(0, firstExpected)
+    .flatMap((step) => step.narration ? [step.narration.ko, step.narration.en ?? ''] : [])
+    .join(' ');
+}
+
 describe('deriveMulSteps — mul-running (2×1, 3×1) answer matches a×b', () => {
   for (const digits of [2, 3]) {
     it(`${digits}×1`, () => {
@@ -94,6 +103,21 @@ describe('deriveMulSteps — square (2-digit, ±d) answer matches a²', () => {
     const steps = deriveMulSteps(p);
     const branches = steps.filter((s) => s.t === 'branch');
     expect(branches.length).toBe(2); // +d, −d
+  });
+
+  it('names the actual nearest ten when that anchor is below the square base', () => {
+    const p: Problem = { op: 'mul', operands: [32, 32], method: 'square', level: 1 };
+    const first = deriveMulSteps(p)[0];
+
+    expect(first?.narration?.ko).toBe('32²: 가까운 30까지 2만큼 내리고, 반대쪽은 같은 만큼 올려요.');
+    expect(first?.narration?.en).toBe(
+      '32²: move down 2 to the nearby 30, and move the other side up by 2.'
+    );
+  });
+
+  it('does not reveal the square answer before asking for input', () => {
+    const p: Problem = { op: 'mul', operands: [67, 67], method: 'square', level: 1 };
+    expect(narrationBeforeFirstInput(p)).not.toContain('4489');
   });
 });
 
@@ -171,6 +195,21 @@ describe('2×2 four methods reach the same answer (property test)', () => {
         answerFromSteps({ op: 'mul', operands: [76, 11], method: 'mul-11', level: 1 })
       )
     ).toBe(836);
+  });
+
+  it('mul-11 describes a digit sum of exactly 10 as ten or more', () => {
+    const p: Problem = { op: 'mul', operands: [28, 11], method: 'mul-11', level: 1 };
+    const narrations = deriveMulSteps(p).flatMap((step) =>
+      step.narration?.ko === undefined ? [] : [step.narration.ko]
+    );
+
+    expect(narrations).toContain('합이 10이라 10 이상이에요. 앞자리에 1을 올려요.');
+    expect(narrations.some((text) => text.includes('합이 10') && text.includes('10이 넘어요'))).toBe(false);
+  });
+
+  it('does not reveal the product before asking for input', () => {
+    const p: Problem = { op: 'mul', operands: [76, 11], method: 'mul-11', level: 1 };
+    expect(narrationBeforeFirstInput(p)).not.toContain('836');
   });
 });
 

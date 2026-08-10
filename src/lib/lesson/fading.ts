@@ -9,7 +9,11 @@
  * 공개하므로, expect 를 떼기만 하면 "선생님이 보여주고 학생이 마지막을 채우는" 연출이 된다.
  * K 는 레슨 진행에 따라 점진 확대(브리프 "expect 셀 점진 확대").
  */
-import type { Step, WriteStep } from '../engine/types.js';
+import type { ChoiceStep, Step, WriteStep } from '../engine/types.js';
+
+function isExpectedInput(step: Step): step is WriteStep | ChoiceStep {
+  return (step.t === 'write' || step.t === 'choice') && step.expect === true;
+}
 
 /**
  * steps 에서 마지막 K 개의 expect(write) 스텝만 입력 대기로 두고, 나머지 write 는
@@ -20,7 +24,7 @@ export function withExpectOnLastK(steps: readonly Step[], k: number): Step[] {
   // expect write 스텝의 인덱스를 풀이 순서대로 수집.
   const expectIdx: number[] = [];
   steps.forEach((s, i) => {
-    if (s.t === 'write' && (s as WriteStep).expect === true) expectIdx.push(i);
+    if (isExpectedInput(s)) expectIdx.push(i);
   });
 
   const keepCount = Math.max(0, Math.min(k, expectIdx.length));
@@ -31,11 +35,20 @@ export function withExpectOnLastK(steps: readonly Step[], k: number): Step[] {
   const keepSet = new Set(expectIdx.slice(keepFrom));
 
   return steps.map((s, i) => {
-    if (s.t === 'write' && (s as WriteStep).expect === true && !keepSet.has(i)) {
+    if (s.t === 'write' && s.expect === true && !keepSet.has(i)) {
       // expect 제거 — 자동 공개 데모 셀로 전환. value/narration 유지.
       const { t, cell, value, narration } = s;
       const out: WriteStep = narration !== undefined ? { t, cell, value, narration } : { t, cell, value };
       return out;
+    }
+    if (s.t === 'choice' && s.expect === true && !keepSet.has(i)) {
+      const { t, value, narration, explanation } = s;
+      return {
+        t,
+        value,
+        ...(narration !== undefined ? { narration } : {}),
+        ...(explanation !== undefined ? { explanation } : {})
+      };
     }
     return s;
   });
@@ -43,7 +56,7 @@ export function withExpectOnLastK(steps: readonly Step[], k: number): Step[] {
 
 /** steps 의 expect(write) 스텝 수(= 답 자릿수). K 산정에 사용. */
 export function expectCount(steps: readonly Step[]): number {
-  return steps.filter((s) => s.t === 'write' && (s as WriteStep).expect === true).length;
+  return steps.filter(isExpectedInput).length;
 }
 
 /**

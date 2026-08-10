@@ -5,11 +5,11 @@
   "order": 2,
   "prerequisites": ["est-digit"],
   "title": { "ko": "반올림 밴드 (곱셈 어림)", "en": "Rounding band (multiplication estimate)" },
-  "subtitle": { "ko": "정답이 범위가 되는 문제", "en": "Problems where the answer is a range" },
-  "rule": { "ko": "한 수는 올리고 다른 수는 내려 반올림해 곱합니다. 답이 어떤 범위 안에 들어요.", "en": "Round one number up and the other down, then multiply. The answer lands in a range." },
+  "subtitle": { "ko": "피연산자 내림과 올림으로 곱의 범위 만들기", "en": "Bound a product by rounding its operands down and up" },
+  "rule": { "ko": "중앙 어림값은 첫 수를 올리고 둘째 수를 내려 곱합니다. 하한은 둘 다 내려 곱하고, 상한은 둘 다 올려 곱해 정확값 없이 범위를 만듭니다.", "en": "For the central estimate, round the first operand up and the second down. Multiply both lower roundings for the lower bound and both upper roundings for the upper bound, so the range does not depend on the exact product." },
   "hook": { "problemSet": { "op": "est", "method": "est-band", "digits": 3, "carry": true, "count": 1, "seed": 16, "estOf": "mul" }, "intro": { "ko": "곱셈도 어림으로 빠르게!", "en": "Estimate products fast too!" }, "outro": { "ko": "정답 근처의 밴드를 구해요.", "en": "Find a band around the true answer." }, "autoPlayMs": 9000 },
   "example": { "problemSet": { "op": "est", "method": "est-band", "digits": 3, "carry": true, "count": 2, "seed": 26, "estOf": "mul" }, "intro": { "ko": "올리고 내려서 곱해요.", "en": "Round one up, one down, multiply." } },
   "fading": { "problemSet": { "op": "est", "method": "est-band", "digits": 3, "carry": true, "count": 3, "seed": 36, "estOf": "mul" }, "intro": { "ko": "마지막 자리부터 채워 보세요.", "en": "Fill in the last digits yourself." } },
-  "practice": { "problemSet": { "op": "est", "method": "est-band", "digits": 3, "carry": true, "count": 3, "seed": 46, "estOf": "mul" }, "intro": { "ko": "혼자 어림해 보세요.", "en": "Estimate on your own." }, "hints": { "point": { "ko": "한 수는 올리고 한 수는 내려요.", "en": "Round one up, one down." }, "teach": { "ko": "반올림해 곱하고 밴드를 봐요. 첫 칸을 보여줄게요.", "en": "Round, multiply, check the band. I'll show the first cell." }, "bottomOut": { "ko": "어림 답을 공개할게요.", "en": "Here's the estimate." } }, "passAccuracy": 0.9 },
+  "practice": { "problemSet": { "op": "est", "method": "est-band", "digits": 3, "carry": true, "count": 3, "seed": 46, "estOf": "mul" }, "intro": { "ko": "혼자 어림해 보세요.", "en": "Estimate on your own." }, "hints": { "point": { "ko": "중앙값은 첫 수를 올리고 둘째 수를 내려요.", "en": "For the central estimate, round the first number up and the second down." }, "teach": { "ko": "둘 다 내린 곱은 하한, 둘 다 올린 곱은 상한이에요.", "en": "The product of both lower roundings is the lower bound; both upper roundings give the upper bound." }, "bottomOut": { "ko": "어림값과 피연산자로 구한 범위를 공개할게요.", "en": "Here's the estimate and the operand-derived range." } }, "passAccuracy": 0.9 },
   "strategyCards": { "thisTechnique": { "ko": "밴드로 어림했어요", "en": "I used a band" }, "otherTechnique": { "ko": "다른 방법으로 풀었어요", "en": "I used a different way" }, "justKnew": { "ko": "그냥 알았어요", "en": "I just knew it" } }
 }

@@ -40,6 +40,7 @@
   import { createCardFromLesson } from '../srs/integration.js';
   import StepPlayer from '../../components/StepPlayer.svelte';
   import DigitInput from '../../components/DigitInput.svelte';
+  import ChoiceInput from '../../components/ChoiceInput.svelte';
   import RollingCounter from '../../components/RollingCounter.svelte';
   import XDiagram from '../../components/XDiagram.svelte';
   import DivisionBracket from '../../components/DivisionBracket.svelte';
@@ -108,6 +109,9 @@
 
   const grid = $derived(currentProblem ? deriveGrid(currentProblem) : undefined);
   const baseSteps = $derived(currentProblem ? deriveSteps(currentProblem) : undefined);
+  const expectsChoice = $derived(
+    baseSteps?.some((step) => step.t === 'choice' && step.expect === true) ?? false
+  );
 
   // M6: 8장 메모리 슬롯 — store 스텝들을 모아 MemorySlot 카드로 보여준다(slot 최신값).
   const memoryEntries = $derived.by(() => {
@@ -172,7 +176,7 @@
       return { kind: 'coladd', layout: columnAddLayout(p) };
     }
     if (p.op === 'sqrt') return { kind: 'sqrt', layout: squareRootLayout(p) };
-    if (p.op === 'div') return { kind: 'bracket', problem: p };
+    if (p.op === 'div' && p.method !== 'divisibility') return { kind: 'bracket', problem: p };
     if (p.op === 'est') return { kind: 'chain', problem: p };
     return null;
   });
@@ -386,6 +390,7 @@
   function revealExpression(p: Problem): string {
     const a = p.operands[0] ?? 0; const b = p.operands[1] ?? 0;
     if (p.method === 'square') return `${a}²`;
+    if (p.method === 'divisibility') return `${a} ÷ ${b}?`;
     const sign = p.op === 'add' ? '+' : p.op === 'sub' ? '−' : p.op === 'mul' ? '×' : p.op === 'div' ? '÷' : '≈';
     return `${a} ${sign} ${b}`;
   }
@@ -394,6 +399,7 @@
     const a = p.operands[0] ?? 0; const b = p.operands[1] ?? 0;
     if (p.op === 'mul') return String(a * b);
     if (p.op === 'div') {
+      if (p.method === 'divisibility') return a % b === 0 ? m.choice_yes() : m.choice_no();
       const q = Math.floor(a / b);
       const r = a - q * b;
       return r === 0 ? String(q) : `${q} ${m.math_remainder()} ${r}`;
@@ -496,7 +502,11 @@
       </div>
       <div class="stage-deck">
         {#key problemKey}
-          <DigitInput {grid} steps={renderSteps} oncomplete={() => dispatch({ t: 'next' })} />
+          {#if expectsChoice}
+            <ChoiceInput steps={renderSteps} oncomplete={() => dispatch({ t: 'next' })} />
+          {:else}
+            <DigitInput {grid} steps={renderSteps} oncomplete={() => dispatch({ t: 'next' })} />
+          {/if}
         {/key}
       </div>
     {:else if lessonState.phase === 'practice' && grid && renderSteps && currentProblem}
@@ -506,7 +516,11 @@
         </div>
         <div class="stage-deck">
           {#key problemKey}
-            <DigitInput {grid} steps={renderSteps} prefill={teachPrefill} oncomplete={onPracticeComplete} />
+            {#if expectsChoice}
+              <ChoiceInput steps={renderSteps} oncomplete={onPracticeComplete} />
+            {:else}
+              <DigitInput {grid} steps={renderSteps} prefill={teachPrefill} oncomplete={onPracticeComplete} />
+            {/if}
           {/key}
         </div>
         {#if hintBubble}
@@ -539,7 +553,12 @@
         <div class="card reveal" role="group" aria-label={m.lesson_hint_bottom_out()}>
           <p class="reveal-label">{m.lesson_hint_bottom_out()}</p>
           <p class="reveal-answer">
-            {revealExpression(currentProblem)} =
+            {revealExpression(currentProblem)}
+            {#if currentProblem.method === 'divisibility'}
+              →
+            {:else}
+              =
+            {/if}
             <strong>{revealAnswer(currentProblem)}</strong>
           </p>
           {#if hintBubble}

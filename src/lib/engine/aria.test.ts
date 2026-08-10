@@ -19,14 +19,25 @@ describe('cellAriaLabel', () => {
     expect(cellAriaLabel('answer', 1, '5', 'add')).toBe('십의 자리, 5');
   });
 
+  it('distinguishes quotient and remainder input rows', () => {
+    expect(cellAriaLabel('quotient', 1, '', 'div')).toBe('십의 자리 몫 칸');
+    expect(cellAriaLabel('quotient', 1, '2', 'div')).toBe('십의 자리 몫, 2');
+    expect(cellAriaLabel('remainder', 0, '', 'div')).toBe('일의 자리 나머지 칸');
+    expect(cellAriaLabel('remainder', 0, '4', 'div')).toBe('일의 자리 나머지, 4');
+  });
+
   it('carry cell: "<place> 받아올림 <digit>"', () => {
     expect(cellAriaLabel('carry', 2, '1', 'add')).toBe('백의 자리 받아올림 1');
     expect(cellAriaLabel('carry', 0, '', 'add')).toBe('일의 자리');
   });
 
-  it('sign cell: add → "더하기", sub → "빼기"', () => {
+  it('announces each operation sign truthfully', () => {
     expect(cellAriaLabel('op2', -1, '+', 'add')).toBe('더하기');
     expect(cellAriaLabel('op2', -1, '−', 'sub')).toBe('빼기');
+    expect(cellAriaLabel('op2', -1, '×', 'mul')).toBe('곱하기');
+    expect(cellAriaLabel('op2', -1, '÷', 'div')).toBe('나누기');
+    expect(cellAriaLabel('op2', -1, '≈', 'est')).toBe('약');
+    expect(cellAriaLabel('op2', -1, '√', 'sqrt')).toBe('제곱근');
   });
 
   it('empty operand cell → place name only', () => {

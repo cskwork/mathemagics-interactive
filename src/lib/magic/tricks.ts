@@ -50,9 +50,9 @@ function randInt(r: () => number, lo: number, hi: number): number {
   return lo + Math.floor(r() * (hi - lo + 1));
 }
 
-/** 숫자를 뒤집은 수(123 → 321). */
-function reverse(n: number): number {
-  return Number(String(n).split('').reverse().join(''));
+/** 숫자를 고정 자릿수로 뒤집은 수(99, 3 → 990). */
+function reversePadded(n: number, width: number): number {
+  return Number(String(n).padStart(width, '0').split('').reverse().join(''));
 }
 
 // ── 트릭 1: 심령 수학 (ch2 해금) ────────────────────────────────────────────────
@@ -86,23 +86,24 @@ const magic1089: MagicTrick = {
   id: 'magic-1089',
   unlockChapter: 3,
   title: L("마법의 1089", "Magic 1089"),
-  secret: L("앞뒤가 바뀐 세 자리 수의 차는 99의 배수, 거기에 뒤집은 수를 더하면 1089.", "abc − cba is a multiple of 99; + reverse gives 1089."),
-  principle: L('abc − cba = 99(a−c); 99의 배수 + 뒤집은 수 = 1089.', 'abc − cba = 99(a−c); + reverse → 1089.'),
+  secret: L("첫 자리가 끝 자리보다 2 이상 큰 세 자리 수를 쓰면, 뒤집어 뺀 수와 그 역순의 합은 1089예요.", "When the first digit is at least 2 greater than the last, the difference plus its reverse is 1089."),
+  principle: L('abc − cba = 99(a−c). a−c가 2~8이면 그 세 자리 차와 역순의 합은 1089.', 'abc − cba = 99(a−c). For a−c from 2 to 8, the three-digit difference plus its reverse is 1089.'),
   demo: (seed) => {
     const r = rng(seed);
-    // 첫 자리 > 끝 자리인 3자리 수.
-    const a = randInt(r, 2, 9);
-    const c = randInt(r, 1, a - 1);
+    // 차가 세 자리로 유지되도록 첫 자리와 끝 자리는 2 이상 차이.
+    const a = randInt(r, 3, 9);
+    const c = randInt(r, 1, a - 2);
     const b = randInt(r, 0, 9);
     const n = a * 100 + b * 10 + c;
-    const rev = reverse(n);
-    const diff = n - rev; // 항상 99의 배수; 자릿수 맞춰 0패딩 포함
-    const diffRev = reverse(diff);
+    const rev = reversePadded(n, 3);
+    const diff = n - rev;
+    const diffText = String(diff).padStart(3, '0');
+    const diffRev = reversePadded(diff, 3);
     return {
       steps: [
         { label: L('첫>끝인 3자리 수'), value: n },
         { label: L('뒤집어 빼기'), value: `${n} − ${rev} = ${diff}` },
-        { label: L('결과 뒤집어 더하기'), value: `${diff} + ${diffRev} = ${diff + diffRev}` }
+        { label: L('결과 뒤집어 더하기'), value: `${diffText} + ${diffRev} = ${diff + diffRev}` }
       ],
       finale: L('항상 1089!', 'Always 1089!')
     };
@@ -119,23 +120,32 @@ const missingDigit: MagicTrick = {
   demo: (seed) => {
     const r = rng(seed);
     const base = 1089;
-    const mult = randInt(r, 100, 999);
-    const product = base * mult;
-    const digits = String(product).split('');
-    const hideIdx = randInt(r, 0, digits.length - 1);
+    let mult = 0;
+    let product = 0;
+    let digits: string[] = [];
+    let eligibleIndices: number[] = [];
+    // 모드 9만으로 구별할 수 없는 0/9는 숨기지 않는다.
+    do {
+      mult = randInt(r, 100, 999);
+      product = base * mult;
+      digits = String(product).split('');
+      eligibleIndices = digits.flatMap((digit, index) => (digit === '0' || digit === '9' ? [] : [index]));
+    } while (eligibleIndices.length === 0);
+    const hideIdx = eligibleIndices[randInt(r, 0, eligibleIndices.length - 1)]!;
     digits[hideIdx] = '_';
     const shown = digits.join('');
     const sumRest = String(product).split('').reduce((s, d, i) => (i === hideIdx ? s : s + Number(d)), 0);
     const modRest = modSum9(sumRest);
-    // 다음 9의 배수(또는 같은)까지의 차이가 빠진 숫자(0/9 모호성은 9로 취급).
+    // 숨긴 숫자는 1~8이므로 다음 9의 배수까지의 차이로 유일하게 복원된다.
     const missing = (9 - modRest) % 9;
+    const spokenCount = digits.length - 1;
     return {
       steps: [
         { label: L('1089 × 임의 3자리 수'), value: `${base} × ${mult} = ${product}` },
-        { label: L('5자리만 부르기(한 자리 숨김)'), value: shown },
+        { label: L(`${spokenCount}자리만 부르기(0·9가 아닌 한 자리 숨김)`, `Say ${spokenCount} digits (hide one digit other than 0 or 9)`), value: shown },
         { label: L('보이는 숫자 합의 모드섬'), value: modRest }
       ],
-      finale: L(`빠진 숫자는 ${missing === 0 ? 9 : missing}!`, `Missing digit is ${missing === 0 ? 9 : missing}!`)
+      finale: L(`빠진 숫자는 ${missing}!`, `Missing digit is ${missing}!`)
     };
   }
 };
