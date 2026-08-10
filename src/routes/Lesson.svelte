@@ -4,6 +4,8 @@
 -->
 <script lang="ts">
   import { m } from '../lib/paraglide/messages.js';
+  import { findLesson } from '../lib/lesson/loader.js';
+  import { isLessonUnlocked } from '../lib/lesson/state-machine.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
   import LessonPlayer from '../lib/lesson/LessonPlayer.svelte';
@@ -23,11 +25,58 @@
   }
 
   const skillId = readSkillId();
+  const lesson = skillId === '' ? undefined : findLesson(skillId);
+  let access = $state<'loading' | 'missing' | 'locked' | 'open' | 'error'>(
+    lesson === undefined ? 'missing' : 'loading'
+  );
+  let accessRequest = 0;
+
+  async function refreshAccess(): Promise<void> {
+    const request = ++accessRequest;
+    if (lesson === undefined) {
+      access = 'missing';
+      return;
+    }
+
+    access = 'loading';
+    try {
+      const progress = await app.loadAllProgress();
+      if (request !== accessRequest) return;
+      const completed = new Set(
+        progress.filter((record) => record.completedAt !== undefined).map((record) => record.skillId)
+      );
+      access = isLessonUnlocked(lesson.file.prerequisites, completed) ? 'open' : 'locked';
+    } catch {
+      if (request === accessRequest) access = 'error';
+    }
+  }
+
+  $effect(() => {
+    void app.activeProfile();
+    void refreshAccess();
+  });
 </script>
 
-{#if skillId === ''}
+{#if access === 'loading'}
+  <p class="muted" role="status">{m.loading()}</p>
+{:else if access === 'error'}
+  <section class="stack">
+    <div class="card" role="alert">
+      <h2>{m.app_load_error()}</h2>
+    </div>
+    <button class="btn--primary" onclick={refreshAccess}>{m.app_retry()}</button>
+  </section>
+{:else if access === 'missing'}
   <section class="stack">
     <p class="card" role="alert">{m.lesson_missing()}</p>
+    <button onclick={() => router.navigate('lessons')}>{m.lessons_back_to_list()}</button>
+  </section>
+{:else if access === 'locked'}
+  <section class="stack">
+    <div class="card" role="alert">
+      <h2>{m.lessons_locked()}</h2>
+      <p class="muted">{m.lessons_locked_hint()}</p>
+    </div>
     <button onclick={() => router.navigate('lessons')}>{m.lessons_back_to_list()}</button>
   </section>
 {:else}

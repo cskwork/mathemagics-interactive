@@ -14,8 +14,9 @@
   interface Props {
     trick: MagicTrick;
     seed?: number;
+    onDone?: () => void;
   }
-  const { trick, seed = 7 }: Props = $props();
+  const { trick, seed = 7, onDone }: Props = $props();
 
   type Phase = 'demo' | 'secret' | 'practice' | 'mission';
   let phase: Phase = $state('demo');
@@ -42,6 +43,8 @@
       phase = 'mission';
       return;
     }
+    playSound('achievement');
+    onDone?.();
   }
   function back(): void {
     if (phase === 'mission') phase = 'practice';

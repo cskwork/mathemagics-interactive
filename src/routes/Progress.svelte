@@ -183,11 +183,6 @@
   .streak-mark {
     font-size: 1.8rem;
     color: var(--spotlight);
-    animation: flicker 1.5s ease-in-out infinite;
-  }
-  @keyframes flicker {
-    0%, 100% { transform: scale(1) rotate(-2deg); }
-    50% { transform: scale(1.1) rotate(2deg); }
   }
   .streak-sub {
     margin-left: auto;
@@ -252,11 +247,9 @@
     box-shadow: 0 0 8px var(--applause-wash);
   }
   .level-fluent {
-    color: var(--spotlight-ink);
-    background: var(--spotlight);
-    border-color: var(--spotlight);
-    box-shadow: 0 0 12px var(--spotlight-glow);
-    animation: glow-pulse 2s ease-in-out infinite;
+    color: var(--color-accent-ink);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
   }
   .tech-meta {
     display: flex;

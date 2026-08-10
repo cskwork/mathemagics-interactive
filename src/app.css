@@ -1,47 +1,66 @@
-/* Hallmark · P4 H4 E4 S4 R4 V4 — 전역 요소·버튼 시스템·레이아웃 도우미.
- * M7 "The Stage" 리디자인. 토큰은 src/lib/ui/tokens.css 에서(아래 @import). */
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V5
+ * Genre: playful · tone: precise-theatrical · anchor: warm spotlight gold
+ * Macrostructure: Living Stage · Bento hub + Narrative curriculum + Workbench tasks
+ * contrast: pass (40–41) · nav: N2 learning deck · footer: none · slop: pass (42–45)
+ * honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive/mobile: pass (34, 49–57) */
 @import './lib/ui/tokens.css';
 
-/* ── 리셋/기본 ───────────────────────────────────────────────────── */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html,
 body {
-  margin: 0;
+  min-width: 0;
   min-height: 100dvh;
-  background: var(--stage-floor);
-  /* 좁은 폭(320/375)에서 가로 스크롤이 생기지 않도록 — 반응형 검증 대상. */
+  margin: 0;
   overflow-x: clip;
+  background: var(--color-paper);
 }
 
 body {
-  /* 무대 바닥 위에 엷은 빛(스포트라이트 침전) — 페이지 전체 톤. */
   background-image: var(--stage-spotlight-bg);
   background-repeat: no-repeat;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
+  min-width: 0;
   margin: 0;
-  line-height: 1.18;
-  /* hallmark 규약: 헤더에 이탤릭 금지 — 강조는 웨이트·색·언더라인으로. */
-  font-style: normal;
-  font-family: var(--font-display);
   overflow-wrap: anywhere;
+  color: inherit;
+  font-family: var(--font-display);
+  font-style: normal;
+  line-height: 1.12;
 }
 
 h1 {
   font-size: var(--text-display);
-  font-weight: 800;
+  font-weight: var(--display-weight);
   letter-spacing: var(--tracking-display);
 }
 
 h2 {
   font-size: var(--text-title);
-  font-weight: 800;
+  font-weight: 820;
+  letter-spacing: -0.025em;
 }
 
 p {
@@ -49,27 +68,32 @@ p {
 }
 
 a {
-  color: var(--spotlight);
+  color: var(--color-accent-strong);
 }
 
-/* ── 포커스 링(고대비화 — M0 인계 #10 / 브리프 §3.7) ─────────────── */
-/* 앰버 3px + 오프셋 3px, 그리고 wash 헤일로를 더해 어떤 배경에서도 보이게. */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
 :where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 3px solid var(--spotlight);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 0 0 6px var(--spotlight-glow);
+  border-radius: var(--radius-small);
 }
 
-/* ── 레이아웃 도우미 ────────────────────────────────────────────── */
 .app {
   position: relative;
   z-index: 1;
-  max-width: var(--app-max);
-  margin: 0 auto;
-  padding: var(--space-5) var(--space-4) var(--space-7);
-  /* 자식이 가로로 넘치지 않게 — 그리드/플렉스 자식이 minmax(0,1fr) 과 함께 작동. */
+  width: 100%;
   min-width: 0;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding:
+    max(var(--space-3), env(safe-area-inset-top))
+    max(var(--page-gutter), env(safe-area-inset-right))
+    calc(var(--space-3xl) + env(safe-area-inset-bottom))
+    max(var(--page-gutter), env(safe-area-inset-left));
 }
 
 .stack {
@@ -80,57 +104,48 @@ a {
 
 .row {
   display: flex;
-  gap: var(--space-3);
   align-items: center;
   flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .muted {
-  color: var(--house-light);
+  color: var(--color-muted);
 }
 
 .card {
-  background: var(--stage-mid);
-  border-radius: var(--radius);
   padding: var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-paper-2);
+  color: var(--color-ink);
   box-shadow: var(--shadow-card);
 }
 
-/* ── 버튼 시스템 — 역할별 음성 × 8 상태 (브리프 §3.5) ────────────── */
-/* 기본 .btn 베이스 + 변형(--primary/secondary/ghost/danger).
- * 상태: default / hover / focus-visible / active / disabled / loading / error / success.
- * 포커스 링은 위 전역 :focus-visible 규칙이 담당(중복 코드 회피). */
 button,
 .btn {
-  min-height: var(--tap);
   min-width: var(--tap);
-  padding: 0 var(--space-4);
+  min-height: var(--tap);
+  padding-inline: var(--space-4);
   border: 1px solid transparent;
-  border-radius: var(--radius);
-  background: var(--stage-lit);
-  color: var(--house-bright);
-  font: inherit;
+  border-radius: var(--radius-input);
+  background: var(--color-paper-3);
+  color: var(--color-ink);
   font-family: var(--font-body);
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color var(--motion-base) ease,
-    color var(--motion-base) ease,
-    border-color var(--motion-base) ease,
-    transform var(--motion-fast) ease,
-    box-shadow var(--motion-base) ease;
-}
-
-/* secondary(기본 button) — 무대 표면 */
-button:hover,
-.btn:hover {
-  background: var(--stage-rise);
+    background-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
 }
 
 button:active,
 .btn:active {
   transform: translateY(1px);
-  background: var(--stage-mid);
 }
 
 button:disabled,
@@ -142,308 +157,201 @@ button:disabled,
   transform: none;
 }
 
-/* primary — 스포트라이트/앰버(주 행동) */
 .btn--primary,
 button.primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--spotlight) 92%, white 8%), var(--spotlight));
-  color: var(--spotlight-ink);
-  font-weight: 800;
-  box-shadow: var(--shadow-card);
-}
-.btn--primary:hover,
-button.primary:hover {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--spotlight) 88%, white 16%), color-mix(in srgb, var(--spotlight) 96%, white 4%));
-}
-.btn--primary:active,
-button.primary:active {
-  background: linear-gradient(180deg, var(--spotlight), color-mix(in srgb, var(--spotlight) 82%, var(--stage-floor) 18%));
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
+  font-weight: 820;
 }
 
-/* secondary — 무대 표면(명시적 변형 클래스) */
 .btn--secondary {
-  background: var(--stage-lit);
-  color: var(--house-bright);
+  background: var(--color-paper-3);
+  color: var(--color-ink);
+  border-color: var(--color-rule);
 }
 
-/* ghost — 텍스트 전용 보조 */
 .btn--ghost {
-  background: transparent;
-  color: var(--house-light);
   min-width: auto;
-  padding: 0 var(--space-3);
-}
-.btn--ghost:hover {
-  background: var(--spotlight-wash);
-  color: var(--house-bright);
+  padding-inline: var(--space-3);
+  background: transparent;
+  color: var(--color-neutral);
 }
 
-/* danger — 어깨(miss/적색). 본문색은 house-bright(고대비) — miss 적색 텍스트는
-   miss-wash 배경과 ~4.46:1 로 WCAG AA(4.5:1)에 미달(M7 검증 axe 실측). 적색 의미는
-   miss-wash 배경 + miss 테두리가 담당한다. hover 와 일관되게 본문은 밝게. */
 .btn--danger,
 button.danger {
-  color: var(--house-bright);
-  background: var(--miss-wash);
-  border-color: color-mix(in srgb, var(--miss) 45%, transparent);
-}
-.btn--danger:hover,
-button.danger:hover {
-  background: color-mix(in srgb, var(--miss) 28%, var(--stage-mid) 72%);
-}
-.btn--danger:active,
-button.danger:active {
-  background: color-mix(in srgb, var(--miss) 38%, var(--stage-mid) 62%);
+  background: var(--color-error-surface);
+  color: var(--color-error);
+  border-color: var(--color-error);
 }
 
-/* loading / error / success — 답 제출 등에 쓸 수 있는 상태 표식(M2+ 본사용).
- * 시스템으로서 정의하고, M7 에서 즉시 쓰이는 disabled/loading 만 적용. */
+@media (hover: hover) and (pointer: fine) {
+  button:hover,
+  .btn:hover {
+    background: var(--stage-rise);
+  }
+
+  .btn--primary:hover,
+  button.primary:hover {
+    background: color-mix(in oklch, var(--color-accent) 88%, var(--color-ink));
+    color: var(--color-accent-ink);
+  }
+
+  .btn--ghost:hover {
+    background: var(--color-paper-3);
+    color: var(--color-ink);
+  }
+
+  .btn--danger:hover,
+  button.danger:hover {
+    background: color-mix(in oklch, var(--color-error-surface) 82%, var(--color-error));
+    color: var(--color-ink);
+  }
+}
+
 .btn[data-state='loading'] {
-  cursor: progress;
   position: relative;
   color: transparent;
+  cursor: progress;
 }
+
 .btn[data-state='loading']::after {
   content: '';
   position: absolute;
   inset: 0;
+  width: 1rem;
+  height: 1rem;
   margin: auto;
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 50%;
-  border: 2px solid var(--spotlight-wash-strong);
-  border-top-color: var(--spotlight-ink);
-  animation: btn-spin 0.7s linear infinite;
+  border: 2px solid var(--color-rule-2);
+  border-top-color: var(--color-accent-ink);
+  border-radius: var(--radius-pill);
+  animation: btn-spin 700ms linear infinite;
 }
+
 .btn[data-state='success'] {
-  background: var(--applause-wash);
-  color: var(--applause);
-  border-color: var(--applause);
+  background: var(--color-success-surface);
+  color: var(--color-success);
+  border-color: var(--color-success);
 }
+
 .btn[data-state='error'] {
-  background: var(--miss-wash);
-  color: var(--miss);
-  border-color: var(--miss);
-  animation: btn-shake 0.3s ease;
+  background: var(--color-error-surface);
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+input,
+select,
+textarea {
+  min-height: var(--tap);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-rule-2);
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  border-radius: var(--radius-input);
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-muted);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  input:hover,
+  select:hover,
+  textarea:hover {
+    background: var(--color-paper-3);
+  }
+}
+
+/* Three purposeful primitives: route reveal, tactile press above, and success/unlock response. */
+@keyframes curtain-rise {
+  from { transform: translateY(12px); }
+  to { transform: translateY(0); }
+}
+
+@keyframes spotlight-sweep {
+  from { opacity: 0; transform: translateX(-28%); }
+  35% { opacity: 1; }
+  to { opacity: 0; transform: translateX(28%); }
+}
+
+@keyframes card-settle {
+  from { transform: scale(0.96); }
+  to { transform: scale(1); }
+}
+
+@keyframes bounce-in {
+  from { transform: scale(0.94); }
+  to { transform: scale(1); }
+}
+
+@keyframes stage-pop {
+  from { transform: scale(0.94); }
+  to { transform: scale(1); }
 }
 
 @keyframes btn-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes btn-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-3px);
-  }
-  75% {
-    transform: translateX(3px);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* ── 입력 ───────────────────────────────────────────────────────── */
-input,
-select {
-  min-height: var(--tap);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--stage-line);
-  border-radius: var(--radius);
-  background: var(--stage-floor);
-  color: var(--house-bright);
-  font: inherit;
-  font-family: var(--font-body);
-}
-input::placeholder {
-  color: var(--house-light);
-}
-
-/* ── 마이크로인터랙션 원시체(브리프 §3.6, 최대 3종) ────────────────
- * spotlight-sweep(정답) · curtain-rise(진입) · card-settle(셀 채움).
- * 전역 prefers-reduced-motion 블록이 아래에서 이들을 즉시 전환한다. */
-@keyframes spotlight-sweep {
-  0% {
-    background-position: -60% 0;
-    opacity: 0;
-  }
-  35% {
-    opacity: 1;
-  }
-  100% {
-    background-position: 160% 0;
-    opacity: 0;
-  }
-}
-@keyframes curtain-rise {
-  0% {
-    transform: translateY(20px) scale(0.98);
-    opacity: 0;
-    filter: blur(4px);
-  }
-  60% {
-    filter: blur(0);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-    filter: blur(0);
-  }
-}
-@keyframes card-settle {
-  0% {
-    transform: translateY(-3px) scale(0.94);
-  }
-  60% {
-    transform: translateY(0) scale(1.03);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-@keyframes stage-pop {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.12);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* 적용 유틸리티 클래스 — prefers-reduced-motion 에서는 효과 없음(아래 블록). */
 .rise {
-  animation: curtain-rise var(--motion-slow) var(--ease-stage) both;
-}
-.sweep {
-  background-image: linear-gradient(
-    100deg,
-    transparent 30%,
-    var(--spotlight-wash-strong) 50%,
-    transparent 70%
-  );
-  background-size: 60% 100%;
-  background-repeat: no-repeat;
-  animation: spotlight-sweep var(--motion-slow) ease;
-}
-.done-emoji {
-  animation: stage-pop var(--motion-slow) var(--ease-stage) both;
+  animation: curtain-rise var(--dur-long) var(--ease-out) both;
 }
 
-/* ── reduced-motion — 전역 즉시 전환(PLAN §7.2 / hallmark 규약) ──── */
+.done-emoji,
+.bounce-in {
+  animation: bounce-in var(--dur-long) var(--ease-out) both;
+}
+
+.sweep {
+  background-image: var(--gradient-shimmer);
+  animation: spotlight-sweep var(--dur-long) var(--ease-out) both;
+}
+
+.glow-pulse,
+.pulse-ring {
+  border-color: var(--color-accent-strong);
+  animation: card-settle var(--dur-long) var(--ease-out) both;
+}
+
+.shimmer-text {
+  color: var(--color-accent-strong);
+}
+
+.score-popup {
+  position: absolute;
+  z-index: 20;
+  color: var(--color-success);
+  font-family: var(--font-outlier);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  pointer-events: none;
+  animation: curtain-rise var(--dur-long) var(--ease-out) both;
+}
+
+@media (min-width: 58rem) {
+  .app {
+    padding-block-end: var(--space-3xl);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
-}
-
-
-/* ── Enhanced micro-interactions — M7+ splendidness upgrades ────────── */
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 var(--spotlight-glow);
-  }
-  50% {
-    box-shadow: 0 0 20px 4px var(--spotlight-glow);
-  }
-}
-@keyframes float-up {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-30px);
-    opacity: 0;
-  }
-}
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-@keyframes bounce-in {
-  0% {
-    transform: scale(0.3) translateY(20px);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05) translateY(-5px);
-  }
-  70% {
-    transform: scale(0.98) translateY(0);
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-@keyframes pulse-ring {
-  0% {
-    box-shadow: 0 0 0 0 var(--spotlight-glow);
-  }
-  70% {
-    box-shadow: 0 0 0 12px transparent;
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-}
-
-/* Utility classes for new animations */
-.bounce-in {
-  animation: bounce-in var(--motion-slow) var(--ease-spring) both;
-}
-.glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-.pulse-ring {
-  animation: pulse-ring 1.5s ease-out infinite;
-}
-
-/* Shimmer effect for loading / accent text */
-.shimmer-text {
-  background: linear-gradient(
-    90deg,
-    var(--house-bright) 0%,
-    var(--spotlight) 50%,
-    var(--house-bright) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s linear infinite;
-}
-
-/* Enhanced card hover lift — applied globally to .card where interactive */
-.card {
-  transition: transform var(--motion-base) var(--ease-stage), box-shadow var(--motion-base) ease;
-}
-
-/* Floating score popup animation utility */
-.score-popup {
-  position: absolute;
-  font-weight: 800;
-  font-size: 1.5rem;
-  color: var(--applause);
-  pointer-events: none;
-  animation: float-up 0.8s ease-out forwards;
-  z-index: 50;
 }

@@ -37,8 +37,7 @@
   import type { Router } from '../router/hash-router.svelte.js';
   import type { ProgressRecord } from '../storage/types.js';
   import { DEFAULT_SRS_CONFIG } from '../srs/config.js';
-  import { createCardFromLesson, makeFactId } from '../srs/integration.js';
-  import { paramsToBand } from '../srs/difficulty.js';
+  import { createCardFromLesson } from '../srs/integration.js';
   import StepPlayer from '../../components/StepPlayer.svelte';
   import DigitInput from '../../components/DigitInput.svelte';
   import RollingCounter from '../../components/RollingCounter.svelte';
@@ -55,6 +54,7 @@
   import RuleCard from '../../components/RuleCard.svelte';
   import PlaceValueStrip from '../../components/PlaceValueStrip.svelte';
   import { playSound } from '../ui/sound.js';
+  import { persistLessonCompletion } from './completion.js';
 
   interface Props {
     skillId: string;
@@ -80,6 +80,17 @@
   let savedDone = $state(false);
   let celebration: Celebration | undefined = $state(undefined);
   let savedPractice = $state(false);
+  let lessonProfileId = $state<string | undefined>();
+  let practiceProgressWrite: Promise<void> | undefined;
+  let completionStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  let completionPayload:
+    | {
+        progress: ProgressRecord;
+        card: ReturnType<typeof createCardFromLesson>;
+        stars: 0 | 1 | 2 | 3;
+        title: string;
+      }
+    | undefined;
 
   function dispatch(e: LessonEvent): void {
     lessonState = reduce(lessonState, e, counts);
@@ -255,78 +266,105 @@
   }
 
   // ── 진도 저장: practice 진입 시 + done 시 ────────────────────────────────────
-  const profileId = $derived(app.activeProfileId());
-  async function writeProgress(patch: Partial<ProgressRecord>): Promise<void> {
-    if (!profileId || !lesson) return;
-    const base: ProgressRecord = {
+  function progressRecord(
+    profileId: string,
+    state: LessonState,
+    patch: Partial<ProgressRecord>
+  ): ProgressRecord | undefined {
+    if (!lesson) return undefined;
+    return {
       profileId,
       skillId: lesson.file.skillId,
-      attempts: lessonState.attempts,
-      correct: lessonState.correct,
+      attempts: state.attempts,
+      correct: state.correct,
       lastPlayedAt: Date.now(),
-      stars: starsFor(lessonState, lesson.file.practice.passAccuracy)
+      stars: starsFor(state, lesson.file.practice.passAccuracy),
+      ...patch
     };
-    await app.saveProgress({ ...base, ...patch });
   }
+
+  // The first selected profile owns this mounted lesson, even if navigation changes later.
+  $effect(() => {
+    if (lessonProfileId !== undefined) return;
+    const activeProfileId = app.activeProfileId();
+    if (activeProfileId !== undefined) lessonProfileId = activeProfileId;
+  });
 
   // practice 단계에 들어오면 진도 기록(새로고침 후 진도 유지).
   $effect(() => {
-    if (!lesson || lessonState.phase !== 'practice' || savedPractice || !profileId) return;
+    if (!lesson || lessonState.phase !== 'practice' || savedPractice || !lessonProfileId) return;
     savedPractice = true;
-    void writeProgress({ lessonStepReached: 'practice' });
+    const record = progressRecord(lessonProfileId, lessonState, { lessonStepReached: 'practice' });
+    if (!record) return;
+    practiceProgressWrite = app.saveProgress(record);
+    void practiceProgressWrite.catch(() => undefined);
   });
+
+  function prepareCompletion(profileId: string): typeof completionPayload {
+    if (!lesson) return undefined;
+    const completedAt = Date.now();
+    const progress = progressRecord(profileId, lessonState, {
+      lessonStepReached: 'done',
+      hintsUsed: lessonState.hintsUsed.length,
+      bottomOuts: lessonState.bottomOuts,
+      strategyCounts: { ...lessonState.strategyCounts },
+      completedAt
+    });
+    if (!progress) return undefined;
+
+    const ps = lesson.file.practice.problemSet;
+    const card = createCardFromLesson({
+      profileId,
+      skillId: lesson.file.skillId,
+      op: ps.op,
+      method: ps.method,
+      practiceDigits: ps.digits,
+      practiceCarry: ps.carry,
+      ...(ps.estOf !== undefined ? { estOf: ps.estOf } : {}),
+      now: completedAt,
+      config: DEFAULT_SRS_CONFIG
+    });
+    return {
+      progress,
+      card,
+      stars: starsFor(lessonState, lesson.file.practice.passAccuracy),
+      title: resolveLocalized(lesson.file.title, activeLocale())
+    };
+  }
+
+  async function saveCompletion(): Promise<void> {
+    const payload = completionPayload;
+    if (!payload) return;
+    completionStatus = 'saving';
+    const pendingPractice = practiceProgressWrite;
+    practiceProgressWrite = undefined;
+    try {
+      if (pendingPractice) await pendingPractice;
+      await persistLessonCompletion(app, payload.progress, payload.card);
+      completionStatus = 'saved';
+      playSound('achievement');
+      setTimeout(() => celebration?.rain(50), 100);
+      setTimeout(() => celebration?.rain(30), 400);
+      if (payload.stars === 3) {
+        pushToast(m.lesson_completion_perfect({ title: payload.title }), {
+          icon: 'star', variant: 'achievement', duration: 4000
+        });
+      } else {
+        pushToast(m.lesson_completion_saved({ title: payload.title }), {
+          icon: 'check', variant: 'success', duration: 3000
+        });
+      }
+    } catch {
+      completionStatus = 'error';
+    }
+  }
 
   // done 시 최종 진도 기록 + SRS 카드 생성(브리프: 레슨 완료 → 카드 생성).
   $effect(() => {
-    if (!lesson || lessonState.phase !== 'done' || savedDone || !profileId) return;
+    if (!lesson || lessonState.phase !== 'done' || savedDone || !lessonProfileId) return;
     savedDone = true;
-    playSound('achievement');
-    // Fire confetti celebration
-    setTimeout(() => celebration?.rain(50), 100);
-    setTimeout(() => celebration?.rain(30), 400);
-    // Show achievement toast
-    const stars = starsFor(lessonState, lesson.file.practice.passAccuracy);
-    if (stars === 3) {
-      pushToast(`⭐ ${resolveLocalized(lesson.file.title, activeLocale())} — Perfect!`, {
-        icon: 'star', variant: 'achievement', duration: 4000
-      });
-    } else {
-      pushToast(`${resolveLocalized(lesson.file.title, activeLocale())} ✓`, {
-        icon: 'check', variant: 'success', duration: 3000
-      });
-    }
-    void (async (): Promise<void> => {
-      await writeProgress({
-        lessonStepReached: 'done',
-        hintsUsed: lessonState.hintsUsed.length,
-        bottomOuts: lessonState.bottomOuts,
-        strategyCounts: { ...lessonState.strategyCounts },
-        completedAt: Date.now()
-      });
-      // 카드 생성(멱등 — 이미 있으면 덮어쓰지 않음). 기법 × 밴드 1장.
-      const ps = lesson.file.practice.problemSet;
-      const band = Math.min(
-        DEFAULT_SRS_CONFIG.maxDifficultyBand,
-        paramsToBand({ digits: ps.digits, carry: ps.carry })
-      );
-      const factId = makeFactId(lesson.file.skillId, band);
-      const existing = await app.loadAllCards();
-      const hasCard = existing.some((c) => c.factId === factId);
-      if (!hasCard) {
-        const card = createCardFromLesson({
-          profileId,
-          skillId: lesson.file.skillId,
-          op: ps.op,
-          method: ps.method,
-          practiceDigits: ps.digits,
-          practiceCarry: ps.carry,
-          ...(ps.estOf !== undefined ? { estOf: ps.estOf } : {}),
-          now: Date.now(),
-          config: DEFAULT_SRS_CONFIG
-        });
-        await app.upsertCard(card);
-      }
-    })();
+    completionPayload = prepareCompletion(lessonProfileId);
+    void saveCompletion();
   });
 
   const finalStars = $derived(lesson ? starsFor(lessonState, lesson.file.practice.passAccuracy) : 0);
@@ -539,9 +577,27 @@
           <p class="muted small">
             {m.lessons_accuracy({ pct: finalAcc })}
           </p>
+          {#if completionStatus === 'saving'}
+            <p class="muted small" role="status">{m.lesson_completion_saving()}</p>
+          {:else if completionStatus === 'error'}
+            <div class="stack" role="alert">
+              <p class="muted small">{m.lesson_completion_save_error()}</p>
+              <button class="btn--ghost" onclick={() => void saveCompletion()}>
+                {m.lesson_completion_retry()}
+              </button>
+            </div>
+          {/if}
           <div class="row controls">
-            <button class="btn--primary" onclick={goLessons}>{m.lessons_back_to_list()}</button>
-            <button class="btn--ghost" onclick={() => router.navigate('home')}>{m.lesson_back_home()}</button>
+            <button
+              class="btn--primary"
+              disabled={completionStatus !== 'saved'}
+              onclick={goLessons}>{m.lessons_back_to_list()}</button
+            >
+            <button
+              class="btn--ghost"
+              disabled={completionStatus !== 'saved'}
+              onclick={() => router.navigate('home')}>{m.lesson_back_home()}</button
+            >
           </div>
         </div>
       </div>

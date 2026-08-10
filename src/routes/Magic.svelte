@@ -44,6 +44,10 @@
   function trickUnlocked(chapter: number): boolean {
     return isChapterComplete(chapter, nodes, completedSet());
   }
+  function closeTrick(): void {
+    trickId = undefined;
+    globalThis.location.hash = '#/magic';
+  }
 
   // ?id= 쿼리에서 트릭 id 추출.
   let trickId = $state<string | undefined>(undefined);
@@ -60,18 +64,21 @@
   });
 
   const activeTrick = $derived(trickId ? findMagicTrick(trickId) : undefined);
+  const activeTrickUnlocked = $derived(
+    activeTrick === undefined ? false : trickUnlocked(activeTrick.unlockChapter)
+  );
 </script>
 
 <section class="stack">
-  {#if activeTrick}
-    <MagicTrick trick={activeTrick} />
+  {#if !loaded}
+    <p class="muted" role="status">{m.loading()}</p>
+  {:else if activeTrick && activeTrickUnlocked}
+    <MagicTrick trick={activeTrick} onDone={closeTrick} />
     <div class="row">
-      <button class="btn--ghost" onclick={() => { trickId = undefined; globalThis.location.hash = '#/magic'; }}>
+      <button class="btn--ghost" onclick={closeTrick}>
         {m.lessons_back_to_list()}
       </button>
     </div>
-  {:else if !loaded}
-    <p class="muted">{m.loading()}</p>
   {:else}
     <header>
       <h2>{m.magic_heading()}</h2>

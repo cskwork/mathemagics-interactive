@@ -1,7 +1,4 @@
-<!-- Hallmark · P4 H4 E4 S4 R4 V4 — 프로시니엄 프레임 + 라우트 스위치 (M7 산출물 3).
-  - 헤더 = 무대 프롬프트: 좌 워드마크 · (중앙) 활성 공연자 칩 · 우 로케일 스위처.
-  - 하단 얇은 앰버 선 = 프로시니엄(edge of stage) 암시. 과하지 않게 1px.
-  - 라우트 영역 진입 시 curtain-rise(막 올림). reduced-motion 은 전역 즉시 전환. -->
+<!-- Hallmark · Living Stage · shared shell + adaptive learning deck. -->
 <script lang="ts">
   import { m } from './lib/paraglide/messages.js';
   import { createRouter } from './lib/router/hash-router.svelte.js';
@@ -20,11 +17,11 @@
   import Catch from './routes/Catch.svelte';
   import Memory from './routes/Memory.svelte';
   import LocaleSwitcher from './components/LocaleSwitcher.svelte';
+  import StageNav from './components/StageNav.svelte';
   import Icon from './components/Icon.svelte';
   import Avatar from './components/Avatar.svelte';
   import { initTheme, toggleTheme, theme, setLangAttribute } from './lib/ui/theme.svelte.js';
   import { initSound, setSoundEnabled } from './lib/ui/sound.js';
-  import AmbientBackground from './lib/components/canvasui/AmbientBackground.svelte';
   import ToastContainer from './lib/components/ToastContainer.svelte';
   import { activeLocale } from './lib/i18n/locale.svelte.js';
 
@@ -33,6 +30,15 @@
   const currentTheme = $derived(theme());
 
   let bootError = $state<string | undefined>(undefined);
+
+  async function boot(): Promise<void> {
+    bootError = undefined;
+    try {
+      await app.boot();
+    } catch (err: unknown) {
+      bootError = err instanceof Error ? err.message : String(err);
+    }
+  }
 
   $effect(() => router.start());
 
@@ -53,9 +59,7 @@
   });
 
   $effect(() => {
-    app.boot().catch((err: unknown) => {
-      bootError = err instanceof Error ? err.message : String(err);
-    });
+    void boot();
   });
 
   // 프로필이 없는데 home/settings/lessons/lesson 으로 들어오면 프로필 선택으로 되돌린다.
@@ -71,37 +75,49 @@
   const profile = $derived(app.activeProfile());
   // 라우트가 바뀔 때마다 curtain-rise 를 재생하기 위한 키.
   const routeKey = $derived(router.current() ?? 'profiles');
+  // 같은 라우트의 쿼리 딥링크도 독립 화면이다(예: lesson?id=A → lesson?id=B).
+  const routeRenderKey = $derived(`${routeKey}:${router.locationHash()}`);
+  const wideStage = $derived(
+    ['profiles', 'home', 'settings', 'lessons', 'progress', 'report'].includes(routeKey)
+  );
 
   // 라우트 전환 시 본문 영역(#main-stage)으로 포커스 옮김 — 스크린리더·키보드.
   // 최초 진입은 건너뛴다(프로필 입력 등으로 포커스를 빼앗지 않게).
   let firstRoute = true;
   $effect(() => {
-    void routeKey;
+    void routeRenderKey;
     if (firstRoute) {
       firstRoute = false;
       return;
     }
     document.getElementById('main-stage')?.focus();
   });
+
+  function skipToMain(event: MouseEvent): void {
+    event.preventDefault();
+    const mainStage = document.getElementById('main-stage');
+    mainStage?.focus();
+    mainStage?.scrollIntoView({ block: 'start' });
+  }
 </script>
 
-<AmbientBackground />
 <main class="app">
-  <a class="skip-link" href="#main-stage">{m.app_skip_to_content()}</a>
+  <a class="skip-link" href="#main-stage" onclick={skipToMain}>{m.app_skip_to_content()}</a>
   <header class="proscenium">
-    <a class="wordmark" href="#/profiles" aria-label={m.app_title()}>
+    <a class="wordmark" href={profile ? '#/home' : '#/profiles'} aria-label={m.app_title()}>
       <span class="wordmark-mark" aria-hidden="true"><Icon name="diamond" /></span>
       <span class="wordmark-text">{m.app_title()}</span>
     </a>
 
-    {#if profile}
-      <div class="chip" aria-label={m.stage_chip_label()}>
-        <span class="chip-avatar" aria-hidden="true"><Avatar id={profile.avatar} /></span>
-        <span class="chip-name">{profile.name}</span>
-      </div>
-    {/if}
+    {#if profile}<StageNav current={routeKey} />{/if}
 
     <div class="header-tail">
+      {#if profile}
+        <a class="chip" href="#/profiles" aria-label={m.stage_chip_label()}>
+          <span class="chip-avatar" aria-hidden="true"><Avatar id={profile.avatar} /></span>
+          <span class="chip-name">{profile.name}</span>
+        </a>
+      {/if}
       <button
         class="theme-toggle"
         onclick={() => toggleTheme()}
@@ -114,13 +130,27 @@
     </div>
   </header>
 
-  <div class="stage" id="main-stage" tabindex="-1" role="group" aria-label={m.app_stage_label()}>
-    {#key routeKey}
+  <div
+    class="stage"
+    class:wide={wideStage}
+    id="main-stage"
+    tabindex="-1"
+    role="group"
+    aria-label={m.app_stage_label()}
+  >
+    {#key routeRenderKey}
       <div class="rise">
         {#if bootError}
-          <p class="card" role="alert">{bootError}</p>
+          <section class="load-state card" role="alert">
+            <Icon name="x" />
+            <h1>{m.app_load_error()}</h1>
+            <button class="btn--primary" onclick={boot}>{m.app_retry()}</button>
+          </section>
         {:else if !app.ready()}
-          <p class="muted">{m.loading()}</p>
+          <div class="loading-stage" role="status" aria-label={m.loading()}>
+            <span></span><span></span><span></span>
+            <p>{m.loading()}</p>
+          </div>
         {:else if router.unknownHash()}
           <section class="stack">
             <p class="card">{m.not_found()}</p>
@@ -161,17 +191,15 @@
 
 <style>
   .proscenium {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--space-3);
-    flex-wrap: wrap;
-    padding-bottom: var(--space-4);
-    margin-bottom: var(--space-6);
-    border-bottom: 2px solid transparent;
-    background-image: linear-gradient(var(--stage-floor), var(--stage-floor)),
-      linear-gradient(90deg, transparent, var(--spotlight) 30%, var(--spotlight) 70%, transparent);
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
+    width: min(100%, var(--app-wide));
+    margin-inline: auto;
+    padding-block-end: var(--space-3);
+    margin-block-end: clamp(var(--space-5), 4vw, var(--space-7));
+    border-bottom: 1px solid var(--color-rule);
   }
   .wordmark {
     display: inline-flex;
@@ -183,23 +211,14 @@
     font-weight: 800;
     letter-spacing: var(--tracking-display);
     font-size: 1rem;
-    transition: opacity var(--motion-base) ease, text-shadow var(--motion-base) ease;
-  }
-  .wordmark:hover {
-    text-shadow: 0 0 12px var(--spotlight-glow);
-  }
-  .wordmark:hover {
-    opacity: 0.8;
+    min-width: var(--tap);
+    justify-content: flex-start;
+    min-height: var(--tap);
+    transition: color var(--dur-short) var(--ease-out);
   }
   .wordmark-mark {
-    color: var(--spotlight);
-    font-size: 0.65rem;
-    transform: translateY(-1px);
-    filter: drop-shadow(0 0 4px var(--spotlight-glow));
-    transition: transform var(--motion-base) var(--ease-spring);
-  }
-  .wordmark:hover .wordmark-mark {
-    transform: translateY(-1px) rotate(15deg) scale(1.1);
+    color: var(--color-accent-strong);
+    font-size: 0.7rem;
   }
   .wordmark-text {
     white-space: nowrap;
@@ -209,12 +228,13 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-height: calc(var(--tap) * 0.68);
+    min-height: var(--tap);
     padding: 0 var(--space-3) 0 var(--space-2);
     background: var(--stage-mid);
     border: 1px solid var(--stage-line);
     border-radius: var(--radius-pill);
-    box-shadow: var(--shadow-card);
+    color: var(--color-ink);
+    text-decoration: none;
   }
   .chip-avatar {
     font-size: 1.05rem;
@@ -230,7 +250,6 @@
   }
 
   .header-tail {
-    margin-left: auto;
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -240,10 +259,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: calc(var(--tap) * 0.68);
-    height: calc(var(--tap) * 0.68);
-    min-width: auto;
-    min-height: auto;
+    width: var(--tap);
+    height: var(--tap);
+    min-width: var(--tap);
+    min-height: var(--tap);
     padding: 0;
     border: 1px solid var(--stage-line);
     border-radius: var(--radius-pill);
@@ -251,7 +270,9 @@
     color: var(--house-light);
     font-size: 1.05rem;
     cursor: pointer;
-    transition: color var(--motion-base) ease, border-color var(--motion-base) ease;
+    transition:
+      color var(--dur-short) var(--ease-out),
+      background-color var(--dur-short) var(--ease-out);
   }
   .theme-toggle:hover {
     color: var(--spotlight);
@@ -261,6 +282,11 @@
 
   .stage {
     min-width: 0;
+    width: min(100%, var(--app-max));
+    margin-inline: auto;
+  }
+  .stage.wide {
+    width: min(100%, var(--app-wide));
   }
   .stage:focus {
     outline: none;
@@ -293,9 +319,55 @@
     font-weight: 800;
   }
 
-  @media (max-width: 360px) {
+  .load-state,
+  .loading-stage {
+    min-height: 15rem;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: var(--space-4);
+    text-align: center;
+  }
+  .load-state > :global(svg) {
+    font-size: var(--text-2xl);
+    color: var(--color-error);
+  }
+  .load-state h1 {
+    font-size: var(--text-xl);
+  }
+  .loading-stage {
+    grid-template-columns: repeat(3, 0.65rem);
+  }
+  .loading-stage span {
+    width: 0.65rem;
+    aspect-ratio: 1;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-strong);
+    opacity: 0.3;
+    animation: load-beat 900ms var(--ease-in-out) infinite alternate;
+  }
+  .loading-stage span:nth-child(2) { animation-delay: 120ms; }
+  .loading-stage span:nth-child(3) { animation-delay: 240ms; }
+  .loading-stage p { grid-column: 1 / -1; color: var(--color-muted); }
+
+  @keyframes load-beat {
+    to { opacity: 1; transform: translateY(-3px); }
+  }
+
+  @media (max-width: 23rem) {
+    .wordmark-text { display: none; }
     .chip-name {
-      max-width: 5rem;
+      display: none;
+    }
+  }
+
+  @media (max-width: 57.99rem) {
+    .chip { display: none; }
+  }
+
+  @media (min-width: 58rem) {
+    .proscenium {
+      grid-template-columns: auto minmax(28rem, 1fr) auto;
     }
   }
 </style>

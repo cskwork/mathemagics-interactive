@@ -23,8 +23,9 @@
     cancelLabel?: string;
     gatePrompt?: string;
     gateWrong?: string;
+    confirmError?: string;
     /** 확인 시. prompt 변형은 입력값을, 그 외는 빈 문자열을 넘긴다. */
-    onconfirm?: (value: string) => void;
+    onconfirm?: (value: string) => void | Promise<void>;
     /** 취소/ESC/배경클릭 시. */
     oncancel?: () => void;
   }
@@ -42,6 +43,7 @@
     cancelLabel,
     gatePrompt,
     gateWrong,
+    confirmError,
     onconfirm,
     oncancel
   }: Props = $props();
@@ -51,6 +53,8 @@
   let gate: ParentGateChallenge | undefined = $state(undefined);
   let gateInput = $state('');
   let gateError = $state(false);
+  let submitting = $state(false);
+  let actionError = $state<string | null>(null);
   let lastFocused: HTMLElement | null = null;
 
   const FOCUSABLE =
@@ -61,7 +65,7 @@
   );
 
   const confirmDisabled = $derived(
-    variant === 'prompt' ? textValue.trim() === '' : variant === 'parent-gate' ? !gateSolved : false
+    submitting || (variant === 'prompt' ? textValue.trim() === '' : variant === 'parent-gate' ? !gateSolved : false)
   );
 
   function close(): void {
@@ -69,17 +73,26 @@
   }
 
   function fireCancel(): void {
+    if (submitting) return;
     oncancel?.();
     close();
   }
 
-  function fireConfirm(): void {
+  async function fireConfirm(): Promise<void> {
     if (confirmDisabled) {
       if (variant === 'parent-gate') gateError = true;
       return;
     }
-    onconfirm?.(variant === 'prompt' ? textValue.trim() : '');
-    close();
+    actionError = null;
+    submitting = true;
+    try {
+      await onconfirm?.(variant === 'prompt' ? textValue.trim() : '');
+      close();
+    } catch {
+      actionError = confirmError ?? m.dialog_action_error();
+    } finally {
+      submitting = false;
+    }
   }
 
   function focusables(): HTMLElement[] {
@@ -88,11 +101,6 @@
   }
 
   function onKey(e: KeyboardEvent): void {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      fireCancel();
-      return;
-    }
     if (e.key === 'Tab') {
       const items = focusables();
       if (items.length === 0) return;
@@ -108,6 +116,12 @@
     }
   }
 
+  function onWindowKey(e: KeyboardEvent): void {
+    if (!open || e.key !== 'Escape') return;
+    e.preventDefault();
+    fireCancel();
+  }
+
   function onBackdrop(e: MouseEvent): void {
     if (e.target === backdropEl) fireCancel();
   }
@@ -118,6 +132,8 @@
   $effect(() => {
     if (!open) return;
     lastFocused = document.activeElement as HTMLElement | null;
+    submitting = false;
+    actionError = null;
     if (variant === 'prompt') textValue = promptValue;
     if (variant === 'parent-gate') {
       gate = makeParentGateChallenge();
@@ -141,6 +157,8 @@
   const titleId = 'dialog-title';
 </script>
 
+<svelte:window onkeydown={onWindowKey} />
+
 {#if open}
   <div
     bind:this={backdropEl}
@@ -155,6 +173,7 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
+      aria-busy={submitting}
       tabindex="-1"
       onkeydown={onKey}
     >
@@ -173,7 +192,7 @@
             maxlength="20"
             autocomplete="off"
             onkeydown={(e) => {
-              if (e.key === 'Enter') fireConfirm();
+              if (e.key === 'Enter') void fireConfirm();
             }}
           />
         </label>
@@ -190,7 +209,7 @@
               autocomplete="off"
               onkeydown={(e) => {
                 gateError = false;
-                if (e.key === 'Enter') fireConfirm();
+                if (e.key === 'Enter') void fireConfirm();
               }}
             />
           </label>
@@ -200,15 +219,20 @@
         </div>
       {/if}
 
+      {#if actionError}
+        <p class="action-error" role="alert">{actionError}</p>
+      {/if}
+
       <div class="actions">
-        <button type="button" class="btn--ghost" onclick={fireCancel}>
+        <button type="button" class="btn--ghost" onclick={fireCancel} disabled={submitting}>
           {cancelLabel ?? m.dialog_cancel()}
         </button>
         <button
           type="button"
           class={danger ? 'btn--danger' : 'btn--primary'}
-          onclick={fireConfirm}
+          onclick={() => void fireConfirm()}
           disabled={confirmDisabled}
+          data-state={submitting ? 'loading' : undefined}
         >
           {confirmLabel ?? m.dialog_confirm()}
         </button>
@@ -228,7 +252,7 @@
     padding: var(--space-4);
     background: color-mix(in srgb, var(--stage-floor) 80%, transparent);
     backdrop-filter: blur(4px);
-    /* 모달 진입 — 가벼운 fade. reduced-motion 은 전역 블록이 즉시 전환. */
+    /* 모달 진입 — 대비를 유지하는 짧은 이동. reduced-motion 은 전역 블록이 즉시 전환. */
     animation: curtain-rise var(--motion-base) var(--ease-stage) both;
   }
 
@@ -247,8 +271,8 @@
     animation: dialog-in var(--motion-slow) var(--ease-spring) both;
   }
   @keyframes dialog-in {
-    from { opacity: 0; transform: scale(0.92) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from { transform: scale(0.92) translateY(10px); }
+    to { transform: scale(1) translateY(0); }
   }
   .panel.danger {
     border-color: color-mix(in srgb, var(--miss) 55%, transparent);
@@ -277,6 +301,9 @@
   }
   .field input {
     width: 100%;
+    background: var(--stage-floor);
+    color: var(--house-bright);
+    border-color: var(--stage-line);
   }
 
   .gate {
@@ -298,6 +325,12 @@
     border-radius: var(--radius);
   }
   .gate-wrong {
+    margin: 0;
+    color: var(--miss);
+    font-size: var(--text-small);
+  }
+
+  .action-error {
     margin: 0;
     color: var(--miss);
     font-size: var(--text-small);

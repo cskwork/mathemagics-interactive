@@ -41,6 +41,7 @@ export class AppState {
   #profiles = $state<Profile[]>([]);
   #activeId = $state<string | undefined>(undefined);
   #settings = $state<Settings | undefined>(undefined);
+  #profileSelectionVersion = 0;
 
   ready(): boolean {
     return this.#ready;
@@ -86,16 +87,19 @@ export class AppState {
   }
 
   async selectProfile(id: string): Promise<void> {
-    this.#activeId = id;
-    writeLastProfileId(id);
+    const version = ++this.#profileSelectionVersion;
     const stored = await this.adapter().getSettings(id);
     const settings = stored ?? defaultSettings(id);
     if (!stored) await this.adapter().saveSettings(settings);
+    if (version !== this.#profileSelectionVersion) return;
+    this.#activeId = id;
+    writeLastProfileId(id);
     this.#settings = settings;
     applyLocale(settings.locale);
   }
 
   clearActiveProfile(): void {
+    this.#profileSelectionVersion += 1;
     this.#activeId = undefined;
     this.#settings = undefined;
     writeLastProfileId(undefined);
@@ -142,12 +146,29 @@ export class AppState {
   }
 
   async updateSettings(patch: Partial<Omit<Settings, 'profileId'>>): Promise<void> {
-    const current = this.#settings;
-    if (!current) return;
+    const profileId = this.#activeId;
+    if (profileId === undefined) return;
+    await this.updateSettingsForProfile(profileId, patch);
+  }
+
+  /**
+   * Update one profile even if navigation changes the active profile while storage is pending.
+   * The in-memory active settings are refreshed only when that same profile is still selected.
+   */
+  async updateSettingsForProfile(
+    profileId: string,
+    patch: Partial<Omit<Settings, 'profileId'>>
+  ): Promise<void> {
+    const current =
+      (this.#activeId === profileId ? this.#settings : undefined) ??
+      (await this.adapter().getSettings(profileId)) ??
+      defaultSettings(profileId);
     const next: Settings = { ...current, ...patch };
     await this.adapter().saveSettings(next);
-    this.#settings = next;
-    applyLocale(next.locale);
+    if (this.#activeId === profileId) {
+      this.#settings = next;
+      applyLocale(next.locale);
+    }
   }
 
   // ── 진도(M2 레슨 프레임워크) ──────────────────────────────────────────────
@@ -162,7 +183,15 @@ export class AppState {
   /** 활성 프로필의 특정 스킬 진도. */
   async loadProgress(skillId: string): Promise<ProgressRecord | undefined> {
     if (this.#activeId === undefined) return undefined;
-    const all = await this.adapter().getProgress(this.#activeId);
+    return this.loadProgressForProfile(this.#activeId, skillId);
+  }
+
+  /** Load a session owner's progress without following later active-profile changes. */
+  async loadProgressForProfile(
+    profileId: string,
+    skillId: string
+  ): Promise<ProgressRecord | undefined> {
+    const all = await this.adapter().getProgress(profileId);
     return all.find((r) => r.skillId === skillId);
   }
 
@@ -185,16 +214,30 @@ export class AppState {
   /** 활성 프로필의 모든 SRS 카드. 진도·보고서 화면이 사용. */
   async loadAllCards(): Promise<SrsCard[]> {
     if (this.#activeId === undefined) return [];
+    return this.loadAllCardsForProfile(this.#activeId);
+  }
+
+  /** Load every card for a session owner without following later profile changes. */
+  async loadAllCardsForProfile(profileId: string): Promise<SrsCard[]> {
     // getDueCards(now=+∞, limit=100000) 로 전체 회수.
     // limit 은 IndexedDB getAll 의 count 파라미터(unsigned long 32-bit)로 전달되므로
     // Number.MAX_SAFE_INTEGER 를 쓰면 "outside unsigned long" 에러가 발생한다.
-    return this.adapter().getDueCards(this.#activeId, Number.MAX_SAFE_INTEGER, 100_000);
+    return this.adapter().getDueCards(profileId, Number.MAX_SAFE_INTEGER, 100_000);
   }
 
   /** 지금 복습 예정(due ≤ now) 카드. 연습 세션 시작용. */
   async getDueCards(now: number, limit: number = 200): Promise<SrsCard[]> {
     if (this.#activeId === undefined) return [];
-    return this.adapter().getDueCards(this.#activeId, now, limit);
+    return this.getDueCardsForProfile(this.#activeId, now, limit);
+  }
+
+  /** Load due cards for the profile that owns a session. */
+  async getDueCardsForProfile(
+    profileId: string,
+    now: number,
+    limit: number = 200
+  ): Promise<SrsCard[]> {
+    return this.adapter().getDueCards(profileId, now, limit);
   }
 
   /** 카드 upsert(복습 결과 저장·카드 생성). profileId 는 card 에서 가져온다. */

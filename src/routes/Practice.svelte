@@ -16,7 +16,7 @@
   import type { Problem } from '../lib/engine/types.js';
   import type { AppState } from '../lib/profiles/app-state.svelte.js';
   import type { Router } from '../lib/router/hash-router.svelte.js';
-  import type { SrsCard, ProgressRecord } from '../lib/storage/types.js';
+  import type { Settings, SrsCard } from '../lib/storage/types.js';
   import { DEFAULT_SRS_CONFIG, DAY_MS } from '../lib/srs/config.js';
   import { buildSession, reviewCard, rebandCard, proficiencyOf } from '../lib/srs/integration.js';
   import { loadAllLessons } from '../lib/lesson/loader.js';
@@ -26,6 +26,7 @@
   import { playSound } from '../lib/ui/sound.js';
   import AnimatedCounter from '../components/AnimatedCounter.svelte';
   import { pushToast } from '../lib/ui/toast.svelte.js';
+  import { PracticeSessionPersistence } from '../lib/practice/persistence.js';
 
   interface Props {
     app: AppState;
@@ -35,7 +36,7 @@
 
   const lessons = loadAllLessons();
 
-  type Phase = 'loading' | 'playing' | 'done' | 'empty';
+  type Phase = 'loading' | 'playing' | 'saving' | 'done' | 'empty' | 'error';
   let phase: Phase = $state('loading');
   let session: SrsCard[] = $state([]);
   let index = $state(0);
@@ -43,18 +44,29 @@
   /** 복습 결과(원본 카드 → 갱신된 카드 + rating). 종료 시 일괄 persist. */
   let results: { original: SrsCard; updated: SrsCard; rating: 'again' | 'good' }[] = $state([]);
   let celebration: Celebration | undefined = $state(undefined);
+  let startGeneration = 0;
+  let sessionPersistence: PracticeSessionPersistence | undefined;
+  let sessionSettings: Settings | undefined;
 
-  async function startSession(): Promise<void> {
+  async function startSession(profileId: string): Promise<void> {
+    const generation = ++startGeneration;
     phase = 'loading';
+    sessionPersistence = undefined;
+    sessionSettings = undefined;
     const now = Date.now();
-    const due = await app.getDueCards(now, 200);
+    const due = await app.getDueCardsForProfile(profileId, now, 200);
+    if (generation !== startGeneration) return;
     if (due.length === 0) {
       phase = 'empty';
       return;
     }
     const built = buildSession(due, now, DEFAULT_SRS_CONFIG, Math.floor(now / DAY_MS));
     // overflow 카드 due 재분산 저장(밀린 카드 폭탄 방지).
-    for (const c of built.deferred) await app.upsertCard(c);
+    for (const c of built.deferred) {
+      if (generation !== startGeneration) return;
+      await app.upsertCard(c);
+    }
+    if (generation !== startGeneration) return;
     session = [...built.session];
     if (session.length === 0) {
       phase = 'empty';
@@ -63,13 +75,16 @@
     index = 0;
     correctCount = 0;
     results = [];
+    sessionPersistence = new PracticeSessionPersistence(app, profileId);
+    if (app.activeProfileId() === profileId) sessionSettings = app.settings();
     phase = 'playing';
   }
 
   // 활성 프로필 진입 시 세션 시작.
   $effect(() => {
     void app.activeProfile();
-    if (app.activeProfileId()) void startSession();
+    const profileId = app.activeProfileId();
+    if (profileId) void startSession(profileId);
   });
 
   const currentCard = $derived(session[index]);
@@ -101,118 +116,133 @@
   }
 
   function onSolved(): void {
+    if (phase !== 'playing') return;
     const c = currentCard;
     if (!c) return;
     const updated = reviewCard(c, 'good', Date.now(), DEFAULT_SRS_CONFIG);
     results = [...results, { original: c, updated, rating: 'good' }];
     correctCount += 1;
     // 진도 즉시 저장: 문제를 풀 때마다 저장(중간에 나가도 진도 유지).
-    void savePracticeProgress(c.skillId ?? '', 1, 1);
+    sessionPersistence?.record(c.skillId ?? '', true);
     advance();
   }
 
   function showAnswer(): void {
+    if (phase !== 'playing') return;
     const c = currentCard;
     if (!c) return;
     const updated = reviewCard(c, 'again', Date.now(), DEFAULT_SRS_CONFIG);
     results = [...results, { original: c, updated, rating: 'again' }];
-    void savePracticeProgress(c.skillId ?? '', 1, 0);
+    sessionPersistence?.record(c.skillId ?? '', false);
     advance();
-  }
-
-  /** 개별 문제 풀이 시 즉시 진도 저장(세션 중간 종료 대비). */
-  async function savePracticeProgress(skillId: string, attempts: number, correct: number): Promise<void> {
-    if (!skillId) return;
-    const prog = await app.loadProgress(skillId);
-    const base = prog ?? emptyProgress(skillId);
-    await app.saveProgress({
-      ...base,
-      practiceAttempts: (base.practiceAttempts ?? 0) + attempts,
-      practiceCorrect: (base.practiceCorrect ?? 0) + correct,
-      lastPlayedAt: Date.now()
-    });
   }
 
   function advance(): void {
     if (index + 1 < session.length) {
       index += 1;
     } else {
-      void finishSession();
+      finishSession();
     }
   }
 
-  async function finishSession(): Promise<void> {
-    playSound('achievement');
-    setTimeout(() => celebration?.rain(40), 200);
-    if (correctCount === results.length && results.length > 0) {
-      pushToast('Perfect session! All correct! 🎯', { icon: 'star', variant: 'achievement', duration: 4000 });
-    } else if (results.length > 0) {
-      pushToast(`${correctCount}/${results.length} correct — keep going!`, { icon: 'check', variant: 'success', duration: 3000 });
-    }
-    const now = Date.now();
-    // 1. 복습한 카드 persist.
-    for (const r of results) await app.upsertCard(r.updated);
+  function finishSession(): void {
+    if (phase !== 'playing' || !sessionPersistence) return;
 
-    // 2. 적응 난이도: 기법별 최근 정확도 → 밴드 조정(밴드 바뀌면 구 factId 삭제 후 새 카드 upsert).
-    const bySkill = new Map<string, { correct: number; total: number; cards: SrsCard[] }>();
-    for (const r of results) {
-      const sid = r.original.skillId ?? '';
-      const e = bySkill.get(sid) ?? { correct: 0, total: 0, cards: [] };
-      e.correct += r.rating === 'good' ? 1 : 0;
-      e.total += 1;
-      e.cards.push(r.updated);
-      bySkill.set(sid, e);
-    }
-    const allCards = await app.loadAllCards();
-    for (const [sid, agg] of bySkill) {
-      const acc = agg.total > 0 ? agg.correct / agg.total : 0.5;
-      for (const c of agg.cards) {
-        const { card: rebanded, bandChanged } = rebandCard(c, acc, DEFAULT_SRS_CONFIG);
-        if (bandChanged) {
-          // 구 factId 제거는 저장소가 upsert 기반이라 factId 가 바뀌면 별도 삭제 필요.
-          // 어댑터에 deleteCard 가 없으므로, 구 카드 due 를 먼 미래로 밀어 사실상 비활성(단순화).
-          await app.upsertCard({ ...c, due: now + 365 * DAY_MS });
-          await app.upsertCard(rebanded);
+    phase = 'saving';
+    const generation = startGeneration;
+    const persistence = sessionPersistence;
+    const profileId = persistence.profileId;
+    const settings = sessionSettings;
+    const sessionResults = [...results];
+    const sessionCorrect = correctCount;
+
+    void persistence
+      .finishOnce(async () => {
+        const now = Date.now();
+        // 1. 복습한 카드 persist.
+        for (const r of sessionResults) await app.upsertCard(r.updated);
+
+        // 2. 적응 난이도: 기법별 최근 정확도 → 밴드 조정(밴드 바뀌면 구 factId 삭제 후 새 카드 upsert).
+        const bySkill = new Map<string, { correct: number; total: number; cards: SrsCard[] }>();
+        for (const r of sessionResults) {
+          const sid = r.original.skillId ?? '';
+          const e = bySkill.get(sid) ?? { correct: 0, total: 0, cards: [] };
+          e.correct += r.rating === 'good' ? 1 : 0;
+          e.total += 1;
+          e.cards.push(r.updated);
+          bySkill.set(sid, e);
         }
-      }
+        const allCards = await app.loadAllCardsForProfile(profileId);
+        for (const [sid, agg] of bySkill) {
+          const acc = agg.total > 0 ? agg.correct / agg.total : 0.5;
+          for (const c of agg.cards) {
+            const { card: rebanded, bandChanged } = rebandCard(c, acc, DEFAULT_SRS_CONFIG);
+            if (bandChanged) {
+              // 구 factId 제거는 저장소가 upsert 기반이라 factId 가 바뀌면 별도 삭제 필요.
+              // 어댑터에 deleteCard 가 없으므로, 구 카드 due 를 먼 미래로 밀어 사실상 비활성(단순화).
+              await app.upsertCard({ ...c, due: now + 365 * DAY_MS });
+              await app.upsertCard(rebanded);
+            }
+          }
 
-      // 3. 게이트 통과 표시(단조 잠금).
-      // 연습 누적 진도는 onSolved/showAnswer 에서 이미 개별 저장했으므로 여기서 중복 저장하지 않음.
-      const prog = await app.loadProgress(sid);
-      const decision = proficiencyOf(sid, allCards, prog, DEFAULT_SRS_CONFIG);
-      if (decision.newlyPassed) {
-        await app.saveProgress({ ...(prog ?? emptyProgress(sid)), gatePassedAt: now });
-      }
-    }
+          // 3. 게이트 통과 표시(단조 잠금).
+          // 연습 누적 진도는 위의 직렬화된 개별 저장에서 이미 반영했으므로 여기서 중복 저장하지 않음.
+          const prog = await app.loadProgressForProfile(profileId, sid);
+          const decision = proficiencyOf(sid, allCards, prog, DEFAULT_SRS_CONFIG);
+          if (decision.newlyPassed) {
+            await app.saveProgress({
+              ...(prog ?? emptyProgress(profileId, sid)),
+              profileId,
+              gatePassedAt: now
+            });
+          }
+        }
 
-    // 4. 스트릭 갱신(관대 — 최소량 1 이상이면).
-    const settings = app.settings();
-    if (settings) {
-      const prev = {
-        streakCount: settings.streakCount ?? 0,
-        lastStreakDayMs: settings.lastStreakDayMs ?? 0,
-        freezesAvailable: settings.freezesAvailable ?? DEFAULT_SRS_CONFIG.streakDefaultFreezes
-      };
-      const base = prev.streakCount === 0 ? initialStreak(DEFAULT_SRS_CONFIG) : prev;
-      const upd = updateStreak(base, now, results.length, DEFAULT_SRS_CONFIG);
-      await app.updateSettings({
-        streakCount: upd.state.streakCount,
-        lastStreakDayMs: upd.state.lastStreakDayMs,
-        freezesAvailable: upd.state.freezesAvailable
+        // 4. 스트릭 갱신(관대 — 최소량 1 이상이면).
+        if (settings) {
+          const prev = {
+            streakCount: settings.streakCount ?? 0,
+            lastStreakDayMs: settings.lastStreakDayMs ?? 0,
+            freezesAvailable: settings.freezesAvailable ?? DEFAULT_SRS_CONFIG.streakDefaultFreezes
+          };
+          const base = prev.streakCount === 0 ? initialStreak(DEFAULT_SRS_CONFIG) : prev;
+          const upd = updateStreak(base, now, sessionResults.length, DEFAULT_SRS_CONFIG);
+          await app.updateSettingsForProfile(profileId, {
+            streakCount: upd.state.streakCount,
+            lastStreakDayMs: upd.state.lastStreakDayMs,
+            freezesAvailable: upd.state.freezesAvailable
+          });
+        }
+      })
+      .then(() => {
+        if (generation !== startGeneration) return;
+        playSound('achievement');
+        setTimeout(() => celebration?.rain(40), 200);
+        if (sessionCorrect === sessionResults.length && sessionResults.length > 0) {
+          pushToast(m.practice_completion_perfect(), {
+            icon: 'star', variant: 'achievement', duration: 4000
+          });
+        } else if (sessionResults.length > 0) {
+          pushToast(
+            m.practice_completion_result({ correct: sessionCorrect, total: sessionResults.length }),
+            { icon: 'check', variant: 'success', duration: 3000 }
+          );
+        }
+        phase = 'done';
+      })
+      .catch(() => {
+        if (generation === startGeneration) phase = 'error';
       });
-    }
-
-    phase = 'done';
   }
 
-  function emptyProgress(skillId: string): ProgressRecord {
+  function emptyProgress(profileId: string, skillId: string) {
     return {
-      profileId: app.activeProfileId() ?? '',
+      profileId,
       skillId,
       attempts: 0,
       correct: 0,
       lastPlayedAt: Date.now(),
-      stars: 0
+      stars: 0 as const
     };
   }
 
@@ -229,6 +259,13 @@
 
   {#if phase === 'loading'}
     <p class="muted">{m.loading()}</p>
+  {:else if phase === 'saving'}
+    <p class="muted" role="status">{m.practice_saving()}</p>
+  {:else if phase === 'error'}
+    <div class="card empty" role="alert">
+      <p>{m.practice_save_error()}</p>
+      <button class="btn--primary" onclick={() => router.navigate('home')}>{m.practice_back_home()}</button>
+    </div>
   {:else if phase === 'empty'}
     <div class="card empty">
       <p class="emoji" aria-hidden="true"><Icon name="sparkles" /></p>

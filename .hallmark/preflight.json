@@ -1,0 +1,16 @@
+{
+  "skill": "hallmark",
+  "version": "1.1.0",
+  "verb": "redesign",
+  "theme": "custom-living-stage",
+  "genre": "playful",
+  "macrostructures": ["bento-grid", "narrative-workflow", "workbench"],
+  "navigation": "learning-deck",
+  "enrichment": "none",
+  "routes": ["home", "lessons", "practice", "progress"],
+  "confirmed": true,
+  "critique": { "philosophy": 5, "hierarchy": 5, "execution": 4, "specificity": 5, "restraint": 4, "variety": 5 },
+  "slopTest": "pass (58/58 on redesigned surfaces)",
+  "contrast": "pass (light, dark, and transient motion states)",
+  "responsive": "pass (320, 375, 414, 768 CSS px)"
+}

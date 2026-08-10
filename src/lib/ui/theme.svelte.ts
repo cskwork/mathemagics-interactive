@@ -13,6 +13,9 @@ let current = $state<Theme>('light');
 function apply(theme: Theme): void {
   if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
+    const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    themeColor?.setAttribute('content', theme === 'dark' ? '#140a1c' : '#f5f1ea');
   }
 }
 

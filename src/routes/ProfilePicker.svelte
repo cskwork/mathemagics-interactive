@@ -16,6 +16,7 @@
   let draftName = $state('');
   let draftAvatar = $state<string>(AVATAR_IDS[0]);
   let busy = $state(false);
+  let profileError = $state<string | null>(null);
 
   let renameOpen = $state(false);
   let renameTarget = $state<{ id: string; name: string } | undefined>(undefined);
@@ -32,19 +33,31 @@
     event.preventDefault();
     if (busy || draftName.trim() === '') return;
     busy = true;
+    profileError = null;
     try {
       const profile = await app.createProfile(draftName, draftAvatar);
       creating = false;
       await app.selectProfile(profile.id);
       router.navigate('home');
+    } catch {
+      profileError = m.profiles_action_error();
     } finally {
       busy = false;
     }
   }
 
   async function choose(id: string): Promise<void> {
-    await app.selectProfile(id);
-    router.navigate('home');
+    if (busy) return;
+    busy = true;
+    profileError = null;
+    try {
+      await app.selectProfile(id);
+      router.navigate('home');
+    } catch {
+      profileError = m.profiles_action_error();
+    } finally {
+      busy = false;
+    }
   }
 
   function askRename(id: string, currentName: string): void {
@@ -66,7 +79,7 @@
   }
 </script>
 
-<section class="cast">
+<section class="cast" aria-busy={busy}>
   <header class="cast-head">
     <h2>{m.stage_cast_heading()}</h2>
     <p class="muted">{m.stage_cast_hint()}</p>
@@ -92,16 +105,16 @@
     <ul class="roster" role="list">
       {#each app.profiles() as profile (profile.id)}
         <li class="cast-row">
-          <button class="cast-pick" onclick={() => choose(profile.id)}>
+          <button class="cast-pick" onclick={() => choose(profile.id)} disabled={busy}>
             <span class="cast-avatar" aria-hidden="true"><Avatar id={profile.avatar} /></span>
             <span class="cast-name">{profile.name}</span>
             <span class="cast-arrow" aria-hidden="true"><Icon name="chevron-right" /></span>
           </button>
           <span class="cast-actions">
-            <button class="btn--ghost" onclick={() => askRename(profile.id, profile.name)}>
+            <button class="btn--ghost" onclick={() => askRename(profile.id, profile.name)} disabled={busy}>
               {m.profiles_rename()}
             </button>
-            <button class="btn--danger" onclick={() => askDelete(profile.id, profile.name)}>
+            <button class="btn--danger" onclick={() => askDelete(profile.id, profile.name)} disabled={busy}>
               {m.profiles_delete()}
             </button>
           </span>
@@ -128,10 +141,11 @@
       <fieldset class="avatars">
         <legend>{m.profiles_avatar_label()}</legend>
         <div class="avatar-grid">
-          {#each AVATAR_IDS as avatar (avatar)}
+          {#each AVATAR_IDS as avatar, index (avatar)}
             <button
               type="button"
               class="avatar-btn"
+              aria-label={`${m.profiles_avatar_label()} ${index + 1}`}
               aria-pressed={draftAvatar === avatar}
               onclick={() => (draftAvatar = avatar)}><Avatar id={avatar} /></button
             >
@@ -143,7 +157,7 @@
         <button class="btn--primary" type="submit" disabled={busy || draftName.trim() === ''} data-state={busy ? 'loading' : undefined}>
           {m.profiles_save()}
         </button>
-        <button type="button" onclick={() => (creating = false)}>{m.profiles_cancel()}</button>
+        <button type="button" onclick={() => (creating = false)} disabled={busy}>{m.profiles_cancel()}</button>
       </div>
     </form>
   {:else if app.profiles().length > 0}
@@ -151,6 +165,10 @@
       <Icon name="users" />
       <span>{m.profiles_add()}</span>
     </button>
+  {/if}
+
+  {#if profileError}
+    <p class="profile-error" role="alert">{profileError}</p>
   {/if}
 </section>
 
@@ -163,6 +181,7 @@
   confirmLabel={m.dialog_confirm()}
   cancelLabel={m.dialog_cancel()}
   onconfirm={(value) => doRename(value)}
+  confirmError={m.profiles_action_error()}
 />
 
 <Dialog
@@ -176,6 +195,7 @@
   confirmLabel={m.profiles_delete()}
   cancelLabel={m.dialog_cancel()}
   onconfirm={() => doDelete()}
+  confirmError={m.profiles_action_error()}
 />
 
 <style>
@@ -308,7 +328,7 @@
     flex: 0 0 auto;
   }
   .cast-actions button {
-    min-height: calc(var(--tap) * 0.8);
+    min-height: var(--tap);
     padding: 0 var(--space-2);
     font-size: var(--text-small);
     border-radius: var(--radius-sm);
@@ -383,6 +403,12 @@
     align-items: center;
     gap: var(--space-2);
     align-self: flex-start;
+  }
+
+  .profile-error {
+    margin: 0;
+    color: var(--miss);
+    font-size: var(--text-small);
   }
 
   @media (max-width: 360px) {

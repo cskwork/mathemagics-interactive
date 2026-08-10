@@ -81,6 +81,8 @@ export function routeToHash(route: Route): string {
 export interface Router {
   /** 현재 라우트. 템플릿에서 읽으면 반응형이다. */
   current(): Route;
+  /** 쿼리를 포함한 현재 해시. 같은 라우트 안의 딥링크 변경도 반응형으로 구분한다. */
+  locationHash(): string;
   /** 해시는 있는데 아는 라우트가 아님 (오탈자 링크 등). */
   unknownHash(): boolean;
   navigate(route: Route): void;
@@ -91,16 +93,20 @@ export interface Router {
 /** 현재 라우트를 들고 있는 반응형 스토어. */
 export function createRouter(): Router {
   let current = $state<Route>(DEFAULT_ROUTE);
+  let currentHash = $state('');
   let unknown = $state(false);
 
   function sync(): void {
-    const parsed = parseHash(globalThis.location?.hash ?? '');
-    unknown = parsed === undefined && (globalThis.location?.hash ?? '').length > 1;
+    const hash = globalThis.location?.hash ?? '';
+    const parsed = parseHash(hash);
+    currentHash = hash;
+    unknown = parsed === undefined && hash.length > 1;
     current = parsed ?? DEFAULT_ROUTE;
   }
 
   return {
     current: () => current,
+    locationHash: () => currentHash,
     unknownHash: () => unknown,
     navigate(route: Route): void {
       const next = routeToHash(route);

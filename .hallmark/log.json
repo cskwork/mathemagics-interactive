@@ -1,0 +1,12 @@
+{
+  "skill": "hallmark",
+  "version": "1.1.0",
+  "verb": "redesign",
+  "theme": "custom-living-stage",
+  "genre": "playful",
+  "macrostructure": "bento-grid",
+  "navigation": "learning-deck",
+  "enrichment": "none",
+  "contract": "design.md",
+  "tokens": "tokens.css"
+}

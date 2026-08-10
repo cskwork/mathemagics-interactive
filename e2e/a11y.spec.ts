@@ -32,16 +32,25 @@ test.describe('접근성 (axe-core, WCAG 2.0/2.1 A/AA)', () => {
   test('profiles', async ({ page }) => {
     await page.goto('#/');
     await expect(page.getByRole('heading', { name: '오늘의 공연자' })).toBeVisible();
+    await page.getByRole('button', { name: '프로필 만들기' }).click();
+    await expect(page.getByRole('button', { name: '아바타 1' })).toBeVisible();
     const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     assertNoSeriousViolations(result, 'profiles');
   });
 
   test('home', async ({ page }) => {
     await createProfile(page);
-    // "오늘의 공연" 은 <p.kicker>(heading 아님) → 홈 도달은 인사 h2 로 확인.
-    await expect(page.getByRole('heading', { name: /안녕/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /테스트/ })).toBeVisible();
     const result = await new AxeBuilder({ page }).exclude('.spotlight-card-beam').withTags(WCAG_TAGS).analyze();
     assertNoSeriousViolations(result, 'home');
+  });
+
+  test('home — dark theme', async ({ page }) => {
+    await createProfile(page);
+    await page.getByRole('button', { name: '다크 모드' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const result = await new AxeBuilder({ page }).exclude('.spotlight-card-beam').withTags(WCAG_TAGS).analyze();
+    assertNoSeriousViolations(result, 'home-dark');
   });
 
   test('settings', async ({ page }) => {
@@ -51,6 +60,22 @@ test.describe('접근성 (axe-core, WCAG 2.0/2.1 A/AA)', () => {
     const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     assertNoSeriousViolations(result, 'settings');
   });
+
+  const learningRoutes = {
+    lessons: '학습 여정',
+    progress: '내 진도',
+    stage: '공연 모드',
+    magic: '수학 마술'
+  } as const;
+  for (const [route, heading] of Object.entries(learningRoutes)) {
+    test(route, async ({ page }) => {
+      await createProfile(page);
+      await page.goto(`#/${route}`);
+      await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+      const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+      assertNoSeriousViolations(result, route);
+    });
+  }
 
   test('playground', async ({ page }) => {
     await page.goto('#/dev/playground');
