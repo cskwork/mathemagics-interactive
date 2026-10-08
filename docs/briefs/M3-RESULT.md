@@ -142,13 +142,13 @@ $ npm run check
 > paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --strategy baseLocale
 ℹ [paraglide-js] Compiling inlang project ...
 ✔ [paraglide-js] Successfully compiled inlang project.
-Loading svelte-check in workspace: /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+Loading svelte-check in workspace: /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
 Getting Svelte diagnostics...
 svelte-check found 0 errors and 0 warnings
 
 ########## TEST ##########
 $ npm test
- RUN  v4.1.10 /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+ RUN  v4.1.10 /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
  Test Files  18 passed (18)
       Tests  201 passed (201)
    Start at  06:25:49

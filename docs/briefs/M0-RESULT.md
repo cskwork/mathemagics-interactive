@@ -149,7 +149,7 @@ $ npm run check ; echo EXIT=$?
 
 ℹ [paraglide-js] Compiling inlang project ...
 ✔ [paraglide-js] Successfully compiled inlang project.
-1785195033900 START "/Users/danny/Documents/PARA/Resource/mathemagics-interactive"
+1785195033900 START "/Users/<user>/Documents/PARA/Resource/mathemagics-interactive"
 1785195033904 COMPLETED 927 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
 EXIT=0
 ```
@@ -161,7 +161,7 @@ $ npm test ; echo EXIT=$?
 > vitest run
 
 
- RUN  v4.1.10 /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+ RUN  v4.1.10 /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
 
 
  Test Files  5 passed (5)

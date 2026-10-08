@@ -106,12 +106,12 @@ M4 의 선례(XDiagram/DivisionBracket 가 ColumnGrid 형제)에 따라 **지필
 ########## CHECK ##########
 ℹ [paraglide-js] Compiling inlang project ...
 ✔ [paraglide-js] Successfully compiled inlang project.
-Loading svelte-check in workspace: /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+Loading svelte-check in workspace: /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
 Getting Svelte diagnostics...
 svelte-check found 0 errors and 0 warnings
 
 ########## TEST ##########
- RUN  v4.1.10 /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+ RUN  v4.1.10 /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
  Test Files  26 passed (26)
       Tests  316 passed (316)
    Start at  07:21:18

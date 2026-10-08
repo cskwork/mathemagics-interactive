@@ -96,12 +96,12 @@ DigitInput 회귀 0(BASE_MS Record 에 `running`/`branch` 엔트리 추가만). 
 > paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --strategy baseLocale
 ℹ [paraglide-js] Compiling inlang project ...
 ✔ [paraglide-js] Successfully compiled inlang project.
-Loading svelte-check in workspace: /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+Loading svelte-check in workspace: /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
 Getting Svelte diagnostics...
 svelte-check found 0 errors and 0 warnings
 
 ########## TEST ##########
- RUN  v4.1.10 /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+ RUN  v4.1.10 /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
  Test Files  22 passed (22)
       Tests  255 passed (255)
    Start at  06:51:51
