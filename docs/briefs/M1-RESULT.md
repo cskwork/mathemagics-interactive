@@ -99,7 +99,7 @@ $ npm run check
 
 ℹ [paraglide-js] Compiling inlang project ...
 ✔ [paraglide-js] Successfully compiled inlang project.
-Loading svelte-check in workspace: /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+Loading svelte-check in workspace: /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
 Getting Svelte diagnostics...
 
 svelte-check found 0 errors and 0 warnings
@@ -111,7 +111,7 @@ $ npm test
 > vitest run
 
 
- RUN  v4.1.10 /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+ RUN  v4.1.10 /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
 
 
  Test Files  7 passed (7)

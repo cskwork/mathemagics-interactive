@@ -97,12 +97,12 @@ font-family 도 `var(--font-*)`. `StepPlayer.BASE_MS` 에 `memory:900` 추가(St
 ########## CHECK ##########
 > npm run i18n && svelte-check --tsconfig ./tsconfig.json
 ✔ [paraglide-js] Successfully compiled inlang project.
-Loading svelte-check in workspace: /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+Loading svelte-check in workspace: /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
 Getting Svelte diagnostics...
 svelte-check found 0 errors and 0 warnings
 
 ########## TEST ##########
- RUN  v4.1.10 /Users/danny/Documents/PARA/Resource/mathemagics-interactive
+ RUN  v4.1.10 /Users/<user>/Documents/PARA/Resource/mathemagics-interactive
  Test Files  28 passed (28)
       Tests  365 passed (365)
    Start at  07:44:54

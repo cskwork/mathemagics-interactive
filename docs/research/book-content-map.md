@@ -1,6 +1,6 @@
 # Mathemagics (Benjamin & Shermer, 1993) — 콘텐츠 맵
 
-> 원본: `/Users/danny/Documents/PARA/Resource/mathemagics-interactive/mathemagics.pdf` (240쪽 스캔본)
+> 원본: `/Users/<user>/Documents/PARA/Resource/mathemagics-interactive/mathemagics.pdf` (240쪽 스캔본)
 > 페이지 대응: **PDF 페이지 = 책 페이지 + 21** (책 p.1 = PDF p.22)
 > 이 문서는 아동용 인터랙티브 학습 앱의 커리큘럼 설계를 위한 구조화 요약이다.
 > 텍스트는 OCR 추출본 기반이며, 핵심 예제는 원문 수치를 직접 확인했다. (미확인 부분은 본문에 표시)
